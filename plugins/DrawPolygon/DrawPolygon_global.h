@@ -1,0 +1,12 @@
+#ifndef DRAWPOLYGON_GLOBAL_H
+#define DRAWPOLYGON_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#ifdef DRAWPOLYGON_LIB
+# define DRAWPOLYGON_EXPORT Q_DECL_EXPORT
+#else
+# define DRAWPOLYGON_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // DRAWPOLYGON_GLOBAL_H

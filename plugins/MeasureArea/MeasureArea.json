@@ -1,0 +1,10 @@
+{
+  "Name": "MeasureArea",
+  "Version": "0.0.1",
+  "Dependencies": [
+    {
+      "Name": "DrawPolygon",
+      "Version": "0.0.1"
+    }
+  ]
+}

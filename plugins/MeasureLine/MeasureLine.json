@@ -1,0 +1,10 @@
+{
+  "Name": "MeasureLine",
+  "Version": "0.0.1",
+  "Dependencies": [
+    {
+      "Name": "DrawLine",
+      "Version": "0.0.1"
+    }
+  ]
+}

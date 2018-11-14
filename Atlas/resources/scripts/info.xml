@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<info>
+  <WKT>
+    PROJCS["CGCS_2000_3_Degree_GK_CM_120E",
+    GEOGCS["GCS_CGCS_2000",
+    DATUM["CGCS_2000",
+    SPHEROID["CGCS_2000",6378137,298.257222101]],
+    PRIMEM["Greenwich",0],
+    UNIT["degree",0.0174532925199433]],
+    PROJECTION["Transverse_Mercator"],
+    PARAMETER["latitude_of_origin",0],
+    PARAMETER["central_meridian",120],
+    PARAMETER["scale_factor",1],
+    PARAMETER["false_easting",500000],
+    PARAMETER["false_northing",0],
+    UNIT["metre",1,
+    AUTHORITY["EPSG","9001"]]]
+  </WKT>
+
+  <Origin>605998.377246828400530,3254001.634820304811001</Origin>
+  <Pixel_Size>2.000000000000000,-2.000000000000000</Pixel_Size>
+  <Metadata>
+    AREA_OR_POINT=Area
+    DataType=Generic
+  </Metadata>
+  <Image_Structure_Metadata>
+    COMPRESSION=LZW
+    INTERLEAVE=BAND
+  </Image_Structure_Metadata>
+
+  <Corner_Coordinates>
+    <Upper_Left>605998.377, 3254001.635</Upper_Left>
+    <Lower_Left>605998.377, 3251999.635</Lower_Left>
+    <Upper_Right>608000.377, 3254001.635</Upper_Right>
+    <Lower_Right>608000.377, 3251999.635</Lower_Right>
+    <Center>606999.377, 3253000.635</Center>
+  </Corner_Coordinates>
+
+  <Band num ="1">
+    <Block>128,128</Block>
+    <Type>Float32</Type>
+    <ColorInterp>Gray</ColorInterp>
+  </Band>
+  <NoData_Value>-3.40282306073709653e+38</NoData_Value>
+</info>

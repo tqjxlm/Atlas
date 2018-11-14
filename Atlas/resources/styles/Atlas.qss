@@ -1,0 +1,96 @@
+QTreeView::branch:has-siblings:!adjoins-item {
+    border-image: url(resources/widgets/vline.png) 0;
+}
+
+QTreeView::branch:has-siblings:adjoins-item {
+    border-image: url(resources/widgets/branch-more.png) 0;
+}
+
+QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+    border-image: url(resources/widgets/branch-end.png) 0;
+}
+
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+    border-image: none;
+    image: url(resources/widgets/branch-closed.png);
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings  {
+    border-image: none;
+    image: url(resources/widgets/branch-open.png);
+}
+
+QToolBar {
+    background-color: #ffffff;
+}
+
+QStatusBar {
+    background-color: #ffffff;
+}
+
+QMenu {
+    background-color: #fbfbfb;
+    padding: 5px;
+}
+
+QMenu::item {
+    padding: 3px 30px 3px 20px;
+    border: 1px solid transparent;
+}
+
+QMenu::item::selected {
+    background-color: #ededed;
+    border: 1px solid transparent;
+}
+
+QMenu::item::checked {
+    background-color: #CCE8FF;
+    border: 1px solid #BADEFD;
+}
+
+QMenu::indicator {
+    width: 13px;
+    height: 13px;
+}
+
+QMenu::indicator:non-exclusive:unchecked {
+    image: url(resources/widgets/checkbox_unchecked.png);
+}
+
+QMenu::indicator:non-exclusive:checked {
+    image: url(resources/widgets/checkbox_checked.png);
+}
+
+NXDockWidgetTabButton {
+    padding: 0;
+    font: 10pt "Sans Serif";
+    background-color: #fafafa;
+    border: 1px solid #dddddd;
+    border-top: 0;
+    border-bottom-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+NXDockWidgetTabButton:hover {
+    background-color: #EAF1FF;
+}
+
+NXDockWidgetTabButton:checked {
+    background-color: #ffffff;
+}
+
+NXDockWidgetTabBar {
+    padding: 0;
+}
+
+AtlasSplashScreen > QProgressBar {
+    border: 2px solid grey;
+    border-radius: 5px;
+}
+
+AtlasSplashScreen > QProgressBar::chunk {
+    background-color: #05B8CC;
+    width: 20px;
+}

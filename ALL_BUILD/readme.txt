@@ -1,0 +1,1 @@
+This project makes sure every thing that's needed for a Release run will be copied to the release dir.

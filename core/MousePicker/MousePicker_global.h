@@ -1,0 +1,12 @@
+#ifndef MOUSEPICKER_GLOBAL_H
+#define MOUSEPICKER_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#ifdef MOUSEPICKER_LIB
+# define MOUSEPICKER_EXPORT Q_DECL_EXPORT
+#else
+# define MOUSEPICKER_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // MOUSEPICKER_GLOBAL_H

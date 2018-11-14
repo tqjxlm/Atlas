@@ -1,0 +1,12 @@
+#ifndef SETREFPLANE_GLOBAL_H
+#define SETREFPLANE_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#ifdef SETREFPLANE_LIB
+# define SETREFPLANE_EXPORT Q_DECL_EXPORT
+#else
+# define SETREFPLANE_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // SETREFPLANE_GLOBAL_H

@@ -1,0 +1,12 @@
+#ifndef VIEWERWIDGET_GLOBAL_H
+#define VIEWERWIDGET_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#ifdef VIEWERWIDGET_LIB
+# define VIEWERWIDGET_EXPORT Q_DECL_EXPORT
+#else
+# define VIEWERWIDGET_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // VIEWERWIDGET_GLOBAL_H

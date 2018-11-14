@@ -1,0 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?> 
+ <style id="0" name="buildings">
+    <altitude-clamping>terrain</altitude-clamping>
+    <extrusion-height>15</extrusion-height>
+	<extrusion-flatten>true</extrusion-flatten>
+	<fill>#ff7f2f</fill>
+</style>

@@ -1,0 +1,14 @@
+{
+  "Name": "MeasureTerrainVolume",
+  "Version": "0.0.1",
+  "Dependencies": [
+    {
+      "Name": "MeasureTerrainArea",
+      "Version": "0.0.1"
+    },
+    {
+      "Name": "SetRefPlane",
+      "Version": "0.0.1"
+    }
+  ]
+}
