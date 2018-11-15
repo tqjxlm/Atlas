@@ -1,27 +1,10 @@
 # Build Guide
 
-## Install Tools
+Build pass on:
 
-The following environment has been tested. If you build successfully with other versions of any of these environments, or get in to problems, please inform us.
-
-1. Visual Studio 2015 update 3
-2. [Qt 5.11](https://download.qt.io/official_releases/qt/5.11/) and above (Visual Studio 2015 x64 verison) with [qt-vsaddin](https://download.qt.io/official_releases/vsaddin/)
-3. CMake 3.6 and above
-
-## Ready-to-use dev pack
-
-Prebuilt pack with full plugins (only for __VS2015 + Win10 + Qt5.11.x_x64__):
-
-* OpenSceneGraph.rar ([Google](https://drive.google.com/open?id=1WDazxtmwctlUJS7kPhkJQ3aO-6tyIVG6) / [Baidu](https://pan.baidu.com/s/17LA7XGeUsZpzTZdLmpRWNw))
-* thirdparty.rar ([Google](https://drive.google.com/open?id=1_mEG45tPvaDolTiJlHWhsCWOfC2M_MVK) / [Baidu](https://pan.baidu.com/s/17LA7XGeUsZpzTZdLmpRWNw))
-
-Extract them to separate dirs, and add them as *__OSG_ROOT__* and *__THIRD_PARTY_DIR__* to system environment variables, respectively. Then you can jump to [Build Atlas](#build-atlas) directly.
-
-If there's no special needs, it is recommended to install VS2015 + Qt5.11.x_x64 and use our prebuilt pack to save your life.
-
-If your want to prepare by yourself or use a different version of MSVC, read on. The whole process will cost half to a whole day, depending on your hardware and your familiarity of the tools.
-
-## Prepare Third Party Libs
+* Windows 10 x64 + VS2015 + Qt 5.11.1 + osgEarth 2.10 + osg 3.6.1
+* Ubuntu 16.04 x64 + g++ 5 + Qt 5.11.0 + osgEarth 2.9 + osg 3.6.0
+* Fedora 28 + Qt 5 + osgEarth 2.9 + osg 3.4
 
 Dependency list (indirect or redundant dependencies not listed):
 
@@ -40,30 +23,62 @@ Dependency list (indirect or redundant dependencies not listed):
 * optional: python3-gdal
 * optional: [FBX](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2019-0) (it required 1GB of space to install)
 
-### Using prebuilt pack
+## Linux
 
-For Visual Studio 2015, we provide a thirdparty pack ([Google](https://drive.google.com/open?id=1_mEG45tPvaDolTiJlHWhsCWOfC2M_MVK) / [Baidu](https://pan.baidu.com/s/17LA7XGeUsZpzTZdLmpRWNw)) with full dependencies.
-For other version of Visual Studio, refer to [OSG dependencies](http://www.openscenegraph.org/index.php/download-section/dependencies). You may need to build some additional libs to support optional functions.
+### Dependencies
 
-If any part of the prebuilt pack does not work, you have to prepare dependencies by yourself. The two great tools are __osgeo4w__ (for prebuilt but maybe outdated libs) and __vcpkg__ (for automatic compiling from source using native tools).
+At lease, you should meet these requirements:
 
-__Important__: No matter how you prepare the dependencies, please copy all your dependencies to a separate folder, and add it as *__THIRD_PARTY_DIR__* to system environment variables. It is ugly but it is the only way, until we finish CMake integration.
+* g++ 5+
+* cmake-gui 3.4+
+* Qt 5.6+
+* OpenSceneGraph 3.4+
+* osgQt
+* osgEarth 2.9+ (better build by yourself)
 
-### Using osgeo4w
+If you want full functionalities, build OpenSceneGraph and osgEarth by yourself using all the dependencies in the previous section.
 
-1. Download [osgeo4w x64 version](https://trac.osgeo.org/osgeo4w/), and open the installer
-2. Choose advance installation -> Install from Internet
-3. Choose a proper position as installation directory (it may take some storage)
-4. Next all the way (If you are behind GFW, VPN may be required instead of direct connections)
-5. At the Select Packages page, search and select desired packages to install by typing key words in the search bar
-6. Find the package you want to install and click on the "Skip" text until a desired version number is shown.
-7. Confirm and wait for installation
+### Build
 
-Whenever you find a missing lib in the following sections, you can always come back and do 1-7 again, picking up what you have left.
+``` batch
+git clone https://github.com/tqjxlm/Atlas.git
+cd Atlas
 
-After installing, copy the /bin /include /lib dirs to [THIRD_PARTY_DIR]
+mkdir build
+cd build
 
-### Using vcpkg
+cmake-gui ../ #Select Plugins
+make
+```
+
+The default runtime directory is build/dist
+
+## Windows
+
+### Choose your way
+
+You can install our recommended environment and use the [dev pack](#prepare-dependencies-using-dev-pack) to quick start.
+
+Or you can [prepare dependencies](#prepare-dependencies-by-yourself) by yourself.
+
+### Prepare dependencies using dev pack
+
+Prebuilt pack with full plugins (only for VS2015 + Win10 + Qt5.11.x_x64):
+
+* OpenSceneGraph.rar ([Google](https://drive.google.com/open?id=1WDazxtmwctlUJS7kPhkJQ3aO-6tyIVG6) / [Baidu](https://pan.baidu.com/s/17LA7XGeUsZpzTZdLmpRWNw))
+* thirdparty.rar ([Google](https://drive.google.com/open?id=1_mEG45tPvaDolTiJlHWhsCWOfC2M_MVK) / [Baidu](https://pan.baidu.com/s/17LA7XGeUsZpzTZdLmpRWNw))
+
+Extract them to separate dirs, and add them as *__OSG_ROOT__* and *__THIRD_PARTY_DIR__* to system environment variables, respectively. 
+
+Then you can jump to [Build Atlas](#build-atlas) directly.
+
+### Prepare dependencies by yourself
+
+If your want to prepare by yourself or to use a different version of MSVC, read on. The whole process will cost half to a whole day, depending on your hardware and your familiarity of the tools.
+
+__Important__: No matter how you prepare the dependencies, please export the final libs to a separate folder, and add it as *__THIRD_PARTY_DIR__* to system environment variables. It is ugly but it is the only way, until we finish CMake integration for Windows.
+
+#### When a dependency is missing
 
 For any missing package, use [vcpkg](https://github.com/Microsoft/vcpkg) to compile them from source. Remember to compile the x64 version. For example
 
@@ -73,9 +88,7 @@ For any missing package, use [vcpkg](https://github.com/Microsoft/vcpkg) to comp
 
 After packages are installed, you can find them at *VCPKG_ROOT*\installed\x64-windows. copy the /bin /include /lib dirs to [THIRD_PARTY_DIR]
 
-## Build OSG
-
-The build process may cost a long time. Put the folder on an SSD may help.
+#### Build OSG
 
 1. Get OpenSceneGraph [source code](https://github.com/openscenegraph/OpenSceneGraph/releases), extract it to an arbitrary folder (referred to as *OSG_SRC* in the following)
 2. Open CMake, choose the source position as [*OSG_SRC*], and the build position as [*OSG_SRC*]/build
@@ -91,7 +104,7 @@ The build process may cost a long time. Put the folder on an SSD may help.
 12. Build ALL_BUILD and INSTALL projects for both Debug and Release
 13. Add the output directory as *__OSG_ROOT__* in your system environment variables
 
-## Build OSGQt
+#### Build OSGQt
 
 1. Download OSGQt [source code](https://github.com/openscenegraph/osgQt/releases), choose the newest release even though it is named "Qt4"
 2. Open CMake, set source dir as the OSGQt extracted folder, set build dir as /build folder under OSGQt (it may not exist), click Configure
@@ -102,9 +115,9 @@ The build process may cost a long time. Put the folder on an SSD may help.
 7. Remove optimized.lib and debug.lib from the link input of the Release version project OsgQt
 8. Build ALL_BUILD and INSTALL projects for Debug ad Release
 
-## Build OSGEarth
+#### Build osgEarth
 
-1. Download OSGEarth [source code](https://github.com/gwaldron/osgearth/releases). Extract. And use CMake to configure it just as the previous sections
+1. Download osgEarth [source code](https://github.com/gwaldron/osgearth/releases). Extract. And use CMake to configure it just as the previous sections
 2. Set OSG_DIR to [*OSG_ROOT*]
 3. Set THIRD_PARTY_DIR to [*THIRD_PARTY_DIR*]
 4. Configure. And set other dependencies that are not detected automatically. The missing ones are:
@@ -119,7 +132,7 @@ The build process may cost a long time. Put the folder on an SSD may help.
 8. Configure & Generate. Open generated solution
 9. Build ALL_BUILD and INSTALL projects for Debug and Release
 
-## Build Atlas
+### Build atlas
 
 1. Clone this project
 2. Make sure you have added *__OSG_ROOT__* and *__THIRD_PARTY_DIR__* to system environment variables
@@ -127,15 +140,15 @@ The build process may cost a long time. Put the folder on an SSD may help.
 4. Open [ProjectRoot]/Atlas.sln
 5. Build ALL_BUILD project, or simply build the solution
 
-## Run program
+### Run program
 
-### Debug
+#### Debug
 
 1. Open Atlas project properties
 2. Add \$(*OSG_ROOT*)\bin and \$(*THIRD_PARTY_DIR*)\bin to Debugging -> Environment
 3. Press F5 to start debugging
 
-### Deploy
+#### Deploy
 
 In cmd, run
 
