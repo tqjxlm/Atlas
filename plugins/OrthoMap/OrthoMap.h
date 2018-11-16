@@ -28,6 +28,7 @@ public slots:
 	virtual void toggle(bool checked) override;
 
 protected:
+    osg::Node* _selectedNode;
 	SaveOrthoProjDialog::ProjectionMode _mode;
 	SaveOrthoProjDialog* _saveDialog;
 	QAction* _orthoModelAction;

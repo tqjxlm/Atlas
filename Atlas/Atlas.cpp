@@ -77,7 +77,7 @@ void Atlas::initAll()
     initDataStructure();
 
 	emit sendNowInitName(tr("Initializing camera"));
-	resetMainManipulator();
+	resetCamera();
 
 	initPlugins();
 
@@ -98,7 +98,7 @@ void Atlas::initCore()
 
 	connect(_dataManager, &DataManager::loadingProgress, this, &AtlasMainWindow::loadingProgress);
 	connect(_dataManager, &DataManager::loadingDone, this, &AtlasMainWindow::loadingDone);
-	connect(_dataManager, &DataManager::resetMainManipulator, this, &Atlas::resetMainManipulator);
+	connect(_dataManager, &DataManager::resetCamera, this, &Atlas::resetCamera);
 
     emit sendNowInitName(tr("Initializing viewer"));
 	_mainViewerWidget = new ViewerWidget(_root, 0, 0, 1280, 1024, osgViewer::ViewerBase::SingleThreaded);
@@ -178,11 +178,19 @@ void Atlas::initDataStructure()
     _dataManager->registerDataRoots(_root);
 }
 
-void Atlas::resetMainManipulator()
+void Atlas::resetCamera()
 {
-	_mainViewerWidget->resetMainManipulator(_dataManager->getCenterNode());
+    MapController* manipulator = _mainViewerWidget->getManipulator();
+    if (manipulator == NULL)
+    {
+        // Init a manipulator if not inited yet
+        manipulator = new MapController(_dataRoot);
+        _mainViewerWidget->getMainView()->setCameraManipulator(manipulator);
+        manipulator->setAutoComputeHomePosition(false);
 
-	MapController* manipulator = _mainViewerWidget->getManipulator();
+        manipulator->setCenterIndicator(_mainViewerWidget->createCameraIndicator());
+    }
+	_mainViewerWidget->resetCamera(_mapNode[0]);
 
 	connect(_dataManager, SIGNAL(moveToNode(const osg::Node*, double)), 
 		manipulator, SLOT(fitViewOnNode(const osg::Node*, double)),

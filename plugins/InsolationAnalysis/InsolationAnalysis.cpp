@@ -351,21 +351,13 @@ void InsolationAnalysis::toggle(bool checked)
 {
     if (checked)
     {
-        osg::Node* activenode = _dataManager->getActivatedNode();
-        osg::Node* selectNode = NULL;
-
-        if (activenode)
-        {
-            selectNode = findNodeInNode(activenode->getName(), _dataRoot);
-        }
-
-        if (!selectNode)
+        if (!_selectedNode)
         {
             QMessageBox::warning(_mainWindow, tr("Notice:"), tr("Please select a model first."), QMessageBox::Ok);
             _action->toggle();
             return;
         }
-        toggleTileSelectDialog(selectNode, true);
+        toggleTileSelectDialog(_selectedNode, true);
 
     }
     else

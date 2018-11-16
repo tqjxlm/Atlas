@@ -69,8 +69,6 @@ public:
 
 	// Getters
 	const osgEarth::GeoExtent* getExtent(const QString& name);
-	osg::Node* getCenterNode();
-	osg::Node* getActivatedNode();
 	QList<QTreeWidgetItem*> getSelectedItems();
 
 	QMap<QString, QVector<attrib>>& getAttributeList();
@@ -114,7 +112,7 @@ signals:
 	void loadingProgress(int);
 	void loadingDone();
 	void requestContextMenu(QMenu*, QTreeWidgetItem*);
-	void resetMainManipulator();
+	void resetCamera();
 	void showDataAttributes(QString);
 
 private:
@@ -145,10 +143,6 @@ private:
 	QMap<QString, QVector<attrib>> _attributeLists;
 	QMap<QString, QVector<feature>> _featureTables;
 	QMap<QString, QStringList> _featureFieldList;
-
-	// Scene structure reference
-	osg::ref_ptr<osg::Node> _activatedNode;
-	osg::ref_ptr<osg::Node> _centerNode;
 
 	// Data loading
 	//ModelLayerManager* _modellyermanager;

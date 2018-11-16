@@ -9,10 +9,10 @@
 #include <osgSim/OverlayNode>
 
 #include "SaveOrthoProjDialog.h"
-#include <DataManager/DataManager.h>
 #include <DataManager/FindNode.hpp>
 
 OrthoMap::OrthoMap()
+    : _selectedNode(nullptr)
 {
 	_pluginName = tr("Orthographic Map");
 	_pluginCategory = "Edit";
@@ -111,10 +111,10 @@ void OrthoMap::toggle(bool checked)
 		else
 			QMessageBox::critical(NULL, tr("Error"), tr("OrthoMap plugin received from invalid sender!"));
 
-		if (_dataManager->getCenterNode() == NULL)
+		if (_selectedNode == NULL)
 			QMessageBox::critical(NULL, tr("Error"), tr("No active model selected!"));
 		else
-			setupWorkingDialog(_dataManager->getCenterNode());
+			setupWorkingDialog(_selectedNode);
 
 		action->toggle();
 	}

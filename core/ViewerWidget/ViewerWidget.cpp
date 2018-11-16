@@ -236,18 +236,8 @@ osg::ref_ptr<osg::Camera> ViewerWidget::createLegendHud(QString titleString, QVe
 	return hudCamera;
 }
 
-void ViewerWidget::resetMainManipulator(osg::ref_ptr<osg::Node> centerNode)
+void ViewerWidget::resetCamera(osg::ref_ptr<osg::Node> centerNode)
 {
-	if (_mainView->getCameraManipulator() == NULL)
-	{
-		// Init a manipulator if not inited yet
-		_mainManipulator = new MapController();
-		_mainView->setCameraManipulator(_mainManipulator);
-		_mainManipulator->setAutoComputeHomePosition(false);
-
-		_mainManipulator->setCenterIndicator(createCameraIndicator());
-	}
-
 	if (centerNode.valid())
 	{
 		(dynamic_cast<MapController*>(_mainView->getCameraManipulator()))->fitViewOnNode(centerNode, 0);
@@ -256,7 +246,7 @@ void ViewerWidget::resetMainManipulator(osg::ref_ptr<osg::Node> centerNode)
 
 MapController * ViewerWidget::getManipulator()
 {
-	return _mainManipulator;
+	return dynamic_cast<MapController*>(_mainView->getCameraManipulator());
 }
 
 osg::ref_ptr<osg::PositionAttitudeTransform> ViewerWidget::createCameraIndicator()
