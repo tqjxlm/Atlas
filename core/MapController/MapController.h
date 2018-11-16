@@ -3,6 +3,8 @@
 
 #include "MapController_global.h"
 
+#include <QMap>
+
 #include <QObject>
 #include <osgGA/OrbitManipulator>
 #include <osgViewer/View>
@@ -25,7 +27,7 @@ class MAPCONTROLLER_EXPORT MapController :public QObject, public osgGA::OrbitMan
 	Q_OBJECT
 
 public:
-	MapController();
+	MapController(osg::ref_ptr<osg::Node> dataRoot);
 
 	// Event handler that is called every event traversal
 	virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us) override;
@@ -49,9 +51,20 @@ protected:
 	// Rotate function defined by OrbitManipulator
 	virtual void rotateWithFixedVertical(const float dx, const float dy) override;
 
+    // Keyboard function defined by OrbitManipulator
+    virtual bool handleKeyDown(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us) override;
+
+    // Keyboard function defined by OrbitManipulator
+    virtual bool handleKeyUp(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us) override;
+
+    // Action that make sure the rotation center is intersected with the scene
+    virtual void stickToScene();
+
+    void updateDriveDirection();
+
 public slots:
 	// Begin or stop predefined movement
-	void updateTravelrole(bool isTravel);
+	void enableAnimation(bool enabled);
 
 	// Begin or stop screen saving movement
 	void screenSaving(bool on);
@@ -68,10 +81,11 @@ public slots:
 protected slots:
 	void screenSaversMovement();
 	void flyingMovement();
+    void drivingMovement();
 
 private:
 	// Movement switches
-	bool _isTraveling;
+	bool _inAnimation;
 	bool _isFlying;
 	bool _isScreenSaving;
 
@@ -99,6 +113,17 @@ private:
 
 	osg::ref_ptr<osg::PositionAttitudeTransform> _centerIndicator;
 	osg::ref_ptr<osgViewer::View> _view;
+
+    // Driver mode
+    bool _isDriving;
+    osg::Vec3 _driveDirection;
+    osg::Vec3 _front;
+    osg::Vec3 _right;
+    double _driveSpeed;
+    QMap<int, bool> _keyPressed;
+
+    // Data root to stick to
+    osg::ref_ptr<osg::Node> _dataRoot;
 };
 
 #endif

@@ -32,7 +32,6 @@ DataManager::DataManager(SettingsManager* settingsManager, QObject* parent /*= N
 	, _countLoadingData(0)
 	, _settingsManager(settingsManager)
 	//, _featureStyleDlg(NULL)
-	, _activatedNode(NULL)
 {
 	initDataTree();
 	setupUi();
@@ -185,7 +184,7 @@ void DataManager::setupUi()
 	//rotateModelAction->setText(tr("Rotate"));
 	//rotateModelAction->setToolTip(tr("Rotate model"));
 
-	connect(resetViewAction, SIGNAL(triggered()), this, SIGNAL(resetMainManipulator()));
+	connect(resetViewAction, SIGNAL(triggered()), this, SIGNAL(resetCamera()));
 	
 	//connect(showAttributeTableAction, SIGNAL(triggered()), this, SLOT(showAttributeTableSlot()));
 	//connect(showMetatDataAction, SIGNAL(triggered()), this, SLOT(showMetaDataSlot()));
@@ -315,32 +314,15 @@ void DataManager::registerDataRoots(osg::Group* root)
 
 void DataManager::setCenterNode(osg::Node* node)
 {
-	_centerNode = node;
-
-	emit moveToNode(_centerNode, 0);
+	emit moveToNode(node, 0);
 
 	emit loadingDone();
-}
-
-void DataManager::setActivatedNode(osg::Node* node)
-{
-	_activatedNode = node;
 }
 
 const osgEarth::GeoExtent* DataManager::getExtent(const QString& name)
 {
 	DataRecord* record = _nodeTree->getRecord(name);
 	return record ? record->extent() : NULL;
-}
-
-osg::Node* DataManager::getCenterNode()
-{
-	return _centerNode.get();
-}
-
-osg::Node* DataManager::getActivatedNode()
-{
-	return _activatedNode.get();
 }
 
 QList<QTreeWidgetItem*> DataManager::getSelectedItems()

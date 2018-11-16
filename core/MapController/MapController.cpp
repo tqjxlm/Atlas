@@ -33,12 +33,14 @@ inline float computeRoll(const osg::Vec3& endVector, const osg::Vec3& startVecto
 	return asin(v2.z()) - asin(v1.z());
 }
 
-MapController::MapController(void)
-	: _interval(2)
-	, _totalTime(1)
-	, _totalSteps(_totalTime / (1 / 60.0 * _interval))
-	, _isTraveling(false)
-	, _isFlying(false)
+MapController::MapController(osg::ref_ptr<osg::Node> dataRoot)
+    : _dataRoot(dataRoot)
+    , _interval(2)
+    , _totalTime(1)
+    , _totalSteps(_totalTime / (1 / 60.0 * _interval))
+    , _inAnimation(false)
+    , _isFlying(false)
+    , _isDriving(false)
 	, _isScreenSaving(false)
 	, _centerIndicator(NULL)
 	, _view(NULL)
@@ -54,34 +56,32 @@ bool MapController::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAda
 	osgViewer::View* viewer = dynamic_cast<osgViewer::View*>(&us);
 	_view = viewer;
 
-	osgUtil::LineSegmentIntersector::Intersections intersections;
+    // In an animation, don't accept events
+    if (_inAnimation)
+        return true;
 
 	switch (ea.getEventType())
 	{
 	case(osgGA::GUIEventAdapter::PUSH):
 		// Show camera indicator
 		_centerIndicator->setNodeMask(0xffffffff);
-		if (ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
-		{
-			if (_isTraveling == true && viewer->computeIntersections(ea, intersections))
-			{
-				typedef osgUtil::LineSegmentIntersector::Intersections::const_iterator itr_Intersection;
-				itr_Intersection first = intersections.begin();
-				flyToPoint(first->getWorldIntersectPoint(), first->getWorldIntersectNormal());
-			}
-		}
 		break;
-	case(osgGA::GUIEventAdapter::RELEASE):
-		// Hide camera indicator
-		_centerIndicator->setNodeMask(0);
-		break;
+    case(osgGA::GUIEventAdapter::RELEASE):
+        // Hide camera indicator
+        _centerIndicator->setNodeMask(0);
+        break;
+	case(osgGA::GUIEventAdapter::KEYDOWN):
+        // Keyboard: don't pass the event on
+        return handleKeyDown(ea, us);
+    case(osgGA::GUIEventAdapter::KEYUP):
+        // Keyboard: don't pass the event on
+        return handleKeyUp(ea, us);
 	default:
 		break;
 	}
 
 	// Hand over the event to the default pipeline
-	OrbitManipulator::handle(ea, us);
-	return false;
+    return OrbitManipulator::handle(ea, us);
 }
 
 void MapController::updateCamera(osg::Camera &camera)
@@ -89,7 +89,7 @@ void MapController::updateCamera(osg::Camera &camera)
 	OrbitManipulator::updateCamera(camera);
 
 	// If a flying action is scheduled, move according to the settings
-	if (_isTraveling && ++_timeStamp == _interval)
+	if (_inAnimation && ++_timeStamp == _interval)
 	{
 		// The flying action is performed in three stages
 		if (_isFlying)
@@ -98,15 +98,20 @@ void MapController::updateCamera(osg::Camera &camera)
 			screenSaversMovement();
 		_timeStamp = 0;
 	}
+
+    if (_isDriving)
+    {
+        drivingMovement();
+    }
 	
 	// The camera indicator should always be at the center
 	if (_centerIndicator.valid())
 		_centerIndicator->setPosition(_center);
 }
 
-void MapController::updateTravelrole(bool isTravel)
+void MapController::enableAnimation(bool enabled)
 {
-	_isTraveling = isTravel;
+	_inAnimation = enabled;
 }
 
 void MapController::flyToPoint(osg::Vec3 targetPosition, osg::Vec3 targetNormal, float targetDistance)
@@ -119,7 +124,7 @@ void MapController::flyToPoint(osg::Vec3 targetPosition, osg::Vec3 targetNormal,
 	_speed = osg::Vec3();
 
 	// Set action flags
-	updateTravelrole(true);
+	enableAnimation(true);
 	_stepCount = 0;
 	_timeStamp = 0;
 	_isFlying = true;
@@ -138,6 +143,13 @@ void MapController::flyingMovement()
 		setCenter(getCenter() + _speed);
 	else
 		_isFlying = false;
+}
+
+void MapController::drivingMovement()
+{
+    _center += _driveDirection * _driveSpeed;
+
+    stickToScene();
 }
 
 void MapController::setCenterIndicator(osg::PositionAttitudeTransform* center)
@@ -247,21 +259,7 @@ bool MapController::performMovementMiddleMouseButton(const double eventTimeDelta
 	
 	_center += dv;
 
-	// Action that make sure the rotation center is intersected with the scene
-	Vec3d eye, center, up;
-	getTransformation(eye, center, up);
-	center += (center - eye) * 500;
-
-	osg::ref_ptr<osgUtil::LineSegmentIntersector> ls = new osgUtil::LineSegmentIntersector(eye, center);
-	osgUtil::IntersectionVisitor iv(ls);
-	if (_view.valid())
-	{
-		_view->getCamera()->accept(iv);
-		auto newCenter = ls->getFirstIntersection().getWorldIntersectPoint();
-		_distance = (newCenter - eye).length();
-
-		_center = newCenter;
-	}
+    stickToScene();
 
 	return true;
 }
@@ -320,6 +318,122 @@ void MapController::rotateWithFixedVertical(const float dx, const float dy)
 		rotateYawPitch(_rotation, dx, dy, localUp);
 }
 
+bool MapController::handleKeyDown(const osgGA::GUIEventAdapter & ea, osgGA::GUIActionAdapter & us)
+{
+    if (!_isDriving)
+    {
+        stickToScene();
+
+        _isDriving = true;
+
+        Vec3d eye, center, up;
+        getTransformation(eye, center, up);
+        _front = center - eye;
+        _front.z() = 0;
+        _front.normalize();
+
+        _right = _front ^ osg::Vec3( 0, 0, 1 );
+
+        _driveSpeed = eye.z() / 100;
+    }
+
+    if (_isDriving)
+    {
+        switch (ea.getKey())
+        {
+        case(osgGA::GUIEventAdapter::KEY_Up):
+        case(osgGA::GUIEventAdapter::KEY_Down):
+        case(osgGA::GUIEventAdapter::KEY_Left):
+        case(osgGA::GUIEventAdapter::KEY_Right):
+            if (!_keyPressed[ea.getKey()])
+            {
+                _keyPressed[ea.getKey()] = true;
+                updateDriveDirection();
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    return false;
+}
+
+bool MapController::handleKeyUp(const osgGA::GUIEventAdapter & ea, osgGA::GUIActionAdapter & us)
+{
+    if (_isDriving)
+    {
+        switch (ea.getKey())
+        {
+        case(osgGA::GUIEventAdapter::KEY_Up):
+        case(osgGA::GUIEventAdapter::KEY_Down):
+        case(osgGA::GUIEventAdapter::KEY_Left):
+        case(osgGA::GUIEventAdapter::KEY_Right):
+            _keyPressed[ea.getKey()] = false;
+
+            updateDriveDirection();
+
+            break;
+        default:
+            break;
+        }
+        // Stop moving if all keys released
+        for (auto pressed : _keyPressed)
+        {
+            if (pressed)
+                return false;
+        }
+        _isDriving = false;
+    }
+
+    return false;
+}
+
+void MapController::stickToScene()
+{
+    Vec3d eye, center, up;
+    getTransformation(eye, center, up);
+    center += (center - eye) * 500;
+
+    // Check if the view direction intersects with the data root
+    osg::ref_ptr<osgUtil::LineSegmentIntersector> ls = new osgUtil::LineSegmentIntersector(eye, center);
+    osgUtil::IntersectionVisitor iv(ls);
+    if (_view.valid())
+    {
+        _view->getCamera()->accept(iv);
+        for (auto intersection : ls->getIntersections())
+        {
+            for (auto parent : intersection.nodePath)
+            {
+                if (parent == _dataRoot.get())
+                {
+                    // If intersected, change the trackball center to the intersected point
+                    auto newCenter = intersection.getWorldIntersectPoint();
+                    _distance = (newCenter - eye).length();
+
+                    _center = newCenter;
+                    return;
+                }
+            }
+        }
+    }
+}
+
+void MapController::updateDriveDirection()
+{
+    _driveDirection = { 0, 0, 0 };
+    if (_keyPressed[osgGA::GUIEventAdapter::KEY_Up])
+        _driveDirection += _front;
+    if (_keyPressed[osgGA::GUIEventAdapter::KEY_Down])
+        _driveDirection -= _front;
+    if (_keyPressed[osgGA::GUIEventAdapter::KEY_Left])
+        _driveDirection -= _right;
+    if (_keyPressed[osgGA::GUIEventAdapter::KEY_Right])
+        _driveDirection += _right;
+
+    _driveDirection.normalize();
+}
+
 // screensavers
 void MapController::screenSaversMovement()
 {
@@ -329,6 +443,6 @@ void MapController::screenSaversMovement()
 
 void MapController::screenSaving(bool on)
 {
-	_isTraveling = on;
+	_inAnimation = on;
 	_isScreenSaving = on;
 }

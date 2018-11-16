@@ -55,7 +55,7 @@ public slots:
 	void about();
 
 	// View related slots
-	void resetMainManipulator();
+	void resetCamera();
 
 signals:
 	// For splash screen

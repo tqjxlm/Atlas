@@ -46,7 +46,7 @@ public:
 	 MapController* getManipulator();
 
 	 // Reset camera manipulator to the default position
-	 void resetMainManipulator(osg::ref_ptr<osg::Node> centerNode);
+	 void resetCamera(osg::ref_ptr<osg::Node> centerNode);
 
 	// Add a widget to the viewer layout at specified position
 	void setWidgetInLayout(QWidget* widget, int row, int column, bool visible = true);
@@ -66,6 +66,9 @@ public:
 	// Viewer paint event, it is called automatically every UI update
 	virtual void paintEvent(QPaintEvent* event) override;
 
+    // An indicator at the center of the scene
+    osg::ref_ptr<osg::PositionAttitudeTransform> createCameraIndicator();
+
 public slots:
 	void setMouseStyle(unsigned styleshape);
 	void stopRendering();
@@ -73,9 +76,6 @@ public slots:
 	void setFrameRate(int FPS);
 
 protected:
-	// An indicator at the center of the scene
-	osg::ref_ptr<osg::PositionAttitudeTransform> createCameraIndicator();
-
 	// A compass that's rendered as an hud
 	void initCompass(osg::Group* root);
 
