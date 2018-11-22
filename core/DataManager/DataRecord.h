@@ -11,7 +11,7 @@
 
 namespace osgEarth {
 	class GeoExtent;
-	class TerrainLayer;
+	class Layer;
 }
 
 class DATAMANAGER_EXPORT DataRecord : public QTreeWidgetItem
@@ -24,10 +24,10 @@ public:
 	DataRecord(const QString& name, osg::Node* node, DataRecord* parent, const osg::BoundingSphere* bs = NULL);
 
 	// OSGEarth layer: given extent
-	DataRecord(const QString& name, osgEarth::TerrainLayer* layer, DataRecord* parent, const osgEarth::GeoExtent* extent = NULL, int mask = 0xffffffff);
+	DataRecord(const QString& name, osgEarth::Layer* layer, DataRecord* parent, const osgEarth::GeoExtent* extent = NULL, int mask = 0xffffffff);
 
 	// OSGEarth layer: given bounding box
-	DataRecord(const QString& name, osgEarth::TerrainLayer* layer, DataRecord* parent, const osg::BoundingSphere* bs, int mask = 0xffffffff);
+	DataRecord(const QString& name, osgEarth::Layer* layer, DataRecord* parent, const osg::BoundingSphere* bs, int mask = 0xffffffff);
 
     ~DataRecord();
 
@@ -36,7 +36,7 @@ public:
 
 	// Getters
 	osg::Node* node();
-	osgEarth::TerrainLayer* layer();
+	osgEarth::Layer* layer();
 	bool isLayer() const;
 	
 	const osg::BoundingSphere* bounding() const;
@@ -54,7 +54,7 @@ public:
 private:
 	union {
 		osg::ref_ptr<osg::Node> const _node;
-		osg::ref_ptr<osgEarth::TerrainLayer> const _layer;
+		osg::ref_ptr<osgEarth::Layer> const _layer;
 	};
 
 	const osg::BoundingSphere* _bs;

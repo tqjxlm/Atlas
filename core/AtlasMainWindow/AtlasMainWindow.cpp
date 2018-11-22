@@ -35,8 +35,7 @@ void  AtlasMainWindow::setupUi()
 
 	setWindowIcon(QIcon("resources/icons/atlas.png"));
 
-	initStatusBar();
-	initDockWidgets();
+    initDockWidgets();
 }
 
 void  AtlasMainWindow::loadingDone()
@@ -149,28 +148,7 @@ void  AtlasMainWindow::initDockWidgets()
 	}
 }
 
-void  AtlasMainWindow::initStatusBar()
-{
-  QSizePolicy  siePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-	_labelLocalCoord = new QLabel();
-	_labelWorldCoord = new QLabel();
-  _labelGeoCoord   = new QLabel();
-
-	_labelLocalCoord->setSizePolicy(siePolicy);
-	_labelWorldCoord->setSizePolicy(siePolicy);
-	_labelGeoCoord->setSizePolicy(siePolicy);
-
-	_labelLocalCoord->setFixedSize(300, 20);
-	_labelWorldCoord->setFixedSize(300, 20);
-	_labelGeoCoord->setFixedSize(300, 20);
-
-	_ui->statusBar->addWidget(_labelLocalCoord);
-	_ui->statusBar->addWidget(_labelWorldCoord);
-	_ui->statusBar->addWidget(_labelGeoCoord);
-}
-
-void  AtlasMainWindow::initUiStyles()
+void AtlasMainWindow::initUiStyles()
 {
 	// Tool bars (main entrance for all plugins)
   QVector<QToolBar *>  toolBars = {

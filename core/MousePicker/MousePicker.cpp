@@ -2,18 +2,21 @@
 
 #include <QMap>
 #include <QPair>
+#include <QLabel>
+#include <QStatusBar>
 
 #include <osgEarth/SpatialReference>
 #include <osgEarth/GeoData>
 #include <osgEarth/MapNode>
+#include <osgEarth/Terrain>
 #include <osg/PositionAttitudeTransform>
 #include <osgSim/OverlayNode>
 #include <osgViewer/View>
 
 #include <DataManager/FindNode.hpp>
 
-osg::Vec3 MousePicker::_currentLocalPos;
-osg::Vec3 MousePicker::_currentWorldPos;
+osg::Vec3d MousePicker::_currentLocalPos;
+osg::Vec3d MousePicker::_currentWorldPos;
 osgUtil::LineSegmentIntersector::Intersections MousePicker::_intersections;
 
 osg::ref_ptr<osgSim::OverlayNode> MousePicker::_overlayNode = NULL;
@@ -29,10 +32,11 @@ DataManager* MousePicker::_dataManager = NULL;
 SettingsManager* MousePicker::_settingsManager = NULL;
 ViewerWidget* MousePicker::_mainViewer = NULL;
 QWidget* MousePicker::_mainWindow = NULL;
-
 const char* MousePicker::_globalWKT = NULL;
 
 bool MousePicker::_isValid = false;
+QLabel* MousePicker::_labelWorldCoord;
+QLabel* MousePicker::_labelGeoCoord;
 
 osg::ref_ptr<const osgEarth::SpatialReference> MousePicker::_globalSRS = NULL;
 
@@ -81,27 +85,22 @@ void MousePicker::pick(osgViewer::View* view, const osgGA::GUIEventAdapter& ea)
 	getPos(view, ea);
 	if (pointValid())
 	{
-		// Update coordinates to the main Ui
-		osgEarth::GeoPoint currentGeoPos = osgEarth::GeoPoint(_globalSRS, _currentWorldPos).transform(srs_wgs84);
+        osgEarth::GeoPoint currentGeoPos;
+        currentGeoPos.fromWorld(_mapNode[0]->getMapSRS(), _currentWorldPos);
 
-		emit updateText1(tr("Local Coordinate: [%1, %2, %3]")
-			.arg(_currentLocalPos.x(), 0, 'f', 2)
-			.arg(_currentLocalPos.y(), 0, 'f', 2)
-			.arg(_currentLocalPos.z(), 0, 'f', 2));
-		emit updateText2(tr("Projected Coordinate: [%1, %2, %3]")
+		_labelWorldCoord->setText(tr("World Coordinate: [%1, %2, %3]")
 			.arg(_currentWorldPos.x(), 0, 'f', 2)
 			.arg(_currentWorldPos.y(), 0, 'f', 2)
 			.arg(_currentWorldPos.z(), 0, 'f', 2));
-		emit updateText3(tr("Geographic Coordinate: [%1, %2, %3]")
+		_labelGeoCoord->setText(tr("Geographic Coordinate: [%1, %2, %3]")
 			.arg(currentGeoPos.x(), 0, 'f', 2)
 			.arg(currentGeoPos.y(), 0, 'f', 2)
 			.arg(currentGeoPos.z(), 0, 'f', 2));
 	}
 	else
 	{
-		emit updateText1(tr("Local Coordinate: NULL"));
-		emit updateText2(tr("Projected Coordinate: NULL"));
-		emit updateText3(tr("Geographic Coordinate: NULL"));
+        _labelWorldCoord->setText(tr("World Coordinate: NULL"));
+        _labelGeoCoord->setText(tr("Geographic Coordinate: NULL"));
 	}
 }
 
@@ -120,13 +119,33 @@ void MousePicker::getPos(osgViewer::View* view,
 				if (parent == _overlayNode)
 				{
 					_currentLocalPos = intersection.getLocalIntersectPoint();
-					_currentWorldPos = intersection.getWorldIntersectPoint();
+
+                    osg::Vec3d world;
+                    _mapNode[0]->getTerrain()->getWorldCoordsUnderMouse(view, ea.getX(), ea.getY(), world);
+                    _currentWorldPos = world;
+
 					_isValid = true;
 					return;
 				}
 			}
 		}
 	}
+}
+
+void MousePicker::setupUi(QStatusBar * statusBar)
+{
+    QSizePolicy siePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    _labelWorldCoord = new QLabel();
+    _labelGeoCoord = new QLabel();
+
+    _labelWorldCoord->setSizePolicy(siePolicy);
+    _labelGeoCoord->setSizePolicy(siePolicy);
+
+    _labelWorldCoord->setFixedSize(400, 20);
+    _labelGeoCoord->setFixedSize(400, 20);
+
+    statusBar->addWidget(_labelWorldCoord);
+    statusBar->addWidget(_labelGeoCoord);
 }
 
 void MousePicker::registerData(

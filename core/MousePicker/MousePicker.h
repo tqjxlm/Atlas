@@ -7,11 +7,15 @@
 #include <QObject>
 #include <osgGA/GUIEventHandler>
 
-namespace osgEarth
-{
-class MapNode;
-class Map;
-class SpatialReference;
+QT_BEGIN_NAMESPACE
+class QStatusBar;
+class QLabel;
+QT_END_NAMESPACE
+
+namespace osgEarth {
+	class MapNode;
+	class Map;
+	class SpatialReference;
 }
 
 namespace osgSim
@@ -63,6 +67,8 @@ public:
 	// Default operation for GUI Event Handler
   virtual void  defaultOperation(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa);
 
+    void setupUi(QStatusBar* statusBar);
+
 protected:
 	// Public main entrance for GUIEventHandler
   virtual bool  handle(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa);
@@ -75,11 +81,6 @@ private:
   virtual void  getPos(osgViewer::View *view, const osgGA::GUIEventAdapter &ea);
 
 signals:
-	// Signals to update coordinates in the status bar
-  void  updateText1(QString);
-  void  updateText2(QString);
-  void  updateText3(QString);
-
 	// Signal to update mouse type
   void  changeMouseType(unsigned type);
 
@@ -109,5 +110,8 @@ protected:
   static const char                                     *_globalWKT;
 
 private:
-  static bool  _isValid;
+  static bool _isValid;
+
+  static QLabel *_labelWorldCoord;
+  static QLabel *_labelGeoCoord;
 };

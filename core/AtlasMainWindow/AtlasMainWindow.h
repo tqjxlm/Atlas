@@ -41,7 +41,6 @@ protected:
 
 	void setupUi();
 	void initDockWidgets();
-	void initStatusBar();
 	void initUiStyles();
 
 public slots:
@@ -88,10 +87,6 @@ protected:
 	QMap<Qt::DockWidgetArea, NXDockWidgetTabBar*> _dockWidgetBar;
 
 	QMenu* _treeWidgetMenu;
-
-	QLabel* _labelLocalCoord;
-	QLabel* _labelWorldCoord;
-	QLabel* _labelGeoCoord;
 
 	QProgressBar* _pProgressBar = NULL;
 };

@@ -51,7 +51,7 @@ void AddXYZData::addImage()
 		std::string nodeName = url.toLocal8Bit().toStdString();
 		XYZOptions opt;
 		opt.url() = nodeName;
-		opt.profile() = _mainMap[0]->getProfile()->toProfileOptions();
+        opt.profile() = { "spherical-mercator" };
 
 		auto layer = new osgEarth::ImageLayer(osgEarth::ImageLayerOptions(nodeName, opt));
 

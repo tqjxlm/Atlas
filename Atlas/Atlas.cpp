@@ -55,11 +55,13 @@ Atlas::~Atlas()
 	delete _dataManager;
 	delete _settingsManager;
 
+    osg::setNotifyLevel(osg::FATAL);
+    osg::setNotifyHandler(nullptr);
+    osgEarth::setNotifyHandler(nullptr);
+
 	cout << "Program closed: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString().c_str() << endl;
 	_log->close();
 	delete _log;
-
-	osg::setNotifyLevel(osg::FATAL);
 }
 
 void  Atlas::initAll()
@@ -128,12 +130,10 @@ void  Atlas::initPlugins()
   _mousePicker = new MousePicker();
   _mousePicker->registerData(this, _dataManager, _mainViewerWidget, _root, _settingsManager->getGlobalSRS());
   _mousePicker->registerSetting(_settingsManager);
+  _mousePicker->setupUi(statusBar());
   _mainViewerWidget->getMainView()->addEventHandler(_mousePicker);
-  connect(_mousePicker, SIGNAL(updateText1(QString)), _labelLocalCoord, SLOT(setText(QString)));
-  connect(_mousePicker, SIGNAL(updateText2(QString)), _labelWorldCoord, SLOT(setText(QString)));
-  connect(_mousePicker, SIGNAL(updateText3(QString)), _labelGeoCoord, SLOT(setText(QString)));
 
-	_pluginManager->loadPlugins();
+  _pluginManager->loadPlugins();
 }
 
 void  Atlas::initDataStructure()
@@ -286,23 +286,8 @@ void  Atlas::initLog()
 	qInstallMessageHandler(qtLogToFile);
 
 	// Redirect OSGEarth
-	if (getenv("OSGEARTH_PACKAGE_LOGGING") != 0)
-	{
-    std::string  level(getenv("OSGEARTH_PACKAGE_LOGGING"));
-
-		if (level == "INFO")
-    {
-      osgEarth::setNotifyLevel(osg::INFO);
-    }
-    else if (level == "DEBUG")
-    {
-      osgEarth::setNotifyLevel(osg::DEBUG_INFO);
-    }
-  }
-	else
-	{
-		osgEarth::setNotifyLevel(osg::INFO);
-	}
+  osgEarth::setNotifyLevel(osg::INFO);
+  osgEarth::setNotifyHandler(new LogFileHandler(_log));
 
 	// Redirect OSG
 	osg::setNotifyLevel(osg::NOTICE);

@@ -364,7 +364,7 @@ void  PluginInterface::recordNode(osg::Node *node, const QString &name, const QS
   emit  recordData(node, nodeName, parent.isEmpty() ? _pluginName : parent);
 }
 
-void  PluginInterface::recordLayer(osgEarth::TerrainLayer *layer, const QString &name, const QString &parent)
+void PluginInterface::recordLayer(osgEarth::Layer * layer, const QString & name, const QString & parent)
 {
   emit  recordData(layer, name.isEmpty() ? QString::fromStdString(layer->getName()) : name, parent.isEmpty() ? _pluginName : parent);
 }

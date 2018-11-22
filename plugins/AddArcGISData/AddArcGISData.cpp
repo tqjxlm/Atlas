@@ -16,7 +16,7 @@
 #include <osgEarth/ElevationLayer>
 #include <osgEarth/ModelLayer>
 #include <osgEarthSymbology/Style>
-#include <osgdb_osgearth_arcgis/ArcGISOptions>
+#include <osgEarthDrivers/arcgis/ArcGISOptions>
 #include <osgEarthDrivers/model_feature_geom/FeatureGeomModelOptions>
 
 using namespace osgEarth;

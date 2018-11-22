@@ -176,37 +176,25 @@ void  EarthDataInterface::addLayerToMap(const QString &path, osgEarth::ModelLaye
     _mainMap[i]->addLayer(layer);
   }
 
-	osg::Node *layernode = layer->getOrCreateSceneGraph(_mainMap[0], _mainMap[0]->getReadOptions(), 0L);
-
-	if (!layernode)
+	if (!layer)
 	{
     QMessageBox::warning((QWidget *)parent(), tr("Error"), tr("Create node failed!"));
 
 		return;
 	}
 
-  emit    recordData(layernode, path, tr("Feature Layers"));
-  double  maxrange = layernode->getBound().radius() * 4;
+	emit recordData(layer, path, tr("Feature Layers"));
 
-	layernode->setName(layer->getName());
+	layer->setName(layer->getName());
 
-	layernode->setUserValue("maxrange", maxrange);
+	layer->setUserValue("gemtype", _modelLayerManager->getGemType().toStdString());
 
-	layernode->setUserValue("gemtype", _modelLayerManager->getGemType().toStdString());
-
-	layernode->setUserValue("layerheight", 0);
+	layer->setUserValue("layerheight", 0);
 }
 
-void  EarthDataInterface::addLayerToMap(osg::ref_ptr<osgEarth::TerrainLayer> layer, DataType dataType, QString &fileName, QVector<attrib> &attribute,
-                                        osgEarth::GeoExtent *extent)
+void EarthDataInterface::addLayerToMap(osg::ref_ptr<osgEarth::Layer> layer, DataType dataType, QString & fileName, QVector<attrib>& attribute, osgEarth::GeoExtent * extent)
 {
-	if (layer.valid())
-	{
-		// Try add it to the main map
-		_mainMap[0]->addLayer(layer);
-
-		// If success, record the layer and add it to sub maps
-    if (((osgEarth::TerrainLayer *)_mainMap[0]->getLayerByName(fileName.toLocal8Bit().toStdString()))->getProfile())
+		if (terrainLayer && terrainLayer->getProfile())
 		{
       emit  recordData(layer, fileName, _dataGroups[dataType].dataTreeTitle, extent);
 
@@ -235,8 +223,8 @@ void  EarthDataInterface::parseEarthNode()
 
   for (auto layer : layers)
 	{
-    QString                 parent;
-    osgEarth::TerrainLayer *terrainLayer = NULL;
+		QString parent;
+		osgEarth::Layer* terrainLayer = NULL;
 
 		if (!terrainLayer)
 		{

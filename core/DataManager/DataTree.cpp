@@ -60,15 +60,15 @@ void  DataTree::addRecord(osg::Node *node, const QString &name, const QString &p
 	parent->addChild(newRecord);
 }
 
-void  DataTree::addRecord(osgEarth::TerrainLayer *layer, const QString &name, const QString &parentName, osgEarth::GeoExtent *extent, bool hidden)
+void DataTree::addRecord(osgEarth::Layer * layer, const QString & name, const QString& parentName, osgEarth::GeoExtent* extent, bool hidden)
 {
   QString  nodeName = resolveName(name);
 
 	layer->setName(nodeName.toLocal8Bit().toStdString());
 
-  DataRecord *parent    = getParent(parentName);
-  DataRecord *newRecord = new DataRecord(nodeName, layer, parent, extent);
-	newRecord->setCheckState(0, layer->getVisible() ? Qt::Checked : Qt::Unchecked);
+	DataRecord* parent = getParent(parentName);
+	DataRecord* newRecord = new DataRecord(nodeName, layer, parent, extent);
+	newRecord->setCheckState(0, layer->getEnabled() ? Qt::Checked : Qt::Unchecked);
 	newRecord->setHidden(hidden);
 	_dataRecords.insert(nodeName, newRecord);
 
@@ -196,10 +196,16 @@ void  DataTree::switchRecord(const QString &nodeName, bool checked)
   {
     if (osgEarth::ModelLayer *layer = dynamic_cast<osgEarth::ModelLayer *>(record->layer()))
     {
-      for (int i = 0; i < MAX_SUBVIEW; i++)
-      {
-        layer->setVisible(checked);
-      }
+        if (osgEarth::ModelLayer* layer = dynamic_cast<osgEarth::ModelLayer*>(record->layer()))
+        {
+            for (int i = 0; i < MAX_SUBVIEW; i++)
+                layer->setVisible(checked);
+        }
+        else
+        {
+            for (int i = 0; i < MAX_SUBVIEW; i++)
+                record->layer()->setEnabled(checked);
+        }
     }
     else
     {
@@ -388,9 +394,8 @@ void  DataTree::setMask(const QString &name, int mask)
 	if (record->isLayer())
 	{
 		// Since osgEarth layer don't support mask, we have to move them manually
-    osgEarth::TerrainLayer *layer   = record->layer();
-    std::string             stdName = layer->getName();
-
+		osgEarth::Layer* layer = record->layer();
+		std::string stdName = layer->getName();
 		if (!layer)
     {
       return;
@@ -448,7 +453,7 @@ osg::Node * DataTree::getNode(const QString &name)
   }
 }
 
-osgEarth::TerrainLayer * DataTree::getLayer(const QString &name)
+osgEarth::Layer* DataTree::getLayer(const QString& name)
 {
   DataRecord *record = getRecord(name);
 

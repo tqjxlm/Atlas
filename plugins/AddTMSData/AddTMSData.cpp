@@ -12,7 +12,6 @@
 #include <osgEarth/ImageLayer>
 #include <osgEarth/ElevationLayer>
 
-#include <osgdb_osgearth_heightmap/HeightMapOptions>
 #include <osgEarthDrivers/tms/TMSOptions>
 using namespace osgEarth;
 using namespace osgEarth::Drivers;
@@ -89,16 +88,6 @@ void AddTMSData::setupUi(QToolBar *toolBar, QMenu *menu)
 	QIcon icon;
 	icon.addFile(QStringLiteral(":/Atlas/resources/icons/USGSTMS.png"), QSize(), QIcon::Normal, QIcon::Off);
 
-	QAction* addTMSTerAction = new QAction(_mainWindow);
-	addTMSTerAction->setObjectName(QStringLiteral("addTMSTerAction"));
-	addTMSTerAction->setIcon(icon);
-	addTMSTerAction->setText(tr("Online terrain (TMS)"));
-	addTMSTerAction->setToolTip(tr("Load online terrain from TMS service"));
-
-	menu = getOrAddMenu(TERRAIN_LAYER);
-	menu->addAction(addTMSTerAction);
-	connect(addTMSTerAction, SIGNAL(triggered()), this, SLOT(addImage()));
-
 	QAction* addTMSImgAction = new QAction(_mainWindow);
 	addTMSImgAction->setObjectName(QStringLiteral("addTMSImgAction"));
 	QIcon icon7;
@@ -110,29 +99,6 @@ void AddTMSData::setupUi(QToolBar *toolBar, QMenu *menu)
 	menu = getOrAddMenu(IMAGE_LAYER);
 	menu->addAction(addTMSImgAction);
 	connect(addTMSImgAction, SIGNAL(triggered()), this, SLOT(addImage()));
-}
-
-void AddTMSData::addTerrain()
-{
-	QString fileName = QInputDialog::getText(dynamic_cast<QWidget*>(parent()), tr("Please enter file location"), "");
-	if (!fileName.isEmpty())
-	{
-		std::string nodeName = fileName.toLocal8Bit().toStdString();
-		QVector<attrib> attribute;
-		osgEarth::GeoExtent* extent = NULL;
-
-		HeightMapOptions opt;
-		opt.url() = nodeName;
-		opt.profile() = osgEarth::Registry::instance()->getGlobalGeodeticProfile()->toProfileOptions();
-
-		opt.format() = "tif";
-		opt.invertY() = true;
-
-		auto layer = new ElevationLayer(ElevationLayerOptions(nodeName, opt));
-		attribute = getHeightMapInfo(nodeName, extent);
-
-		addLayerToMap(layer, TERRAIN_LAYER, fileName, attribute, extent);
-	}
 }
 
 void AddTMSData::addImage()

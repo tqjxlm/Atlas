@@ -22,7 +22,5 @@ public:
   virtual void  setupUi(QToolBar *toolBar, QMenu *menu) override;
 
 public slots:
-  void          addImage();
-
-  void          addTerrain();
+	void addImage();
 };
