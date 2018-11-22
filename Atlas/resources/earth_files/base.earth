@@ -1,40 +1,17 @@
-<map name="base" type="projected">
+<map name="base" type="geocentric" version="2">
 
-  <options>
-    <!--<profile name="CGCS2000 / 3-degree Gauss-Kruger CM 120E">
-      <srs>EPSG:4549</srs>
-      <xmin>-4956071.92</xmin>
-      <ymin>2703739.74</ymin>
-      <xmax>1475444.90 </xmax>
-      <ymax>5912395.20</ymax>
-    </profile>-->
-    <profile name="WGS 84 / Pseudo-Mercator">
-      <srs>EPSG:3857</srs>
-    </profile>
+    <options>
+        <profile>spherical-mercator</profile>
+        <terrain driver="rex" morph_imagery="false"/>
 
-    <sky driver               = "simple"
-                             hours                = "0.0"
-                 ambient              = "0.05"
-                                 atmospheric_lighting = "true"
-                                 exposure             = "3.0"  />
+        <cache driver = "leveldb">
+            <path>../../cache</path>
+            <max_size_mb>1000</max_size_mb>
+        </cache>
+    </options>
 
-    <terrain
-      lighting				= "true"
-		  blending				= "true"
-		  color					= "#ffffff00"
-      driver="mp"
-      skirt_ratio="0">
-    </terrain>
-    <cache driver      = "filesystem">
-      <path>../../cache</path>
-      <max_size_mb>1000</max_size_mb>
-    </cache>
-  </options>
-
-  <image	driver		= "gdal"
-			name		= "base-world"
-			visible		= "true">
-    <url>./world.tif</url>
-  </image>
+    <image driver = "gdal" name = "base-world" visible = "true">
+        <url>./world.tif</url>
+    </image>
 
 </map>

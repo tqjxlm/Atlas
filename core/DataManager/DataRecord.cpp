@@ -25,24 +25,24 @@ DataRecord::DataRecord(const QString &name, osg::Node *node, DataRecord *parent,
 	setToolTip(0, name);
 }
 
-DataRecord::DataRecord(const QString &name, osgEarth::TerrainLayer *layer, DataRecord *parent, const osgEarth::GeoExtent *extent, int mask /*= 0xffffffff*/):
-  QTreeWidgetItem(parent, QStringList(name)),
-  _layer(layer),
-  _bs(NULL),
-  _extent(extent ? extent : &(layer->getProfile()->getExtent())),
-  _mask(mask),
-  _isLayer(true)
+DataRecord::DataRecord(const QString& name, osgEarth::Layer* layer, DataRecord* parent, const osgEarth::GeoExtent* extent, int mask /*= 0xffffffff*/)
+	: QTreeWidgetItem(parent, QStringList(name))
+	, _layer(layer)
+	, _bs(NULL)
+	, _extent(extent ? extent : &(layer->getExtent()))
+	, _mask(mask)
+	, _isLayer(true)
 {
 	setToolTip(0, name);
 }
 
-DataRecord::DataRecord(const QString &name, osgEarth::TerrainLayer *layer, DataRecord *parent, const osg::BoundingSphere *bs, int mask /*= 0xffffffff*/):
-  QTreeWidgetItem(parent, QStringList(name)),
-  _layer(layer),
-  _bs(bs),
-  _extent(NULL),
-  _mask(mask),
-  _isLayer(true)
+DataRecord::DataRecord(const QString& name, osgEarth::Layer* layer, DataRecord* parent, const osg::BoundingSphere* bs, int mask /*= 0xffffffff*/)
+	: QTreeWidgetItem(parent, QStringList(name))
+	, _layer(layer)
+	, _bs(bs)
+	, _extent(NULL)
+	, _mask(mask)
+	, _isLayer(true)
 {
 	setToolTip(0, name);
 }
@@ -66,7 +66,7 @@ osg::Node * DataRecord::node()
   return isLayer() ? NULL : _node;
 }
 
-osgEarth::TerrainLayer * DataRecord::layer()
+osgEarth::Layer* DataRecord::layer()
 {
   return isLayer() ? _layer : NULL;
 }

@@ -28,11 +28,10 @@ class LineWidth;
 class Point;
 }
 
-namespace osgEarth
+namespace osgEarth 
 {
-class GeoExtent;
-class TerrainLayer;
-class Layer;
+	class GeoExtent;
+	class Layer;
 }
 
 /** Common interface for plugins
@@ -135,7 +134,7 @@ protected:
   virtual void                         recordNode(osg::Node *node, const QString &name = "", const QString &parent = "");
 
 	// Record a layer to DataTree
-  virtual void                         recordLayer(osgEarth::TerrainLayer *layer, const QString &name = "", const QString &parent = "");
+	virtual void recordLayer(osgEarth::Layer* layer, const QString& name = "", const QString& parent = "");
 
   /** Call this before you begin a new drawing
    * It does the following things:
@@ -194,17 +193,12 @@ protected:
   }
 
 signals:
-  void          recordData(osg::Node *, const QString &, const QString &, bool = false);
-
-  void          recordData(osgEarth::TerrainLayer *, const QString &, const QString &, osgEarth::GeoExtent * = NULL, bool = false);
-
-  void          removeData(const QString &);
-
-  void          switchData(const QString &, bool);
-
-  void          loadingProgress(int);
-
-  void          loadingDone();
+	void recordData(osg::Node*, const QString&, const QString&, bool = false);
+	void recordData(osgEarth::Layer*, const QString&, const QString&, osgEarth::GeoExtent* = NULL, bool = false);
+	void removeData(const QString&);
+	void switchData(const QString&, bool);
+	void loadingProgress(int);
+	void loadingDone();
 
 public slots:
 	// Default function to toggle the plugin on or off

@@ -269,7 +269,7 @@ void DataManager::recordData(osg::Node* node, const QString& name, const QString
 	_nodeTree->addRecord(node, name, parent, hidden);
 }
 
-void DataManager::recordData(osgEarth::TerrainLayer* layer, const QString& name, const QString& parent, osgEarth::GeoExtent* extent, bool hidden)
+void DataManager::recordData(osgEarth::Layer* layer, const QString& name, const QString& parent, osgEarth::GeoExtent* extent, bool hidden)
 {
 	_nodeTree->addRecord(layer, name, parent, extent, hidden);
 }

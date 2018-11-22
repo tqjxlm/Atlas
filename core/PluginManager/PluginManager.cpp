@@ -39,8 +39,8 @@ void  PluginManager::registerPlugin(PluginInterface *plugin)
   connect(plugin, SIGNAL(recordData(osg::Node *,const QString&,const QString&,bool)),
           _dataManager, SLOT(recordData(osg::Node *,const QString&,const QString&,bool)));
 
-  connect(plugin, SIGNAL(recordData(osgEarth::TerrainLayer *,const QString&,const QString&,osgEarth::GeoExtent *,bool)),
-          _dataManager, SLOT(recordData(osgEarth::TerrainLayer *,const QString&,const QString&,osgEarth::GeoExtent *,bool)));
+	connect(plugin, SIGNAL(recordData(osgEarth::Layer*, const QString&, const QString&, osgEarth::GeoExtent*, bool)),
+		_dataManager, SLOT(recordData(osgEarth::Layer*, const QString&, const QString&, osgEarth::GeoExtent*, bool)));
 
 	connect(plugin, SIGNAL(removeData(const QString&)), _dataManager, SLOT(removeData(const QString&)));
   connect(plugin, SIGNAL(switchData(const QString&,bool)), _dataManager, SLOT(switchData(const QString&,bool)));

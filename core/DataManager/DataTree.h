@@ -15,7 +15,7 @@ namespace osgSim {
 }
 
 namespace osgEarth {
-	class TerrainLayer;
+	class Layer;
 	class Map;
 	class Layer;
 }
@@ -36,7 +36,7 @@ public:
 	void clear();
 
 	void addRecord(osg::Node* node, const QString& name, const QString& parentName, bool hidden = false);
-	void addRecord(osgEarth::TerrainLayer* layer, const QString& name, const QString& parentName, osgEarth::GeoExtent* extent = NULL, bool hidden = false);
+	void addRecord(osgEarth::Layer* layer, const QString& name, const QString& parentName, osgEarth::GeoExtent* extent = NULL, bool hidden = false);
 	void removeRecord(const QString& name);
 
 	bool saveNode(const QString & nodeName);
@@ -46,7 +46,7 @@ public:
 
 	DataRecord* getRecord(const QString& name);
 	osg::Node* getNode(const QString& name);
-	osgEarth::TerrainLayer* getLayer(const QString& name);
+	osgEarth::Layer* getLayer(const QString& name);
 
 public slots:
 	void deleteNodeSlot();

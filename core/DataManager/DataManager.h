@@ -24,7 +24,7 @@ namespace osgSim {
 namespace osgEarth {
 	class MapNode;
 	class ModelLayer;
-	class TerrainLayer;
+	class Layer;
 	class SpatialReference;
 	class GeoExtent;
 	class Map;
@@ -79,7 +79,7 @@ public slots:
 	// Data management
 	void newProject();
 	void recordData(osg::Node* node, const QString& name, const QString& parent, bool hidden = false);
-	void recordData(osgEarth::TerrainLayer* layer, const QString& name, const QString& parent, osgEarth::GeoExtent* = NULL, bool hidden = false);
+	void recordData(osgEarth::Layer* layer, const QString& name, const QString& parent, osgEarth::GeoExtent* = NULL, bool hidden = false);
 	void removeData(const QString& nodeName);
 	void switchData(const QString& nodeName, bool checked);
 

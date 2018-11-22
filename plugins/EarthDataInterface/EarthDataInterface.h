@@ -16,7 +16,7 @@ QT_END_NAMESPACE
 
 namespace osgEarth {
 	class ModelLayer;
-	class TerrainLayer;
+	class Layer;
 	class GeoExtent;
 
 	namespace Symbology {
@@ -62,7 +62,7 @@ protected:
 
 	void getFeatureAttribute(const QString& path, QVector<attrib> &attributeList, QStringList &featureFieldList, osgEarth::Symbology::Style* style);
 	void addLayerToMap(const QString& path, osgEarth::ModelLayer* layer);
-	void addLayerToMap(osg::ref_ptr<osgEarth::TerrainLayer> layer, DataType dataType, QString & fileName, QVector<attrib>& attribute, osgEarth::GeoExtent * extent = nullptr);
+	void addLayerToMap(osg::ref_ptr<osgEarth::Layer> layer, DataType dataType, QString & fileName, QVector<attrib>& attribute, osgEarth::GeoExtent * extent = nullptr);
 
 private:
 	// Parse the earth node and record all of its content
