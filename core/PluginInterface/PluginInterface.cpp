@@ -390,7 +390,7 @@ PluginInterface::StyleConfig  PluginInterface::getDefaultStyle()
     globalStyle["Fill color"]    = QColor(174, 234, 224);
     globalStyle["Line width"]    = 4.0f;
     globalStyle["Point size"]    = 6.0f;
-    globalStyle["Font path"]     = "/home/mola/Source/OpenSceneGraph-Data/fonts/arial.ttf";
+    globalStyle["Font path"]     = "resources/fonts/arial.ttf";
     globalStyle["Font size"]     = 28.0f;
     globalStyle["Text floating"] = 5.0f;
     QSettings().setValue("Plugin Interface/Draw style", globalStyle);

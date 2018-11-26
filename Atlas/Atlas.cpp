@@ -146,7 +146,7 @@ void  Atlas::initDataStructure()
 	// Init osgEarth node using the predefined .earth file
 	for (int i = 0; i < MAX_SUBVIEW; i++)
 	{
-    osg::Node *baseMap = osgDB::readNodeFile("/home/mola/projects/atlas/Atlas/resources/earth_files/base.earth");
+    osg::Node *baseMap = osgDB::readNodeFile("resources/earth_files/base.earth");
 		_mapNode[i] = osgEarth::MapNode::get(baseMap);
 		_mapNode[i]->setName(QString("Map%1").arg(i).toStdString());
 		_mapNode[i]->setNodeMask(SHOW_IN_WINDOW_1 << i);

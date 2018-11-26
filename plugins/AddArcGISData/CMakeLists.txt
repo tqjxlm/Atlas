@@ -15,6 +15,8 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 include_directories(
     ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS}
+    ../
+    ../../drivers/
 )
 
 file(GLOB_RECURSE HFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*.h)

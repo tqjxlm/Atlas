@@ -5,7 +5,7 @@
 #include <QMenu>
 #include <QInputDialog>
 
-#include <osgDb/Registry>
+#include <osgDB/Registry>
 
 #include <osgEarth/JsonUtils>
 #include <osgEarth/XmlUtils>
@@ -22,23 +22,23 @@
 using namespace osgEarth;
 using namespace osgEarth::Drivers;
 
-static QVector<attrib> getArcGISInfo(std::string& path, osgEarth::GeoExtent*& extent)
+static QVector<attrib>  getArcGISInfo(std::string &path, osgEarth::GeoExtent * &extent)
 {
-	QVector<attrib> attribList;
-	char str[1000];
+  QVector<attrib>  attribList;
+  char             str[1000];
+  URI              uri(path);
+  std::string      sep      = uri.full().find("?") == std::string::npos ? "?" : "&";
+  std::string      json_url = uri.full() + sep + std::string("f=pjson");
 
-	URI uri(path);
-	std::string sep = uri.full().find("?") == std::string::npos ? "?" : "&";
-	std::string json_url = uri.full() + sep + std::string("f=pjson");
+  ReadResult  r = URI(json_url).readString(osgDB::Registry::instance()->getOptions());
 
-	ReadResult r = URI(json_url).readString(osgDB::Registry::instance()->getOptions());
 	if (r.failed())
 	{
 		return attribList;
 	}
 
-	Json::Value doc;
-	Json::Reader reader;
+  Json::Value   doc;
+  Json::Reader  reader;
 
 	if (!reader.parse(r.getString(), doc))
 	{
@@ -47,19 +47,20 @@ static QVector<attrib> getArcGISInfo(std::string& path, osgEarth::GeoExtent*& ex
 
 	attribList.push_back(attrib("currentVersion", doc["currentVersion"].asCString()));
 	attribList.push_back(attrib("units", doc["units"].asCString()));
-	for each (Json::Value layer in doc["layers"])
+
+  for (Json::Value layer : doc["layers"])
 	{
 		attribList.push_back(attrib(("layer #" + layer["id"].asString()).c_str(), layer["name"].asCString()));
-	};
+  }
 
-	double xmin = 0.0;
-	double ymin = 0.0;
-	double xmax = 0.0;
-	double ymax = 0.0;
-	int srs = 0;
+  double  xmin = 0.0;
+  double  ymin = 0.0;
+  double  xmax = 0.0;
+  double  ymax = 0.0;
+  int     srs  = 0;
 
-	Json::Value fullExtentValue = doc["fullExtent"];
-	std::string srsValue;
+  Json::Value  fullExtentValue = doc["fullExtent"];
+  std::string  srsValue;
 
 	if (!fullExtentValue.empty())
 	{
@@ -75,9 +76,13 @@ static QVector<attrib> getArcGISInfo(std::string& path, osgEarth::GeoExtent*& ex
 		attribList.push_back(attrib("max", str));
 
 		srs = doc["fullExtent"].get("spatialReference", osgEarth::Json::Value::null).get("latestWkid", 0).asInt();
+
 		if (srs == 0)
-			srs = doc["fullExtent"].get("spatialReference", osgEarth::Json::Value::null).get("wkid", 0).asInt();
-		if (srs != 0)
+    {
+      srs = doc["fullExtent"].get("spatialReference", osgEarth::Json::Value::null).get("wkid", 0).asInt();
+    }
+
+    if (srs != 0)
 		{
 			sprintf(str, "%d", srs);
 			attribList.push_back(attrib("srs", str));
@@ -94,22 +99,22 @@ static QVector<attrib> getArcGISInfo(std::string& path, osgEarth::GeoExtent*& ex
 
 AddArcGISData::AddArcGISData()
 {
-    _pluginCategory = "Data";
-    _pluginName = tr("ArcGIS Data");
+  _pluginCategory = "Data";
+  _pluginName     = tr("ArcGIS Data");
 }
 
 AddArcGISData::~AddArcGISData()
 {
-
 }
 
-void AddArcGISData::setupUi(QToolBar * toolBar, QMenu * menu)
+void  AddArcGISData::setupUi(QToolBar *toolBar, QMenu *menu)
 {
-	QIcon icon;
+  QIcon  icon;
+
 	icon.addFile(QStringLiteral("resources/icons/ArcGIS.png"), QSize(), QIcon::Normal, QIcon::Off);
 
 	// Image
-	QAction* addArcGISImgAction = new QAction(_mainWindow);
+  QAction *addArcGISImgAction = new QAction(_mainWindow);
 	addArcGISImgAction->setObjectName(QStringLiteral("addArcGISImgAction"));
 	addArcGISImgAction->setIcon(icon);
 	addArcGISImgAction->setText(tr("Online image (ArcGIS)"));
@@ -120,7 +125,7 @@ void AddArcGISData::setupUi(QToolBar * toolBar, QMenu * menu)
 	connect(addArcGISImgAction, SIGNAL(triggered()), this, SLOT(addImage()));
 
 	// Terrain
-	QAction* addArcGISTerAction = new QAction(_mainWindow);
+  QAction *addArcGISTerAction = new QAction(_mainWindow);
 	addArcGISTerAction->setObjectName(QStringLiteral("addArcGISTerAction"));
 	addArcGISTerAction->setIcon(icon);
 	addArcGISTerAction->setText(tr("Online terrain (ArcGIS)"));
@@ -131,7 +136,7 @@ void AddArcGISData::setupUi(QToolBar * toolBar, QMenu * menu)
 	connect(addArcGISTerAction, SIGNAL(triggered()), this, SLOT(addImage()));
 
 	// Feature
-	QAction* addArcGISShpAction = new QAction(_mainWindow);
+  QAction *addArcGISShpAction = new QAction(_mainWindow);
 	addArcGISShpAction->setObjectName(QStringLiteral("addArcGISShpAction"));
 	addArcGISShpAction->setIcon(icon);
 	addArcGISShpAction->setText(tr("Online features (ArcGIS)"));
@@ -142,68 +147,71 @@ void AddArcGISData::setupUi(QToolBar * toolBar, QMenu * menu)
 	connect(addArcGISShpAction, SIGNAL(triggered()), this, SLOT(addFeature()));
 }
 
-void AddArcGISData::addImage()
+void  AddArcGISData::addImage()
 {
-	QString fileName = QInputDialog::getText(dynamic_cast<QWidget*>(parent()), tr("Please enter file location"), "");
+  QString  fileName = QInputDialog::getText(dynamic_cast<QWidget *>(parent()), tr("Please enter file location"), "");
+
 	if (!fileName.isEmpty())
 	{
-		auto nodeName = fileName.toLocal8Bit().toStdString();
-		osgEarth::GeoExtent* extent = NULL;
+    auto                 nodeName = fileName.toLocal8Bit().toStdString();
+    osgEarth::GeoExtent *extent   = NULL;
 
-		QVector<attrib> attribute = getArcGISInfo(nodeName, extent);
-		ArcGISOptions opt;
+    QVector<attrib>  attribute = getArcGISInfo(nodeName, extent);
+    ArcGISOptions    opt;
 		opt.url() = nodeName;
-		ImageLayerOptions layerOpt(nodeName, opt);
+    ImageLayerOptions  layerOpt(nodeName, opt);
 		layerOpt.minFilter() = osg::Texture::LINEAR_MIPMAP_LINEAR;
 		layerOpt.magFilter() = osg::Texture::LINEAR;
-		osg::ref_ptr<osgEarth::ImageLayer> layer = new ImageLayer(layerOpt);
+    osg::ref_ptr<osgEarth::ImageLayer>  layer = new ImageLayer(layerOpt);
 
 		addLayerToMap(layer, IMAGE_LAYER, fileName, attribute, extent);
 	}
 }
 
-void AddArcGISData::addTerrain()
+void  AddArcGISData::addTerrain()
 {
-	QString fileName = QInputDialog::getText(dynamic_cast<QWidget*>(parent()), tr("Please enter file location"), "");
+  QString  fileName = QInputDialog::getText(dynamic_cast<QWidget *>(parent()), tr("Please enter file location"), "");
+
 	if (!fileName.isEmpty())
 	{
-		auto nodeName = fileName.toLocal8Bit().toStdString();
-		osgEarth::GeoExtent* extent = NULL;
+    auto                 nodeName = fileName.toLocal8Bit().toStdString();
+    osgEarth::GeoExtent *extent   = NULL;
 
-		ArcGISOptions opt;
+    ArcGISOptions  opt;
 		opt.url() = nodeName;
 
-		osg::ref_ptr<osgEarth::ElevationLayer> layer = new ElevationLayer(ElevationLayerOptions(nodeName, opt));
-		QVector<attrib> attribute = getArcGISInfo(nodeName, extent);
+    osg::ref_ptr<osgEarth::ElevationLayer>  layer     = new ElevationLayer(ElevationLayerOptions(nodeName, opt));
+    QVector<attrib>                         attribute = getArcGISInfo(nodeName, extent);
 
 		addLayerToMap(layer, TERRAIN_LAYER, fileName, attribute, extent);
 	}
 }
 
-void AddArcGISData::addFeature()
+void  AddArcGISData::addFeature()
 {
-	QString	fileName = QInputDialog::getText(
-		dynamic_cast<QWidget*>(parent()), tr("Please enter file location"), "");
+  QString  fileName = QInputDialog::getText(
+    dynamic_cast<QWidget *>(parent()), tr("Please enter file location"), "");
+
 	if (!fileName.isEmpty())
 	{
-		std::string nodeName = fileName.toLocal8Bit().toStdString();
+    std::string  nodeName = fileName.toLocal8Bit().toStdString();
 
-		QVector<attrib> attribList;
-		QStringList featureFieldList;
-		osgEarth::Symbology::Style style;
+    QVector<attrib>             attribList;
+    QStringList                 featureFieldList;
+    osgEarth::Symbology::Style  style;
 
 		getFeatureAttribute(fileName, attribList, featureFieldList, &style);
 
-		ArcGISOptions opt;
+    ArcGISOptions  opt;
 		opt.url() = nodeName;
-		ArcGISOptions arcgisonline;
+    ArcGISOptions  arcgisonline;
 		arcgisonline.url() = osgEarth::URI(nodeName.c_str());
-		osgEarth::Drivers::FeatureGeomModelOptions arcGeomOptions;
+    osgEarth::Drivers::FeatureGeomModelOptions  arcGeomOptions;
 		arcGeomOptions.featureOptions() = arcgisonline;
-		arcGeomOptions.styles() = new StyleSheet();
+    arcGeomOptions.styles()         = new StyleSheet();
 		arcGeomOptions.styles()->addStyle(style);
 		arcGeomOptions.enableLighting() = false;
-		auto layer = new ModelLayer(ModelLayerOptions(nodeName, arcGeomOptions));
+    auto  layer = new ModelLayer(ModelLayerOptions(nodeName, arcGeomOptions));
 
 		addLayerToMap(fileName, layer);
 	}
