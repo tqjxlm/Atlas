@@ -94,11 +94,14 @@ void  AreaVisitor::apply(osg::Geode &geode)
           }
 
           for (unsigned int i = 0; i + 2 < prim->getNumIndices(); i += 3)
-					{
-						area += calcTriangle(
-              vertices->at(prim->index(i)) * _localToWorld,
-              vertices->at(prim->index(i + 1)) * _localToWorld,
-              vertices->at(prim->index(i + 2)) * _localToWorld);
+          {
+            auto  p1 = vertices->at(prim->index(i)) * _localToWorld;
+            auto  p2 = vertices->at(prim->index(i + 1)) * _localToWorld;
+            auto  p3 = vertices->at(prim->index(i + 2)) * _localToWorld;
+            area += calcTriangle(
+              p1,
+              p2,
+              p3);
 					}
 				}
 
@@ -110,7 +113,9 @@ void  AreaVisitor::apply(osg::Geode &geode)
 				// 检查该节点是否与控制体有交集，并标记
 				for (int i = 0; i < vertices->size(); i++)
 				{
-          if (pointInPolygon(vertices->at(i) * _localToWorld))
+          auto  p = vertices->at(i) * _localToWorld;
+
+          if (pointInPolygon(p))
 					{
 						_affected = true;
 
