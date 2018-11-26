@@ -57,7 +57,8 @@ void  MeasureLine::onLeftButton()
 
 			_totoalDistance += currentDis;
 
-      _currentDrawNode->addDrawable(createTextGeode(tr("%1m").arg(currentDis, 0, 'f', 1).toStdString(), disPos));
+      auto  str = tr("%1m").arg(currentDis, 0, 'f', 1).toStdString();
+      _currentDrawNode->addDrawable(createTextGeode(str, disPos));
 		}
 	}
 }
@@ -67,7 +68,8 @@ void  MeasureLine::onDoubleClick()
 	if (_isDrawing)
 	{
     _style.textColor = { 1.0f, 1.0f, 0.0f, 1.0f };
-		_currentDrawNode->addDrawable(createTextGeode(tr("%1m").arg(_totoalDistance, 0, 'f', 1).toStdString(), _anchoredWorldPos));
+    auto  str = tr("%1m").arg(_totoalDistance, 0, 'f', 1).toStdString();
+    _currentDrawNode->addDrawable(createTextGeode(str, _anchoredWorldPos));
 		_totoalDistance = 0;
     _currentDrawNode->removeChild(_tmpLabel);
     _tmpLabel = NULL;
@@ -90,7 +92,8 @@ void  MeasureLine::onMouseMove()
 
       if (!_tmpLabel.valid())
       {
-        _tmpLabel = createTextGeode(tr("%1m").arg(currentDis, 0, 'f', 1).toStdString(), _anchoredWorldPos);
+        auto  str = tr("%1m").arg(currentDis, 0, 'f', 1).toStdString();
+        _tmpLabel = createTextGeode(str, _anchoredWorldPos);
         _currentDrawNode->addDrawable(_tmpLabel);
       }
 
