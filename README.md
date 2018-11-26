@@ -1,3 +1,12 @@
+# On Linux 
+This Fork work on linux with cmake
+
+mkdir build
+cd build
+cmake-gui ../ #Select Plugins ...
+
+make
+
 # Atlas
 
 Atlas is a GIS visualization project that aims to combine some basic features of [QGIS](https://qgis.org/en/site/) and [Google Earth](https://www.google.com/earth/). It utilizes [OpenSceneGraph (OSG)](http://www.openscenegraph.org/) and [OSGEarth](http://osgearth.org/) to handle 2D maps and 3D models in the same space. It depends on [Qt](https://www.qt.io/) to provide a friendly and easy-to-extend UI and provides a convenient plugin system so that all kinds of extensions can be implemented easily.
