@@ -23,18 +23,16 @@
 
 #include "ModelLayerManager.h"
 
-ModelLayerManager* EarthDataInterface::_modelLayerManager;
+ModelLayerManager *EarthDataInterface::_modelLayerManager;
+QMenu             *EarthDataInterface::dataMenu;
+QToolBar          *EarthDataInterface::dataToolBar;
 
-QMenu* EarthDataInterface::dataMenu;
-
-QToolBar* EarthDataInterface::dataToolBar;
-
-EarthDataInterface::DataGroup EarthDataInterface::_dataGroups[ALL_TYPE];
+EarthDataInterface::DataGroup  EarthDataInterface::_dataGroups[ALL_TYPE];
 
 EarthDataInterface::EarthDataInterface()
 {
-    _pluginCategory = "Data";
-    _pluginName = tr("osgEarth Data Interface");
+  _pluginCategory = "Data";
+  _pluginName     = tr("osgEarth Data Interface");
 
 	_dataGroups[IMAGE_LAYER] = {
 		tr("Image Layers"),
@@ -61,87 +59,96 @@ EarthDataInterface::EarthDataInterface()
 
 EarthDataInterface::~EarthDataInterface()
 {
-
 }
 
-void EarthDataInterface::setupUi(QToolBar *toolBar, QMenu *menu)
+void  EarthDataInterface::setupUi(QToolBar *toolBar, QMenu *menu)
 {
-	dataMenu = menu;
+  dataMenu    = menu;
 	dataToolBar = toolBar;
+
 	for (unsigned i = 0; i < ALL_TYPE; i++)
 	{
-		QMenu* menu = getOrAddMenu((DataType)i);
+    QMenu *menu = getOrAddMenu((DataType)i);
 		getOrAddToolButton((DataType)i, menu);
 	}
 
 	parseEarthNode();
 }
 
-void EarthDataInterface::init()
+void  EarthDataInterface::init()
 {
 	_modelLayerManager = new ModelLayerManager(getDefaultStyle());
 
 	PluginInterface::init();
 }
 
-void EarthDataInterface::showDataAttributes(QString nodeName)
+void  EarthDataInterface::showDataAttributes(QString nodeName)
 {
 	// TODO: Not used yet
 
-	//GDALDataset *poDataset;
-	//poDataset = (GDALDataset*)GDALOpenEx(nodeName.toLocal8Bit().toStdString().c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
-	//if (poDataset != NULL)
-	//{
-	//	QMutex* lock = new QMutex;
-	//	lock->lock();
-	//	for (int i = 0; i < poDataset->GetLayerCount(); i++)
-	//	{
+  // GDALDataset *poDataset;
+  // poDataset = (GDALDataset*)GDALOpenEx(nodeName.toLocal8Bit().toStdString().c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
+  // if (poDataset != NULL)
+  // {
+  // QMutex* lock = new QMutex;
+  // lock->lock();
+  // for (int i = 0; i < poDataset->GetLayerCount(); i++)
+  // {
 
-	//		FeatureTableDlg* dlg = new FeatureTableDlg(poDataset, i, lock, (QWidget*)parent());
-	//		dlg->setWindowTitle(nodeName + QString(tr(": Layer #")).append(QString::number(i + 1)));
-	//		dlg->show();
-	//	}
-	//	lock->unlock();
-	//}
+  // FeatureTableDlg* dlg = new FeatureTableDlg(poDataset, i, lock, (QWidget*)parent());
+  // dlg->setWindowTitle(nodeName + QString(tr(": Layer #")).append(QString::number(i + 1)));
+  // dlg->show();
+  // }
+  // lock->unlock();
+  // }
 }
 
-QMenu* EarthDataInterface::getOrAddMenu(DataType dataType)
+QMenu * EarthDataInterface::getOrAddMenu(DataType dataType)
 {
 	if (dataType >= ALL_TYPE)
-		return nullptr;
+  {
+    return nullptr;
+  }
 
-	const DataGroup & dataGroup = _dataGroups[dataType];
+  const DataGroup &dataGroup = _dataGroups[dataType];
+  QMenu           *menu      = dataMenu->findChild<QMenu *>(dataGroup.objectName + "Menu");
 
-	QMenu* menu = dataMenu->findChild<QMenu*>(dataGroup.objectName + "Menu");
 	if (menu)
-		return menu;
+  {
+    return menu;
+  }
 
 	menu = new QMenu(dataMenu);
 	menu->setObjectName(dataGroup.objectName + "Menu");
-	QIcon icon;
+  QIcon  icon;
 	icon.addFile(dataGroup.iconPath, QSize(), QIcon::Normal, QIcon::Off);
 	menu->setIcon(icon);
 	menu->setTitle(dataGroup.title);
 	menu->setToolTip(dataGroup.toolTip);
 
 	dataMenu->addMenu(menu);
+
 	return menu;
 }
 
-QToolButton * EarthDataInterface::getOrAddToolButton(DataType dataType, QMenu* menu)
+QToolButton * EarthDataInterface::getOrAddToolButton(DataType dataType, QMenu *menu)
 {
 	if (dataType >= ALL_TYPE)
-		return nullptr;
+  {
+    return nullptr;
+  }
 
-	const DataGroup & dataGroup = _dataGroups[dataType];
+  const DataGroup &dataGroup = _dataGroups[dataType];
+  QToolButton     *button    = dataMenu->findChild<QToolButton *>(dataGroup.objectName + "Button");
 
-	QToolButton* button = dataMenu->findChild<QToolButton*>(dataGroup.objectName + "Button");
 	if (button)
-		return button;
+  {
+    return button;
+  }
 
 	button = new QToolButton(dataToolBar);
 	button->setObjectName(dataGroup.objectName + "Button");
-	QIcon icon;
+  QIcon  icon;
 	icon.addFile(dataGroup.iconPath, QSize(), QIcon::Normal, QIcon::Off);
 	button->setIcon(icon);
 	button->setText(dataGroup.title);
@@ -150,32 +157,36 @@ QToolButton * EarthDataInterface::getOrAddToolButton(DataType dataType, QMenu* m
 	button->setCheckable(true);
 	button->setMenu(menu);
 	dataToolBar->addWidget(button);
+
 	return button;
 }
 
-void EarthDataInterface::getFeatureAttribute(const QString & path, QVector<attrib>& attributeList, QStringList & featureFieldList, osgEarth::Symbology::Style* style)
+void  EarthDataInterface::getFeatureAttribute(const QString &path, QVector<attrib> &attributeList, QStringList &featureFieldList,
+                                              osgEarth::Symbology::Style *style)
 {
 	_modelLayerManager->getFeatureAttribute(path, attributeList, featureFieldList, style);
 	_dataManager->updateAttributeList(path, attributeList);
 	_dataManager->updateFeatureFieldList(path, featureFieldList);
 }
 
-void EarthDataInterface::addLayerToMap(const QString& path, osgEarth::ModelLayer* layer)
+void  EarthDataInterface::addLayerToMap(const QString &path, osgEarth::ModelLayer *layer)
 {
 	for (int i = 0; i < MAX_SUBVIEW; i++)
-		_mainMap[i]->addLayer(layer);
+  {
+    _mainMap[i]->addLayer(layer);
+  }
 
 	osg::Node *layernode = layer->getOrCreateSceneGraph(_mainMap[0], _mainMap[0]->getReadOptions(), 0L);
 
 	if (!layernode)
 	{
-		QMessageBox::warning((QWidget*)parent(), tr("Error"), tr("Create node failed!"));
+    QMessageBox::warning((QWidget *)parent(), tr("Error"), tr("Create node failed!"));
+
 		return;
 	}
 
-	emit recordData(layernode, path, tr("Feature Layers"));
-
-	double maxrange = layernode->getBound().radius() * 4;
+  emit    recordData(layernode, path, tr("Feature Layers"));
+  double  maxrange = layernode->getBound().radius() * 4;
 
 	layernode->setName(layer->getName());
 
@@ -186,7 +197,8 @@ void EarthDataInterface::addLayerToMap(const QString& path, osgEarth::ModelLayer
 	layernode->setUserValue("layerheight", 0);
 }
 
-void EarthDataInterface::addLayerToMap(osg::ref_ptr<osgEarth::TerrainLayer> layer, DataType dataType, QString & fileName, QVector<attrib>& attribute, osgEarth::GeoExtent * extent)
+void  EarthDataInterface::addLayerToMap(osg::ref_ptr<osgEarth::TerrainLayer> layer, DataType dataType, QString &fileName, QVector<attrib> &attribute,
+                                        osgEarth::GeoExtent *extent)
 {
 	if (layer.valid())
 	{
@@ -194,14 +206,17 @@ void EarthDataInterface::addLayerToMap(osg::ref_ptr<osgEarth::TerrainLayer> laye
 		_mainMap[0]->addLayer(layer);
 
 		// If success, record the layer and add it to sub maps
-		if (((osgEarth::TerrainLayer*)_mainMap[0]->getLayerByName(fileName.toLocal8Bit().toStdString()))->getProfile())
+    if (((osgEarth::TerrainLayer *)_mainMap[0]->getLayerByName(fileName.toLocal8Bit().toStdString()))->getProfile())
 		{
-			emit recordData(layer, fileName, _dataGroups[dataType].dataTreeTitle, extent);
+      emit  recordData(layer, fileName, _dataGroups[dataType].dataTreeTitle, extent);
 
 			for (int i = 1; i < MAX_SUBVIEW; i++)
-				_mainMap[i]->addLayer(layer);
+      {
+        _mainMap[i]->addLayer(layer);
+      }
 
 			_dataManager->updateAttributeList(fileName, attribute);
+
 			return;
 		}
 		else
@@ -210,37 +225,44 @@ void EarthDataInterface::addLayerToMap(osg::ref_ptr<osgEarth::TerrainLayer> laye
 		}
 	}
 
-	QMessageBox::warning((QWidget*)parent(), tr("Error"), tr("Data loading failed!"));
+  QMessageBox::warning((QWidget *)parent(), tr("Error"), tr("Data loading failed!"));
 }
 
-void EarthDataInterface::parseEarthNode()
+void  EarthDataInterface::parseEarthNode()
 {
-	osgEarth::LayerVector layers;
+  osgEarth::LayerVector  layers;
 	_mainMap[0]->getLayers(layers);
-	for each (auto layer in layers)
+
+  for (auto layer : layers)
 	{
-		QString parent;
-		osgEarth::TerrainLayer* terrainLayer = NULL;
+    QString                 parent;
+    osgEarth::TerrainLayer *terrainLayer = NULL;
 
 		if (!terrainLayer)
 		{
-			terrainLayer = dynamic_cast<osgEarth::ImageLayer*>(layer.get());
+      terrainLayer = dynamic_cast<osgEarth::ImageLayer *>(layer.get());
+
 			if (terrainLayer)
-				parent = _dataGroups[IMAGE_LAYER].dataTreeTitle;
-		}
+      {
+        parent = _dataGroups[IMAGE_LAYER].dataTreeTitle;
+      }
+    }
 
 		if (!terrainLayer)
 		{
-			terrainLayer = dynamic_cast<osgEarth::ElevationLayer*>(layer.get());
+      terrainLayer = dynamic_cast<osgEarth::ElevationLayer *>(layer.get());
+
 			if (terrainLayer)
-				parent = _dataGroups[TERRAIN_LAYER].dataTreeTitle;
-		}
+      {
+        parent = _dataGroups[TERRAIN_LAYER].dataTreeTitle;
+      }
+    }
 
 		if (terrainLayer)
 		{
-			std::string originalName = layer->getName();
-			QString name = QString::fromStdString(originalName);
-			emit recordData(terrainLayer, name, parent);
+      std::string  originalName = layer->getName();
+      QString      name         = QString::fromStdString(originalName);
+      emit         recordData(terrainLayer, name, parent);
 
 			// The layer's name may have changed, set its copy's as well
 			for (unsigned i = 1; i < MAX_SUBVIEW; i++)

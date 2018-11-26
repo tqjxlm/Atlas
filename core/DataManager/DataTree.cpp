@@ -16,9 +16,9 @@
 
 #include <SettingsManager/SettingsManager.h>
 
-DataTree::DataTree(SettingsManager* settings, QWidget *parent)
-	: QTreeWidget(parent)
-	, _settingsManager(settings)
+DataTree::DataTree(SettingsManager *settings, QWidget *parent):
+  QTreeWidget(parent),
+  _settingsManager(settings)
 {
 	// Init tree
 	_rootTreeItem = new DataRecord(tr("Scene"), NULL);
@@ -28,25 +28,31 @@ DataTree::DataTree(SettingsManager* settings, QWidget *parent)
 
 DataTree::~DataTree()
 {
-
 }
 
-void DataTree::clear()
+void  DataTree::clear()
 {
 	for (unsigned i = 0; i < _rootTreeItem->childCount(); i++)
-		removeRecord(_rootTreeItem->child(i));
+  {
+    removeRecord(_rootTreeItem->child(i));
+  }
 }
 
-void DataTree::addRecord(osg::Node* node, const QString& name, const QString& parentName, bool hidden)
+void  DataTree::addRecord(osg::Node *node, const QString &name, const QString &parentName, bool hidden)
 {
-	QString nodeName = resolveName(name);
-	osg::BoundingSphere bs = node->getBound();
-	if (!bs.valid())
-		node->computeBound();
-	node->setName(nodeName.toLocal8Bit().toStdString());
+  QString  nodeName = resolveName(name);
 
-	DataRecord* parent = getParent(parentName);
-	DataRecord* newRecord = new DataRecord(nodeName, node, parent);
+  osg::BoundingSphere  bs = node->getBound();
+
+	if (!bs.valid())
+  {
+    node->computeBound();
+  }
+
+  node->setName(nodeName.toLocal8Bit().toStdString());
+
+  DataRecord *parent    = getParent(parentName);
+  DataRecord *newRecord = new DataRecord(nodeName, node, parent);
 	newRecord->setCheckState(0, node->getNodeMask() == SHOW_IN_NO_WINDOW ? Qt::Unchecked : Qt::Checked);
 	newRecord->setHidden(hidden);
 	_dataRecords.insert(nodeName, newRecord);
@@ -54,13 +60,14 @@ void DataTree::addRecord(osg::Node* node, const QString& name, const QString& pa
 	parent->addChild(newRecord);
 }
 
-void DataTree::addRecord(osgEarth::TerrainLayer * layer, const QString & name, const QString& parentName, osgEarth::GeoExtent* extent, bool hidden)
+void  DataTree::addRecord(osgEarth::TerrainLayer *layer, const QString &name, const QString &parentName, osgEarth::GeoExtent *extent, bool hidden)
 {
-	QString nodeName = resolveName(name);
+  QString  nodeName = resolveName(name);
+
 	layer->setName(nodeName.toLocal8Bit().toStdString());
 
-	DataRecord* parent = getParent(parentName);
-	DataRecord* newRecord = new DataRecord(nodeName, layer, parent, extent);
+  DataRecord *parent    = getParent(parentName);
+  DataRecord *newRecord = new DataRecord(nodeName, layer, parent, extent);
 	newRecord->setCheckState(0, layer->getVisible() ? Qt::Checked : Qt::Unchecked);
 	newRecord->setHidden(hidden);
 	_dataRecords.insert(nodeName, newRecord);
@@ -68,155 +75,187 @@ void DataTree::addRecord(osgEarth::TerrainLayer * layer, const QString & name, c
 	parent->addChild(newRecord);
 }
 
-void DataTree::switchDataSlot(QTreeWidgetItem* item, int column)
+void  DataTree::switchDataSlot(QTreeWidgetItem *item, int column)
 {
-	QString& nodeName = item->text(column);
+  const QString &nodeName = item->text(column);
 
 	switchRecord(nodeName, item->checkState(0) == Qt::Checked);
 }
 
-void DataTree::switchAllSlot(int enabled)
+void  DataTree::switchAllSlot(int enabled)
 {
-	QList<QTreeWidgetItem *> itemList = selectedItems();
-	DataRecord *item = dynamic_cast<DataRecord*>(itemList[0]);
+  QList<QTreeWidgetItem *>  itemList = selectedItems();
+  DataRecord               *item     = dynamic_cast<DataRecord *>(itemList[0]);
 	switchAll(item, enabled);
 }
 
-void DataTree::switchAll(DataRecord *item, bool isVisible)
+void  DataTree::switchAll(DataRecord *item, bool isVisible)
 {
-	int childcount = item->childCount();
+  int  childcount = item->childCount();
 
 	for (int i = 0; i < childcount; i++)
 	{
 		DataRecord *childitem = item->child(i);
+
 		if (childitem->childCount() > 0)
-			switchAll(childitem, isVisible);
-		else
-			switchRecord(childitem->text(0), isVisible);
-	}
+    {
+      switchAll(childitem, isVisible);
+    }
+    else
+    {
+      switchRecord(childitem->text(0), isVisible);
+    }
+  }
 }
 
-QString DataTree::resolveName(const QString & expectedName)
+QString  DataTree::resolveName(const QString &expectedName)
 {
 	// Name format: ExpectedName + _ + Index
-	QString newName = expectedName;
-	int pos = newName.lastIndexOf('_');
-
-	int index = pos == -1 ? 0 : newName.right(pos).toInt();
+  QString  newName = expectedName;
+  int      pos     = newName.lastIndexOf('_');
+  int      index   = pos == -1 ? 0 : newName.right(pos).toInt();
 
 	// Increase Index until it does not collide
 	for (unsigned i = index + 1; i < 0xffffffff; i++)
 	{
 		newName = expectedName + QString("_%1").arg(i);
-		if (getRecord(newName) == NULL)
-			return newName;
-	}
 
-	throw std::exception("Run out of node names because of duplication.");
+		if (getRecord(newName) == NULL)
+    {
+      return newName;
+    }
+  }
+
+  throw std::runtime_error("Run out of node names because of duplication.");
+
 	return "";
 }
 
-void DataTree::removeDataRendering(DataRecord* record)
+void  DataTree::removeDataRendering(DataRecord *record)
 {
 	if (record->isLayer())
 	{
 		for (int i = 0; i < MAX_SUBVIEW; i++)
 		{
-			osgEarth::Layer* existed = _mainMap[i]->getLayerByName(record->layer()->getName());
+      osgEarth::Layer *existed = _mainMap[i]->getLayerByName(record->layer()->getName());
+
 			if (existed)
-				_mainMap[i]->removeLayer(existed);
-		}
+      {
+        _mainMap[i]->removeLayer(existed);
+      }
+    }
 	}
 	else
 	{
-		osg::Node* node = record->node();
-        if (node)
+    osg::Node *node = record->node();
+
+    if (node)
+    {
+      if ((node->getNumParents() == 0) && node->asGroup())
+      {
+        // For a pseudo node, parse all of its direct children
+        for (unsigned i = 0; i < node->asGroup()->getNumChildren(); i++)
         {
-            if (node->getNumParents() == 0 && node->asGroup())
-            {
-                // For a pseudo node, parse all of its direct children
-                for (unsigned i = 0; i < node->asGroup()->getNumChildren(); i++)
-                    removeNode(node->asGroup()->getChild(i));
-            }
-            else
-            {
-                // For a real rendered node, simply handle
-                removeNode(node);
-            }
+          removeNode(node->asGroup()->getChild(i));
         }
+      }
+      else
+      {
+        // For a real rendered node, simply handle
+        removeNode(node);
+      }
+    }
 	}
 }
 
-void DataTree::removeNode(osg::Node* node)
+void  DataTree::removeNode(osg::Node *node)
 {
-    // Remove the node from its parent
-    for each (auto parent in node->getParents())
-    {
-        parent->removeChild(node);
+  // Remove the node from its parent
+  for (auto parent : node->getParents())
+  {
+    parent->removeChild(node);
 
-        // Update overlay
-        if (parent == _overlayNode->getOverlaySubgraph())
-            _overlayNode->dirtyOverlayTexture();
+    // Update overlay
+    if (parent == _overlayNode->getOverlaySubgraph())
+    {
+      _overlayNode->dirtyOverlayTexture();
     }
+  }
 }
 
-void DataTree::switchRecord(const QString& nodeName, bool checked)
+void  DataTree::switchRecord(const QString &nodeName, bool checked)
 {
-    auto record = getRecord(nodeName);
-    if (record == NULL)
-        return;
+  auto  record = getRecord(nodeName);
 
-    if (record->isLayer())
+  if (record == NULL)
+  {
+    return;
+  }
+
+  if (record->isLayer())
+  {
+    if (osgEarth::ModelLayer *layer = dynamic_cast<osgEarth::ModelLayer *>(record->layer()))
     {
-        if (osgEarth::ModelLayer* layer = dynamic_cast<osgEarth::ModelLayer*>(record->layer()))
-        {
-            for (int i = 0; i < MAX_SUBVIEW; i++)
-                layer->setVisible(checked);
-        }
-        else
-        {
-            for (int i = 0; i < MAX_SUBVIEW; i++)
-                record->layer()->setVisible(checked);
-        }
+      for (int i = 0; i < MAX_SUBVIEW; i++)
+      {
+        layer->setVisible(checked);
+      }
     }
     else
     {
-        osg::Node* node = record->node();
-        if (node)
-        {
-            if (node->getNumParents() == 0 && node->asGroup())
-            {
-                // For a pseudo node, parse all of its direct children
-                for (unsigned i = 0; i < node->asGroup()->getNumChildren(); i++)
-                    switchNode(node->asGroup()->getChild(i), checked);
-            }
-            else
-            {
-                // For a real rendered node, simply handle
-                switchNode(node, checked);
-            }
-        }
+      for (int i = 0; i < MAX_SUBVIEW; i++)
+      {
+        record->layer()->setVisible(checked);
+      }
     }
+  }
+  else
+  {
+    osg::Node *node = record->node();
 
-    record->setMask(checked ? 0xffffffff : 0x00000000);
-
-    if (record->checkState(0) == Qt::Checked && checked == false)
-        record->setCheckState(0, Qt::Unchecked);
-}
-
-void DataTree::switchNode(osg::Node* node, bool checked)
-{
-    node->setNodeMask(checked ? 0xffffffff : 0x00000000);
-    for each (auto parent in node->getParents())
+    if (node)
     {
-        if (parent == _overlayNode->getOverlaySubgraph())
-            _overlayNode->dirtyOverlayTexture();
+      if ((node->getNumParents() == 0) && node->asGroup())
+      {
+        // For a pseudo node, parse all of its direct children
+        for (unsigned i = 0; i < node->asGroup()->getNumChildren(); i++)
+        {
+          switchNode(node->asGroup()->getChild(i), checked);
+        }
+      }
+      else
+      {
+        // For a real rendered node, simply handle
+        switchNode(node, checked);
+      }
     }
+  }
+
+  record->setMask(checked ? 0xffffffff : 0x00000000);
+
+  if ((record->checkState(0) == Qt::Checked) && (checked == false))
+  {
+    record->setCheckState(0, Qt::Unchecked);
+  }
 }
 
-DataRecord * DataTree::getParent(const QString & parentName)
+void  DataTree::switchNode(osg::Node *node, bool checked)
 {
-	DataRecord* parent = getRecord(parentName);
+  node->setNodeMask(checked ? 0xffffffff : 0x00000000);
+
+  for (auto parent : node->getParents())
+  {
+    if (parent == _overlayNode->getOverlaySubgraph())
+    {
+      _overlayNode->dirtyOverlayTexture();
+    }
+  }
+}
+
+DataRecord * DataTree::getParent(const QString &parentName)
+{
+  DataRecord *parent = getRecord(parentName);
+
 	if (!parent)
 	{
 		parent = new DataRecord(parentName, _rootTreeItem);
@@ -224,141 +263,201 @@ DataRecord * DataTree::getParent(const QString & parentName)
 		_dataRecords.insert(parentName, parent);
 		parent->setExpanded(true);
 	}
+
 	return parent;
 }
 
-void DataTree::saveNodeSlot()
+void  DataTree::saveNodeSlot()
 {
-	QList<QTreeWidgetItem *> itemList = selectedItems();
+  QList<QTreeWidgetItem *>  itemList = selectedItems();
+
 	if (itemList.size() == 1)
 	{
 		if (saveNode(itemList[0]->text(0)) == false)
-			QMessageBox::critical(0, tr("Error"), tr("Failed to save layer"));
-		else
-			QMessageBox::information(0, tr("Result"), tr("Successfully saved"));
-	}
+    {
+      QMessageBox::critical(0, tr("Error"), tr("Failed to save layer"));
+    }
+    else
+    {
+      QMessageBox::information(0, tr("Result"), tr("Successfully saved"));
+    }
+  }
 	else if (itemList.size() > 1)
 	{
-		QStringList nameList;
-		foreach(QTreeWidgetItem *item, itemList)
-			nameList.append(item->text(0));
+    QStringList  nameList;
+    foreach(QTreeWidgetItem * item, itemList)
+    nameList.append(item->text(0));
+
 		if (saveNodes(nameList) == false)
-			QMessageBox::critical(0, tr("Error"), tr("Failed to save layer"));
-		else
-			QMessageBox::information(0, tr("Result"), tr("Successfully saved"));
-	}
+    {
+      QMessageBox::critical(0, tr("Error"), tr("Failed to save layer"));
+    }
+    else
+    {
+      QMessageBox::information(0, tr("Result"), tr("Successfully saved"));
+    }
+  }
 }
 
-void DataTree::removeRecord(const QString& name)
+void  DataTree::removeRecord(const QString &name)
 {
-	auto record = _dataRecords.find(name);
+  auto  record = _dataRecords.find(name);
+
 	if (record == _dataRecords.end())
-		return;
+  {
+    return;
+  }
 
 	removeRecord(*record);
 	_dataRecords.erase(record);
 }
 
-void DataTree::removeRecord(DataRecord* record)
+void  DataTree::removeRecord(DataRecord *record)
 {
 	if (record == _rootTreeItem)
-		return;
+  {
+    return;
+  }
 
-	DataRecord* parent = record->parent();
+  DataRecord *parent = record->parent();
 	parent->removeChild(record);
 	removeDataRendering(record);
 
 	if (parent->childCount() == 0)
-		removeRecord(parent);
+  {
+    removeRecord(parent);
+  }
 }
 
-void DataTree::deleteNodeSlot()
+void  DataTree::deleteNodeSlot()
 {
-	QList<QTreeWidgetItem *> itemList = selectedItems();
-	foreach(QTreeWidgetItem *item, itemList)
-		removeRecord(item->text(0));
+  QList<QTreeWidgetItem *>  itemList = selectedItems();
+  foreach(QTreeWidgetItem * item, itemList)
+  removeRecord(item->text(0));
 }
 
-bool DataTree::saveNode(const QString & nodeName)
+bool  DataTree::saveNode(const QString &nodeName)
 {
-	osg::ref_ptr<osg::Node> node = getNode(nodeName);
+  osg::ref_ptr<osg::Node>  node = getNode(nodeName);
+
 	if (!node.valid())
-		return false;
+  {
+    return false;
+  }
 
-	QString path = QFileDialog::getSaveFileName(0, tr("Choose save location"), " ",
-		tr("OSG plain text (*.osg);;OSG binary (*.osgb);;Allfile(*.*)"));
+  QString  path = QFileDialog::getSaveFileName(0, tr("Choose save location"), " ",
+                                               tr("OSG plain text (*.osg);;OSG binary (*.osgb);;Allfile(*.*)"));
+
 	return osgDB::writeNodeFile(*node, path.toStdString());
 }
 
-bool DataTree::saveNodes(const QStringList & nodeNames)
+bool  DataTree::saveNodes(const QStringList &nodeNames)
 {
-	osg::ref_ptr<osg::Group> group = new osg::Group();
-	for each (auto nodeName in nodeNames)
-	{
-		osg::ref_ptr<osg::Node> node = getNode(nodeName);
-		if (node.valid())
-			group->addChild(node);
-	}
-	if (group->getNumChildren() == 0)
-		return false;
+  osg::ref_ptr<osg::Group>  group = new osg::Group();
 
-	QString path = QFileDialog::getSaveFileName(0, tr("Choose save location"), " ",
-		tr("OSG plain text (*.osg);;OSG binary (*.osgb);;Allfile(*.*)"));
+  for (auto nodeName : nodeNames)
+	{
+    osg::ref_ptr<osg::Node>  node = getNode(nodeName);
+
+		if (node.valid())
+    {
+      group->addChild(node);
+    }
+  }
+
+	if (group->getNumChildren() == 0)
+  {
+    return false;
+  }
+
+  QString  path = QFileDialog::getSaveFileName(0, tr("Choose save location"), " ",
+                                               tr("OSG plain text (*.osg);;OSG binary (*.osgb);;Allfile(*.*)"));
+
 	return osgDB::writeNodeFile(*group, path.toStdString());
 }
 
-void DataTree::setMask(const QString & name, int mask)
+void  DataTree::setMask(const QString &name, int mask)
 {
-	auto record = getRecord(name);
+  auto  record = getRecord(name);
+
 	if (!record)
-		return;
+  {
+    return;
+  }
 
 	if (record->isLayer())
 	{
 		// Since osgEarth layer don't support mask, we have to move them manually
-		osgEarth::TerrainLayer* layer = record->layer();
-		std::string stdName = layer->getName();
+    osgEarth::TerrainLayer *layer   = record->layer();
+    std::string             stdName = layer->getName();
+
 		if (!layer)
-			return;
-		//layer->getOrCreateNode()->setNodeMask(mask);
+    {
+      return;
+    }
+
+    // layer->getOrCreateNode()->setNodeMask(mask);
 		for (int i = 0; i < MAX_SUBVIEW; i++)
 		{
 			if (_mainMap[i] == NULL)
-				continue;
+      {
+        continue;
+      }
 
-			osgEarth::Layer* existed = _mainMap[i]->getLayerByName(stdName);
+      osgEarth::Layer *existed = _mainMap[i]->getLayerByName(stdName);
+
 			if (existed && !(mask & (SHOW_IN_WINDOW_1 << i)))
-				_mainMap[i]->removeLayer(existed);
-			else if (!existed && mask & (SHOW_IN_WINDOW_1 << i))
-				_mainMap[i]->addLayer(layer);
-		}
+      {
+        _mainMap[i]->removeLayer(existed);
+      }
+      else if (!existed && mask & (SHOW_IN_WINDOW_1 << i))
+      {
+        _mainMap[i]->addLayer(layer);
+      }
+    }
 	}
+
 	record->setMask(mask);
 }
 
-DataRecord* DataTree::getRecord(const QString& name)
+DataRecord * DataTree::getRecord(const QString &name)
 {
-	auto record = _dataRecords.find(name);
+  auto  record = _dataRecords.find(name);
+
 	if (record != _dataRecords.end())
-		return *record;
-	else
-		return NULL;
+  {
+    return *record;
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
-osg::Node* DataTree::getNode(const QString& name)
+osg::Node * DataTree::getNode(const QString &name)
 {
-	DataRecord* record = getRecord(name);
+  DataRecord *record = getRecord(name);
+
 	if (record)
-		return record->node();
-	else
-		return NULL;
+  {
+    return record->node();
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
-osgEarth::TerrainLayer* DataTree::getLayer(const QString& name)
+osgEarth::TerrainLayer * DataTree::getLayer(const QString &name)
 {
-	DataRecord* record = getRecord(name);
+  DataRecord *record = getRecord(name);
+
 	if (record)
-		return record->layer();
-	else
-		return NULL;
+  {
+    return record->layer();
+  }
+  else
+  {
+    return NULL;
+  }
 }

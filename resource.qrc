@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/Map">
+        <file>Atlas/resources/earth_files/base.earth</file>
+    </qresource>
+    <qresource prefix="/"/>
+</RCC>

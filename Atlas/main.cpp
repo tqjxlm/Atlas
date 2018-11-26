@@ -4,29 +4,30 @@
 #include <QApplication>
 #include <QFile>
 
-int main(int argc, char *argv[])
+int  main(int argc, char *argv[])
 {
-	_putenv("OSG_ROOT=.");
+// _putenv("OSG_ROOT=.");
 
-	QApplication app(argc, argv);
+  QApplication  app(argc, argv);
 
-    // Load an application style
-    QFile styleFile("resources/styles/Atlas.qss");
-    if (styleFile.open(QFile::ReadOnly))
-    {
-        QString style(styleFile.readAll());
-        app.setStyleSheet(style);
-    }
-	
+  // Load an application style
+  QFile  styleFile("resources/styles/Atlas.qss");
+
+  if (styleFile.open(QFile::ReadOnly))
+  {
+    QString  style(styleFile.readAll());
+    app.setStyleSheet(style);
+  }
+
 	// Show splash screen
-	AtlasSplashScreen *splash = new AtlasSplashScreen(QPixmap("./resources/images/atlas_big.png"));
-
-	Atlas w;
+  QPixmap            a("./resources/images/atlas_big.png");
+  AtlasSplashScreen *splash = new AtlasSplashScreen(a);
+  Atlas              w;
 	QObject::connect(&w, SIGNAL(sendTotalInitSteps(int)), splash, SLOT(setTotalInitSteps(int)));
 	QObject::connect(&w, SIGNAL(sendNowInitName(QString)), splash, SLOT(setNowInitName(QString)));
 
 	splash->show();
-	w.initAll();	
+  w.initAll();
 
 	// Begin application
 	w.showMaximized();

@@ -21,43 +21,40 @@ using namespace osgEarth::Drivers;
 
 #include "MultiChooseDlg.h"
 
-static QVector<attrib> getWMSInfo(std::string& path, osgEarth::GeoExtent*& extent)
+static QVector<attrib>  getWMSInfo(std::string &path, osgEarth::GeoExtent * &extent)
 {
-	QVector<attrib> attribList;
-	char str[1000];
+  QVector<attrib>              attribList;
+  char                         str[1000];
+  URI                          uri(path);
+  osg::ref_ptr<const Profile>  result;
 
-	URI uri(path);
-	osg::ref_ptr<const Profile> result;
-
-	char sep = uri.full().find_first_of('?') == std::string::npos ? '?' : '&';
-
-	URI capUrl = URI(
-		uri.full() +
-		sep +
-		std::string("service=WMS") +
-		std::string("&REQUEST=GetCapabilities"));
-
-	XmlDocument* doc = XmlDocument::load(capUrl.full());
-
+  char  sep    = uri.full().find_first_of('?') == std::string::npos ? '?' : '&';
+  URI   capUrl = URI(
+    uri.full()
+    + sep
+    + std::string("service=WMS")
+    + std::string("&REQUEST=GetCapabilities"));
+  XmlDocument *doc = XmlDocument::load(capUrl.full());
 
 	if (!doc)
 	{
 		return attribList;
 	}
 
-	XmlElement* capabilities = doc->getSubElement("WMS_Capabilities")->getSubElement("Capability");
-	XmlElement* rootLayer = capabilities->getSubElement("Layer");
-	XmlNodeList layers = rootLayer->getSubElements("Layer");
+  XmlElement  *capabilities = doc->getSubElement("WMS_Capabilities")->getSubElement("Capability");
+  XmlElement  *rootLayer    = capabilities->getSubElement("Layer");
+  XmlNodeList  layers       = rootLayer->getSubElements("Layer");
 
-	std::string layersStr;
+  std::string  layersStr;
 
-	for each (auto layer in layers)
+  for (auto layer : layers)
 	{
-		XmlElement* layerInfo = static_cast<XmlElement*>(layer.get());
+    XmlElement *layerInfo = static_cast<XmlElement *>(layer.get());
 		layersStr += layerInfo->getSubElement("Name")->getText() + ',';
 
-		double minX, minY, maxX, maxY;
-		osg::ref_ptr<XmlElement> e_bb = layerInfo->getSubElement("latlonboundingbox");
+    double                    minX, minY, maxX, maxY;
+    osg::ref_ptr<XmlElement>  e_bb = layerInfo->getSubElement("latlonboundingbox");
+
 		if (e_bb.valid())
 		{
 			minX = as<double>(e_bb->getAttr("minx"), 0);
@@ -67,7 +64,8 @@ static QVector<attrib> getWMSInfo(std::string& path, osgEarth::GeoExtent*& exten
 		}
 		else
 		{
-			osg::ref_ptr<XmlElement> e_gbb = layerInfo->getSubElement("ex_geographicboundingbox");
+      osg::ref_ptr<XmlElement>  e_gbb = layerInfo->getSubElement("ex_geographicboundingbox");
+
 			if (e_gbb.valid())
 			{
 				minX = as<double>(e_gbb->getSubElementText("westBoundLongitude"), 0);
@@ -77,12 +75,17 @@ static QVector<attrib> getWMSInfo(std::string& path, osgEarth::GeoExtent*& exten
 			}
 		}
 
-		GeoExtent layerExtent(Registry::instance()->getGlobalGeodeticProfile()->getSRS(), minX, minY, maxX, maxY);
+    GeoExtent  layerExtent(Registry::instance()->getGlobalGeodeticProfile()->getSRS(), minX, minY, maxX, maxY);
+
 		if (!extent)
-			extent = new GeoExtent(layerExtent);
-		else
-			extent->expandToInclude(layerExtent);
-	};
+    {
+      extent = new GeoExtent(layerExtent);
+    }
+    else
+    {
+      extent->expandToInclude(layerExtent);
+    }
+  }
 
 	sprintf(str, "(%.3lf, %.3lf)", extent->xMin(), extent->yMin());
 	attribList.push_back(attrib("min", str));
@@ -97,21 +100,21 @@ static QVector<attrib> getWMSInfo(std::string& path, osgEarth::GeoExtent*& exten
 
 AddOGCData::AddOGCData()
 {
-    _pluginCategory = "Data";
-    _pluginName = tr("OGC Data");
+  _pluginCategory = "Data";
+  _pluginName     = tr("OGC Data");
 }
 
 AddOGCData::~AddOGCData()
 {
-
 }
 
-void AddOGCData::setupUi(QToolBar *toolBar, QMenu *menu)
+void  AddOGCData::setupUi(QToolBar *toolBar, QMenu *menu)
 {
-	QIcon icon;
+  QIcon  icon;
+
 	icon.addFile(QStringLiteral("resources/icons/ogc.png"), QSize(), QIcon::Normal, QIcon::Off);
 
-	QAction* addOGCImgAction = new QAction(_mainWindow);
+  QAction *addOGCImgAction = new QAction(_mainWindow);
 	addOGCImgAction->setObjectName(QStringLiteral("addOGCImgAction"));
 	addOGCImgAction->setIcon(icon);
 	addOGCImgAction->setText(tr("Online images (WMS)"));
@@ -121,7 +124,7 @@ void AddOGCData::setupUi(QToolBar *toolBar, QMenu *menu)
 	menu->addAction(addOGCImgAction);
 	connect(addOGCImgAction, SIGNAL(triggered()), this, SLOT(addImage()));
 
-	QAction* addOGCTerAction = new QAction(_mainWindow);
+  QAction *addOGCTerAction = new QAction(_mainWindow);
 	addOGCTerAction->setObjectName(QStringLiteral("addOGCTerAction"));
 	addOGCTerAction->setIcon(icon);
 	addOGCTerAction->setText(tr("Online terrain (WMS)"));
@@ -131,7 +134,7 @@ void AddOGCData::setupUi(QToolBar *toolBar, QMenu *menu)
 	menu->addAction(addOGCTerAction);
 	connect(addOGCTerAction, SIGNAL(triggered()), this, SLOT(addImage()));
 
-	QAction* addOGCShpAction = new QAction(_mainWindow);
+  QAction *addOGCShpAction = new QAction(_mainWindow);
 	addOGCShpAction->setObjectName(QStringLiteral("addOGCShpAction"));
 	addOGCShpAction->setIcon(icon);
 	addOGCShpAction->setText(tr("Online feature (WFS)"));
@@ -142,77 +145,78 @@ void AddOGCData::setupUi(QToolBar *toolBar, QMenu *menu)
 	connect(addOGCShpAction, SIGNAL(triggered()), this, SLOT(addFeature()));
 }
 
-void AddOGCData::addTerrain()
+void  AddOGCData::addTerrain()
 {
-	QString fileName = QInputDialog::getText(dynamic_cast<QWidget*>(parent()), tr("Please enter file location"), "");
+  QString  fileName = QInputDialog::getText(dynamic_cast<QWidget *>(parent()), tr("Please enter file location"), "");
+
 	if (!fileName.isEmpty())
 	{
-		auto nodeName = fileName.toLocal8Bit().toStdString();
-
-		WCSOptions opt;
+    auto        nodeName = fileName.toLocal8Bit().toStdString();
+    WCSOptions  opt;
 		opt.url() = nodeName;
 
-		auto layer = new ElevationLayer(ElevationLayerOptions(nodeName, opt));
-		
-		QVector<attrib> attribute;
+    auto  layer = new ElevationLayer(ElevationLayerOptions(nodeName, opt));
+
+    QVector<attrib>  attribute;
 		addLayerToMap(layer, TERRAIN_LAYER, fileName, attribute);
 	}
 }
 
-void AddOGCData::addFeature()
+void  AddOGCData::addFeature()
 {
-	QString	fileName = QInputDialog::getText(
-		dynamic_cast<QWidget*>(parent()), tr("Please enter file location"), "");
+  QString  fileName = QInputDialog::getText(
+    dynamic_cast<QWidget *>(parent()), tr("Please enter file location"), "");
+
 	if (!fileName.isEmpty())
 	{
-		std::string nodeName = fileName.toLocal8Bit().toStdString();
+    std::string  nodeName = fileName.toLocal8Bit().toStdString();
 
-		QVector<attrib> attribList;
-		QStringList featureFieldList;
-		osgEarth::Symbology::Style style;
+    QVector<attrib>             attribList;
+    QStringList                 featureFieldList;
+    osgEarth::Symbology::Style  style;
 
 		getFeatureAttribute(fileName, attribList, featureFieldList, &style);
 
-		WFSFeatureOptions opt;//http://120.26.203.95:8080/geoserver/sl-pipes/ows
-		opt.url() = nodeName;
+    WFSFeatureOptions  opt;// http://120.26.203.95:8080/geoserver/sl-pipes/ows
+    opt.url()          = nodeName;
 		opt.outputFormat() = "GML";
-		opt.typeName() = "sl-pipes:DAOL";
+    opt.typeName()     = "sl-pipes:DAOL";
 
-		FeatureGeomModelOptions geomOptions;
+    FeatureGeomModelOptions  geomOptions;
 		geomOptions.featureOptions() = opt;
-		const optional< Config > con = opt.getConfig();
+    const optional<Config>  con = opt.getConfig();
 		geomOptions.styles() = new StyleSheet();
 		geomOptions.styles()->addStyle(style);
 		geomOptions.enableLighting() = false;
-		auto layer = new ModelLayer(ModelLayerOptions(nodeName, geomOptions));
+    auto  layer = new ModelLayer(ModelLayerOptions(nodeName, geomOptions));
 
 		addLayerToMap(fileName, layer);
 	}
 }
 
-void AddOGCData::addImage()
+void  AddOGCData::addImage()
 {
-	QString fileName = QInputDialog::getText(dynamic_cast<QWidget*>(parent()), tr("Please enter file location"), "");
+  QString  fileName = QInputDialog::getText(dynamic_cast<QWidget *>(parent()), tr("Please enter file location"), "");
+
 	if (!fileName.isEmpty())
 	{
-		auto nodeName = fileName.toLocal8Bit().toStdString();
-		osgEarth::GeoExtent* extent = NULL;
+    auto                 nodeName = fileName.toLocal8Bit().toStdString();
+    osgEarth::GeoExtent *extent   = NULL;
 
-		auto attribute = getWMSInfo(nodeName, extent);
-		QStringList layerNames = attribute.back().second.split(',');
-		MultiChooseDlg chooseDlg((QWidget*)parent(), layerNames);
+    auto            attribute  = getWMSInfo(nodeName, extent);
+    QStringList     layerNames = attribute.back().second.split(',');
+    MultiChooseDlg  chooseDlg((QWidget *)parent(), layerNames);
 		chooseDlg.exec();
-		QStringList layersToShow = chooseDlg.getCheckedItems();
-
-		WMSOptions opt;
+    QStringList  layersToShow = chooseDlg.getCheckedItems();
+    WMSOptions   opt;
 		opt.url() = nodeName;
 
-		opt.layers() = layersToShow.join(',').toLocal8Bit().toStdString();
+    opt.layers()      = layersToShow.join(',').toLocal8Bit().toStdString();
 		opt.transparent() = true;
 
 		opt.format() = "png";
 
-		auto layer = new ImageLayer(ImageLayerOptions(nodeName, opt));
+    auto  layer = new ImageLayer(ImageLayerOptions(nodeName, opt));
 
 		addLayerToMap(layer, TERRAIN_LAYER, fileName, attribute, extent);
 	}

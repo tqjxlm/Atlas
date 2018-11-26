@@ -7,18 +7,21 @@
 #include <QObject>
 #include <osgGA/GUIEventHandler>
 
-namespace osgEarth {
-	class MapNode;
-	class Map;
-	class SpatialReference;
+namespace osgEarth
+{
+class MapNode;
+class Map;
+class SpatialReference;
 }
 
-namespace osgSim {
-	class OverlayNode;
+namespace osgSim
+{
+class OverlayNode;
 }
 
-namespace osgViewer {
-	class View;
+namespace osgViewer
+{
+class View;
 }
 
 class DataManager;
@@ -26,82 +29,85 @@ class SettingsManager;
 class ViewerWidget;
 
 /** MousePicker is the public parent of all interactions that happened
-  * in the osg scene, eg. various plugins.
-  *
-  * It provides the coordinate and other information about the point under
-  * the current mouse arrow, and ensures that this information is calculated
-  * only once in an event frame.
-  *
-  * It provides interfaces for various event handlers, including mouse and
-  * keyboard events.
-  *
-  * It also keeps records of some global nodes, and maintains the
-  * connection with the main program, ie. Atlas class, so that any plugins
-  * can inherit and get easy access.
-  */
-class MOUSEPICKER_EXPORT MousePicker : public QObject, public osgGA::GUIEventHandler
+ * in the osg scene, eg. various plugins.
+ *
+ * It provides the coordinate and other information about the point under
+ * the current mouse arrow, and ensures that this information is calculated
+ * only once in an event frame.
+ *
+ * It provides interfaces for various event handlers, including mouse and
+ * keyboard events.
+ *
+ * It also keeps records of some global nodes, and maintains the
+ * connection with the main program, ie. Atlas class, so that any plugins
+ * can inherit and get easy access.
+ */
+class MOUSEPICKER_EXPORT  MousePicker: public QObject, public osgGA::GUIEventHandler
 {
 	Q_OBJECT
 
 public:
 	MousePicker();
+
 	virtual ~MousePicker();
 
 	// Connect action with the main program as well as the associated QAction
-	void registerData(QWidget* mainWindow, DataManager* dataManager, ViewerWidget* mainViewer, osg::Group* root, const osgEarth::SpatialReference* globalSRS);
-	void registerSetting(SettingsManager* settingsMenager);
+  void          registerData(QWidget *mainWindow, DataManager *dataManager, ViewerWidget *mainViewer, osg::Group *root,
+                             const osgEarth::SpatialReference *globalSRS);
+
+  void          registerSetting(SettingsManager *settingsMenager);
 
 	// Return true if the point has valid OSGEarth coordinate
-	bool pointValid();
+  bool          pointValid();
 
 	// Default operation for GUI Event Handler
-	virtual void defaultOperation(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
+  virtual void  defaultOperation(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa);
 
 protected:
 	// Public main entrance for GUIEventHandler
-	virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
+  virtual bool  handle(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa);
 
 private:
-    // Intersect with the scene and update coord to main Ui
-	virtual void pick(osgViewer::View* view, const osgGA::GUIEventAdapter& ea);
+  // Intersect with the scene and update coord to main Ui
+  virtual void  pick(osgViewer::View *view, const osgGA::GUIEventAdapter &ea);
 
-    // Intersect with the scene and update info about the intersected point
-	virtual void getPos(osgViewer::View* view, const osgGA::GUIEventAdapter& ea);
+  // Intersect with the scene and update info about the intersected point
+  virtual void  getPos(osgViewer::View *view, const osgGA::GUIEventAdapter &ea);
 
 signals:
 	// Signals to update coordinates in the status bar
-	void updateText1(QString);
-	void updateText2(QString);
-	void updateText3(QString);
+  void  updateText1(QString);
+  void  updateText2(QString);
+  void  updateText3(QString);
 
 	// Signal to update mouse type
-	void changeMouseType(unsigned type);
+  void  changeMouseType(unsigned type);
 
 protected:
-	bool _activated;
+  bool  _activated;
 
 	// Infomation of the intersected point
-	static osg::Vec3 _currentLocalPos;
-	static osg::Vec3 _currentWorldPos;
-	static osgUtil::LineSegmentIntersector::Intersections _intersections;
+  static osg::Vec3                                       _currentLocalPos;
+  static osg::Vec3                                       _currentWorldPos;
+  static osgUtil::LineSegmentIntersector::Intersections  _intersections;
 
 	// Global nodes defined and initialized in main program
-	static osg::ref_ptr<osg::Group> _root;
-    static osg::ref_ptr<osgSim::OverlayNode> _overlayNode;
-    static osg::ref_ptr<osg::PositionAttitudeTransform> _subgraph;
-	static osg::ref_ptr<osg::PositionAttitudeTransform> _dataRoot;
-    static osg::ref_ptr<osg::PositionAttitudeTransform> _drawRoot;
-    static osg::ref_ptr<osgEarth::MapNode> _mapNode[MAX_SUBVIEW];
-    static osg::ref_ptr<osgEarth::Map> _mainMap[MAX_SUBVIEW];
+  static osg::ref_ptr<osg::Group>                      _root;
+  static osg::ref_ptr<osgSim::OverlayNode>             _overlayNode;
+  static osg::ref_ptr<osg::PositionAttitudeTransform>  _subgraph;
+  static osg::ref_ptr<osg::PositionAttitudeTransform>  _dataRoot;
+  static osg::ref_ptr<osg::PositionAttitudeTransform>  _drawRoot;
+  static osg::ref_ptr<osgEarth::MapNode>               _mapNode[MAX_SUBVIEW];
+  static osg::ref_ptr<osgEarth::Map>                   _mainMap[MAX_SUBVIEW];
 
 	// Access to other components of this program
-	static DataManager* _dataManager;
-	static SettingsManager* _settingsManager;
-	static ViewerWidget* _mainViewer;
-	static QWidget* _mainWindow;
-	static osg::ref_ptr<const osgEarth::SpatialReference> _globalSRS;
-	static const char* _globalWKT;
+  static DataManager                                    *_dataManager;
+  static SettingsManager                                *_settingsManager;
+  static ViewerWidget                                   *_mainViewer;
+  static QWidget                                        *_mainWindow;
+  static osg::ref_ptr<const osgEarth::SpatialReference>  _globalSRS;
+  static const char                                     *_globalWKT;
 
 private:
-	static bool _isValid;
+  static bool  _isValid;
 };

@@ -11,25 +11,24 @@
 #include <QEvent>
 #include <QMenuBar>
 #include <QLabel>
+#include <algorithm>
 
 #include "ui_AtlasMainWindow.h"
 #include "NXDockWidget.h"
 #include "NXDockWidgetTabBar.h"
 #include "NXDockWidgetTabButton.h"
 
-AtlasMainWindow::AtlasMainWindow(QWidget *parent, Qt::WindowFlags flags)
-	: QMainWindow(parent, flags)
-	, _dockWidget(nullptr)
+AtlasMainWindow::AtlasMainWindow(QWidget *parent, Qt::WindowFlags flags):
+  QMainWindow(parent, flags),
+  _dockWidget(nullptr)
 {
-
 }
 
 AtlasMainWindow::~AtlasMainWindow()
 {
-
 }
 
-void AtlasMainWindow::setupUi()
+void  AtlasMainWindow::setupUi()
 {
 	_ui = new Ui::AtlasMainWindowClass;
 	_ui->setupUi(this);
@@ -40,15 +39,15 @@ void AtlasMainWindow::setupUi()
 	initDockWidgets();
 }
 
-void AtlasMainWindow::loadingDone()
+void  AtlasMainWindow::loadingDone()
 {
 	_ui->statusBar->removeWidget(_pProgressBar);
-	//_mousePicker->updateDrawOffset();
+  // _mousePicker->updateDrawOffset();
 	delete _pProgressBar;
 	_pProgressBar = NULL;
 }
 
-void AtlasMainWindow::loadingProgress(int percent)
+void  AtlasMainWindow::loadingProgress(int percent)
 {
 	if (_pProgressBar == NULL)
 	{
@@ -66,7 +65,7 @@ void AtlasMainWindow::loadingProgress(int percent)
 	}
 }
 
-void AtlasMainWindow::initDockWidgets()
+void  AtlasMainWindow::initDockWidgets()
 {
 	createDockWidgetBar(Qt::LeftDockWidgetArea);
 	createDockWidgetBar(Qt::RightDockWidgetArea);
@@ -75,9 +74,9 @@ void AtlasMainWindow::initDockWidgets()
 
 	// Control panel
 	{
-		NXDockWidget* controlPanel = new NXDockWidget(tr("Control Panel"), this);
+    NXDockWidget *controlPanel = new NXDockWidget(tr("Control Panel"), this);
 		controlPanel->setObjectName(QStringLiteral("controlPanel"));
-		QSizePolicy sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Minimum);
+    QSizePolicy  sizePolicy1(QSizePolicy::Preferred, QSizePolicy::Minimum);
 		sizePolicy1.setHorizontalStretch(0);
 		sizePolicy1.setVerticalStretch(0);
 		sizePolicy1.setHeightForWidth(controlPanel->sizePolicy().hasHeightForWidth());
@@ -86,20 +85,20 @@ void AtlasMainWindow::initDockWidgets()
 		controlPanel->setMaximumSize(QSize(524287, 100));
 		controlPanel->setFloating(false);
 		controlPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-		QWidget* dockWidgetContent = new QWidget();
+    QWidget *dockWidgetContent = new QWidget();
 		dockWidgetContent->setObjectName(QStringLiteral("controlPanelContent"));
 		sizePolicy1.setHeightForWidth(dockWidgetContent->sizePolicy().hasHeightForWidth());
 		dockWidgetContent->setSizePolicy(sizePolicy1);
 		dockWidgetContent->setMaximumSize(QSize(16777215, 16777215));
-		QVBoxLayout* verticalLayout = new QVBoxLayout(dockWidgetContent);
+    QVBoxLayout *verticalLayout = new QVBoxLayout(dockWidgetContent);
 		verticalLayout->setSpacing(6);
 		verticalLayout->setContentsMargins(11, 11, 11, 11);
 		verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
 		verticalLayout->setSizeConstraint(QLayout::SetDefaultConstraint);
 		verticalLayout->setContentsMargins(0, 0, 0, 0);
-		QTabWidget* tabWidget = new QTabWidget(dockWidgetContent);
+    QTabWidget *tabWidget = new QTabWidget(dockWidgetContent);
 		tabWidget->setObjectName(QStringLiteral("tabWidget"));
-		QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSizePolicy  sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Minimum);
 		sizePolicy2.setHorizontalStretch(0);
 		sizePolicy2.setVerticalStretch(0);
 		sizePolicy2.setHeightForWidth(tabWidget->sizePolicy().hasHeightForWidth());
@@ -114,26 +113,26 @@ void AtlasMainWindow::initDockWidgets()
 	}
 
 	{
-		NXDockWidget* attributePanel = new NXDockWidget(tr("Attributes"), this);
+    NXDockWidget *attributePanel = new NXDockWidget(tr("Attributes"), this);
 		attributePanel->setObjectName(QStringLiteral("attributePanel"));
-		QSizePolicy sizePolicy3(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    QSizePolicy  sizePolicy3(QSizePolicy::Preferred, QSizePolicy::Expanding);
 		sizePolicy3.setHorizontalStretch(0);
 		sizePolicy3.setVerticalStretch(0);
 		sizePolicy3.setHeightForWidth(attributePanel->sizePolicy().hasHeightForWidth());
 		attributePanel->setSizePolicy(sizePolicy3);
 		attributePanel->setMinimumSize(QSize(100, 0));
 		attributePanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-		QWidget* tableDockWidgetContents = new QWidget();
+    QWidget *tableDockWidgetContents = new QWidget();
 		tableDockWidgetContents->setObjectName(QStringLiteral("tableDockWidgetContents"));
 		sizePolicy3.setHeightForWidth(tableDockWidgetContents->sizePolicy().hasHeightForWidth());
 		tableDockWidgetContents->setSizePolicy(sizePolicy3);
-		QVBoxLayout* verticalLayout_2 = new QVBoxLayout(tableDockWidgetContents);
+    QVBoxLayout *verticalLayout_2 = new QVBoxLayout(tableDockWidgetContents);
 		verticalLayout_2->setSpacing(6);
 		verticalLayout_2->setContentsMargins(11, 11, 11, 11);
 		verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
 		verticalLayout_2->setSizeConstraint(QLayout::SetMaximumSize);
 		verticalLayout_2->setContentsMargins(0, 0, 0, 0);
-		QTableWidget* attributeTable = new QTableWidget(tableDockWidgetContents);
+    QTableWidget *attributeTable = new QTableWidget(tableDockWidgetContents);
 		attributeTable->setObjectName(QStringLiteral("attributeTable"));
 		attributeTable->setEditTriggers(QAbstractItemView::AnyKeyPressed | QAbstractItemView::EditKeyPressed | QAbstractItemView::SelectedClicked);
 		attributeTable->setAlternatingRowColors(false);
@@ -150,17 +149,17 @@ void AtlasMainWindow::initDockWidgets()
 	}
 }
 
-void AtlasMainWindow::initStatusBar()
+void  AtlasMainWindow::initStatusBar()
 {
-	QSizePolicy siePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  QSizePolicy  siePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
 	_labelLocalCoord = new QLabel();
 	_labelWorldCoord = new QLabel();
-	_labelGeoCoord = new QLabel();
+  _labelGeoCoord   = new QLabel();
 
 	_labelLocalCoord->setSizePolicy(siePolicy);
 	_labelWorldCoord->setSizePolicy(siePolicy);
 	_labelGeoCoord->setSizePolicy(siePolicy);
-
 
 	_labelLocalCoord->setFixedSize(300, 20);
 	_labelWorldCoord->setFixedSize(300, 20);
@@ -171,10 +170,10 @@ void AtlasMainWindow::initStatusBar()
 	_ui->statusBar->addWidget(_labelGeoCoord);
 }
 
-void AtlasMainWindow::initUiStyles()
+void  AtlasMainWindow::initUiStyles()
 {
 	// Tool bars (main entrance for all plugins)
-	QVector<QToolBar*> toolBars = {
+  QVector<QToolBar *>  toolBars = {
 		_ui->fileToolBar,
 		_ui->drawToolBar,
 		_ui->dataToolBar,
@@ -184,33 +183,43 @@ void AtlasMainWindow::initUiStyles()
 		_ui->editToolBar
 	};
 
-	for each (QToolBar* toolBar in toolBars)
+  for (QToolBar *toolBar : toolBars)
 	{
 		// Set init style
 		if (toolBar->orientation() == Qt::Vertical)
-			toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
-		else
-			toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-		toolBar->setIconSize(QSize(30, 30));
+    {
+      toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    }
+    else
+    {
+      toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    }
 
-		for each (QAction* action in toolBar->actions())
+    toolBar->setIconSize(QSize(30, 30));
+
+    for (QAction *action : toolBar->actions())
 		{
 			action->setStatusTip(action->toolTip());
 		}
 
-		for each (QWidget* widget in toolBar->children())
+    for (auto *widget : toolBar->children())
 		{
-			QToolButton* button = dynamic_cast<QToolButton*>(widget);
+      QToolButton *button = dynamic_cast<QToolButton *>(widget);
+
 			if (button)
 			{
 				if (toolBar->orientation() == Qt::Vertical)
-					button->setToolButtonStyle(Qt::ToolButtonIconOnly);
-				else
-					button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        {
+          button->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        }
+        else
+        {
+          button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        }
 
 				button->setStatusTip(button->toolTip());
 
-				for each (QAction* action in button->actions())
+        for (QAction *action : button->actions())
 				{
 					action->setStatusTip(action->toolTip());
 				}
@@ -223,29 +232,40 @@ void AtlasMainWindow::initUiStyles()
 		}
 
 		// When a tool bar is dragged and replaced, change its style accordingly
-		connect(toolBar, &QToolBar::orientationChanged, [toolBar](Qt::Orientation orientation) {
+    connect(toolBar, &QToolBar::orientationChanged, [toolBar](Qt::Orientation orientation)
+    {
 			if (orientation == Qt::Vertical)
-				toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+      {
+        toolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+      }
 			else
-				toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+      {
+        toolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+      }
 
-			for each (QWidget* widget in toolBar->children())
+      for (auto *widget : toolBar->children())
 			{
-				QToolButton* button = dynamic_cast<QToolButton*>(widget);
-				if (button)
-				{
-					if (orientation == Qt::Vertical)
-						button->setToolButtonStyle(Qt::ToolButtonIconOnly);
-					else
-						button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        QToolButton *button = dynamic_cast<QToolButton *>(widget);
+
+        if (button)
+        {
+          if (orientation == Qt::Vertical)
+          {
+            button->setToolButtonStyle(Qt::ToolButtonIconOnly);
+          }
+          else
+          {
+            button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+          }
 				}
 			}
 		});
 	}
 
-	for each (auto child in children())
+  for (auto child : children())
 	{
-		NXDockWidget* dock = dynamic_cast<NXDockWidget*>(child);
+    NXDockWidget *dock = dynamic_cast<NXDockWidget *>(child);
+
 		if (dock)
 		{
 			dockWidgetUnpinned(dock);
@@ -254,47 +274,62 @@ void AtlasMainWindow::initUiStyles()
 	}
 }
 
-static Qt::ToolBarArea dockAreaToToolBarArea(Qt::DockWidgetArea area)
+static Qt::ToolBarArea  dockAreaToToolBarArea(Qt::DockWidgetArea area)
 {
 	switch (area)
 	{
-	case Qt::LeftDockWidgetArea: return Qt::LeftToolBarArea;
-	case Qt::RightDockWidgetArea: return Qt::RightToolBarArea;
-	case Qt::TopDockWidgetArea: return Qt::TopToolBarArea;
-	case Qt::BottomDockWidgetArea: return Qt::BottomToolBarArea;
+  case Qt::LeftDockWidgetArea:
+
+    return Qt::LeftToolBarArea;
+  case Qt::RightDockWidgetArea:
+
+    return Qt::RightToolBarArea;
+  case Qt::TopDockWidgetArea:
+
+    return Qt::TopToolBarArea;
+  case Qt::BottomDockWidgetArea:
+
+    return Qt::BottomToolBarArea;
 	default:
+
 		return Qt::ToolBarArea(0);
 	}
 }
 
-void AtlasMainWindow::createDockWidgetBar(Qt::DockWidgetArea area)
+void  AtlasMainWindow::createDockWidgetBar(Qt::DockWidgetArea area)
 {
-	if (_dockWidgetBar.find(area) != _dockWidgetBar.end()) {
+  if (_dockWidgetBar.find(area) != _dockWidgetBar.end())
+  {
 		return;
 	}
 
-	NXDockWidgetTabBar* dockWidgetBar = new NXDockWidgetTabBar(area);
+  NXDockWidgetTabBar *dockWidgetBar = new NXDockWidgetTabBar(area);
 	_dockWidgetBar[area] = dockWidgetBar;
 	connect(dockWidgetBar, &NXDockWidgetTabBar::signal_dockWidgetButton_clicked, this, &AtlasMainWindow::showDockWidget);
 
 	addToolBar(dockAreaToToolBarArea(area), dockWidgetBar);
 }
 
-void AtlasMainWindow::dockWidgetUnpinned(NXDockWidget* dockWidget)
+void  AtlasMainWindow::dockWidgetUnpinned(NXDockWidget *dockWidget)
 {
 	if (dockWidget == nullptr)
-		return;
+  {
+    return;
+  }
 
-	NXDockWidgetTabBar* dockWidgetBar = getDockWidgetBar(dockWidget->getArea());
-	if (dockWidgetBar == nullptr) 
-		return;
+  NXDockWidgetTabBar *dockWidgetBar = getDockWidgetBar(dockWidget->getArea());
 
-	QList<QDockWidget*> dockWidgetList = tabifiedDockWidgets(dockWidget);
+  if (dockWidgetBar == nullptr)
+  {
+		return;
+  }
+
+  QList<QDockWidget *>  dockWidgetList = tabifiedDockWidgets(dockWidget);
 	dockWidgetList.push_back(dockWidget);
 
-	for each (QDockWidget* qDockWidget in dockWidgetList)
+  for (QDockWidget *qDockWidget : dockWidgetList)
 	{
-		NXDockWidget* dockWidget = static_cast<NXDockWidget*>(qDockWidget);
+    NXDockWidget *dockWidget = static_cast<NXDockWidget *>(qDockWidget);
 
 		dockWidget->setState(NXDockWidget::DockWidgetState::Hidden);
 
@@ -315,30 +350,37 @@ void AtlasMainWindow::dockWidgetUnpinned(NXDockWidget* dockWidget)
 	}
 }
 
-void AtlasMainWindow::dockWidgetPinned(NXDockWidget* dockWidget)
+void  AtlasMainWindow::dockWidgetPinned(NXDockWidget *dockWidget)
 {
-	if (dockWidget == nullptr) 
+  if (dockWidget == nullptr)
+  {
 		return;
+  }
 
-	NXDockWidgetTabBar* dockWidgetBar = getDockWidgetBar(dockWidget->getArea());
-	if (dockWidgetBar == nullptr) 
+  NXDockWidgetTabBar *dockWidgetBar = getDockWidgetBar(dockWidget->getArea());
+
+  if (dockWidgetBar == nullptr)
+  {
 		return;
+  }
 
 	_dockWidget = nullptr;
 
-	QList<NXDockWidget*> dockWidgetList = dockWidget->getTabifiedDocks();
+  QList<NXDockWidget *>  dockWidgetList = dockWidget->getTabifiedDocks();
 	dockWidgetList.push_back(dockWidget);
 
-	NXDockWidget* prevDockWidget = nullptr;
+  NXDockWidget *prevDockWidget = nullptr;
 
-	for each (NXDockWidget* dockWidget in dockWidgetList)
+  for (NXDockWidget *dockWidget : dockWidgetList)
 	{
 		if (dockWidgetBar->removeDockWidget(dockWidget))
 		{
-			if (prevDockWidget == nullptr) {
+      if (prevDockWidget == nullptr)
+      {
 				QMainWindow::addDockWidget(dockWidget->getArea(), dockWidget);
 			}
-			else {
+      else
+      {
 				tabifyDockWidget(prevDockWidget, dockWidget);
 			}
 
@@ -352,18 +394,20 @@ void AtlasMainWindow::dockWidgetPinned(NXDockWidget* dockWidget)
 
 	dockWidget->raise();
 
-	if ((dockWidget->getArea() == Qt::LeftDockWidgetArea) &&
-		dockWidgetBar->isHidden())
+  if ((dockWidget->getArea() == Qt::LeftDockWidgetArea)
+      && dockWidgetBar->isHidden())
 	{
 		getDockWidgetBar(Qt::TopDockWidgetArea)->removeSpacing();
 		getDockWidgetBar(Qt::BottomDockWidgetArea)->removeSpacing();
 	}
 }
 
-void AtlasMainWindow::showDockWidget(NXDockWidget* dockWidget)
+void  AtlasMainWindow::showDockWidget(NXDockWidget *dockWidget)
 {
-	if (dockWidget == nullptr) 
+  if (dockWidget == nullptr)
+  {
 		return;
+  }
 
 	if (dockWidget->isHidden())
 	{
@@ -392,7 +436,7 @@ void AtlasMainWindow::showDockWidget(NXDockWidget* dockWidget)
 	}
 }
 
-bool AtlasMainWindow::event(QEvent* event)
+bool  AtlasMainWindow::event(QEvent *event)
 {
 	if (event->type() == QEvent::Resize)
 	{
@@ -403,12 +447,15 @@ bool AtlasMainWindow::event(QEvent* event)
 	return QMainWindow::event(event);
 }
 
-void AtlasMainWindow::adjustDockWidget(NXDockWidget* dockWidget)
+void  AtlasMainWindow::adjustDockWidget(NXDockWidget *dockWidget)
 {
 	if (dockWidget == nullptr)
-		return;
+  {
+    return;
+  }
 
-	QRect rect = getDockWidgetsAreaRect();
+  QRect  rect = getDockWidgetsAreaRect();
+
 	switch (dockWidget->getArea())
 	{
 	case Qt::LeftDockWidgetArea:
@@ -426,27 +473,31 @@ void AtlasMainWindow::adjustDockWidget(NXDockWidget* dockWidget)
 	}
 }
 
-NXDockWidgetTabBar* AtlasMainWindow::getDockWidgetBar(Qt::DockWidgetArea area)
+NXDockWidgetTabBar * AtlasMainWindow::getDockWidgetBar(Qt::DockWidgetArea area)
 {
 	assert(_dockWidgetBar.find(area) != _dockWidgetBar.end());
 
-	auto it = _dockWidgetBar.find(area);
-	if (it != _dockWidgetBar.end()) {
+  auto  it = _dockWidgetBar.find(area);
+
+  if (it != _dockWidgetBar.end())
+  {
 		return *it;
 	}
 
 	return nullptr;
 }
 
-void AtlasMainWindow::addDockWidget(Qt::DockWidgetArea area, NXDockWidget* dockWidget)
+void  AtlasMainWindow::addDockWidget(Qt::DockWidgetArea area, NXDockWidget *dockWidget)
 {
 	addDockWidget(area, dockWidget, Qt::Vertical);
 }
 
-void AtlasMainWindow::addDockWidget(Qt::DockWidgetArea area, NXDockWidget* dockWidget, Qt::Orientation orientation)
+void  AtlasMainWindow::addDockWidget(Qt::DockWidgetArea area, NXDockWidget *dockWidget, Qt::Orientation orientation)
 {
 	if (dockWidget == nullptr)
-		return;
+  {
+    return;
+  }
 
 	connect(dockWidget, &NXDockWidget::signal_pinned, this, &AtlasMainWindow::dockWidgetPinned);
 	connect(dockWidget, &NXDockWidget::signal_unpinned, this, &AtlasMainWindow::dockWidgetUnpinned);
@@ -458,17 +509,22 @@ void AtlasMainWindow::addDockWidget(Qt::DockWidgetArea area, NXDockWidget* dockW
 	QMainWindow::addDockWidget(area, dockWidget, orientation);
 }
 
-void AtlasMainWindow::removeDockWidget(NXDockWidget* dockWidget)
+void  AtlasMainWindow::removeDockWidget(NXDockWidget *dockWidget)
 {
 	if (dockWidget == nullptr)
-		return;
+  {
+    return;
+  }
 
 	if (_dockWidgets.indexOf(dockWidget) < 0)
-		return;
+  {
+    return;
+  }
 
 	_dockWidgets.removeOne(dockWidget);
 
-	if (dockWidget->isMinimized()) {
+  if (dockWidget->isMinimized())
+  {
 		dockWidgetPinned(dockWidget);
 	}
 
@@ -477,30 +533,36 @@ void AtlasMainWindow::removeDockWidget(NXDockWidget* dockWidget)
 	dockWidget->setParent(nullptr);
 }
 
-void AtlasMainWindow::dockWidgetDocked(NXDockWidget* dockWidget)
+void  AtlasMainWindow::dockWidgetDocked(NXDockWidget *dockWidget)
 {
 	if (dockWidget == nullptr)
-		return;
+  {
+    return;
+  }
 }
 
-void AtlasMainWindow::dockWidgetUndocked(NXDockWidget* dockWidget)
+void  AtlasMainWindow::dockWidgetUndocked(NXDockWidget *dockWidget)
 {
 	hideDockWidget(_dockWidget);
 
-	NXDockWidgetTabBar* dockWidgetBar = getDockWidgetBar(dockWidget->getArea());
+  NXDockWidgetTabBar *dockWidgetBar = getDockWidgetBar(dockWidget->getArea());
+
 	if (dockWidgetBar == nullptr)
-		return;
+  {
+    return;
+  }
 
 	dockWidget->clearTabifiedDocks();
 
 	if (dockWidgetBar->removeDockWidget(dockWidget))
 	{
-		if (!dockWidget->isFloating()) {
+    if (!dockWidget->isFloating())
+    {
 			QMainWindow::addDockWidget(dockWidget->getArea(), dockWidget);
 		}
 
-		if ((dockWidget->getArea() == Qt::LeftDockWidgetArea) &&
-			dockWidgetBar->isHidden())
+    if ((dockWidget->getArea() == Qt::LeftDockWidgetArea)
+        && dockWidgetBar->isHidden())
 		{
 			getDockWidgetBar(Qt::TopDockWidgetArea)->removeSpacing();
 			getDockWidgetBar(Qt::BottomDockWidgetArea)->removeSpacing();
@@ -510,52 +572,64 @@ void AtlasMainWindow::dockWidgetUndocked(NXDockWidget* dockWidget)
 	}
 }
 
-QList<NXDockWidget*> AtlasMainWindow::getDockWidgetListAtArea(Qt::DockWidgetArea area)
+QList<NXDockWidget *>  AtlasMainWindow::getDockWidgetListAtArea(Qt::DockWidgetArea area)
 {
-	QList<NXDockWidget*> dockWidgetList;
-	for each (NXDockWidget* dockWidget in _dockWidgets)
+  QList<NXDockWidget *>  dockWidgetList;
+
+  for (NXDockWidget *dockWidget : _dockWidgets)
 	{
-		if (dockWidget->getArea() == area && (dockWidget->isDocked()))
+    if ((dockWidget->getArea() == area) && (dockWidget->isDocked()))
+    {
 			dockWidgetList.push_back(dockWidget);
-	}
+    }
+  }
 
 	return dockWidgetList;
 }
 
-QRect AtlasMainWindow::getDockWidgetsAreaRect()
+QRect  AtlasMainWindow::getDockWidgetsAreaRect()
 {
-	int left = centralWidget()->x();
-	QList<NXDockWidget*> leftAreaDockWidgets = getDockWidgetListAtArea(Qt::LeftDockWidgetArea);
-	for each (const NXDockWidget* dockWidget in leftAreaDockWidgets)
+  int  left = centralWidget()->x();
+
+  QList<NXDockWidget *>  leftAreaDockWidgets = getDockWidgetListAtArea(Qt::LeftDockWidgetArea);
+
+  for (const NXDockWidget *dockWidget : leftAreaDockWidgets)
 	{
-		if ((dockWidget->x() >= 0) && (dockWidget->width() > 0)) {
+    if ((dockWidget->x() >= 0) && (dockWidget->width() > 0))
+    {
 			left = std::min(left, dockWidget->x());
 		}
 	}
 
-	int top = centralWidget()->y();
-	QList<NXDockWidget*> topAreaDockWidgets = getDockWidgetListAtArea(Qt::TopDockWidgetArea);
-	for each (const NXDockWidget* dockWidget in topAreaDockWidgets)
+  int                    top                = centralWidget()->y();
+  QList<NXDockWidget *>  topAreaDockWidgets = getDockWidgetListAtArea(Qt::TopDockWidgetArea);
+
+  for (const NXDockWidget *dockWidget : topAreaDockWidgets)
 	{
-		if ((dockWidget->y() >= 0) && (dockWidget->height() > 0)) {
+    if ((dockWidget->y() >= 0) && (dockWidget->height() > 0))
+    {
 			top = std::min(top, dockWidget->y());
 		}
 	}
 
-	int right = centralWidget()->x() + centralWidget()->width();
-	QList<NXDockWidget*> rightAreaDockWidgets = getDockWidgetListAtArea(Qt::RightDockWidgetArea);
-	for each (const NXDockWidget* dockWidget in rightAreaDockWidgets)
+  int                    right                = centralWidget()->x() + centralWidget()->width();
+  QList<NXDockWidget *>  rightAreaDockWidgets = getDockWidgetListAtArea(Qt::RightDockWidgetArea);
+
+  for (const NXDockWidget *dockWidget : rightAreaDockWidgets)
 	{
-		if ((dockWidget->x() >= 0) && (dockWidget->width() > 0)) {
+    if ((dockWidget->x() >= 0) && (dockWidget->width() > 0))
+    {
 			right = std::max(right, dockWidget->x() + dockWidget->width());
 		}
 	}
 
-	int bottom = centralWidget()->y() + centralWidget()->height();
-	QList<NXDockWidget*> bottomAreaDockWidgets = getDockWidgetListAtArea(Qt::BottomDockWidgetArea);
-	for each (const NXDockWidget* dockWidget in bottomAreaDockWidgets)
+  int                    bottom                = centralWidget()->y() + centralWidget()->height();
+  QList<NXDockWidget *>  bottomAreaDockWidgets = getDockWidgetListAtArea(Qt::BottomDockWidgetArea);
+
+  for (const NXDockWidget *dockWidget : bottomAreaDockWidgets)
 	{
-		if ((dockWidget->y() >= 0) && (dockWidget->height() > 0)) {
+    if ((dockWidget->y() >= 0) && (dockWidget->height() > 0))
+    {
 			bottom = std::max(bottom, dockWidget->y() + dockWidget->height());
 		}
 	}
@@ -563,9 +637,10 @@ QRect AtlasMainWindow::getDockWidgetsAreaRect()
 	return QRect(left, top, right - left, bottom - top);
 }
 
-void AtlasMainWindow::hideDockWidget(NXDockWidget* dockWidget)
+void  AtlasMainWindow::hideDockWidget(NXDockWidget *dockWidget)
 {
-	if ((dockWidget == nullptr) || (dockWidget->isHidden())) {
+  if ((dockWidget == nullptr) || (dockWidget->isHidden()))
+  {
 		return;
 	}
 
@@ -574,19 +649,25 @@ void AtlasMainWindow::hideDockWidget(NXDockWidget* dockWidget)
 	dockWidget->hide();
 }
 
-void AtlasMainWindow::menuWindows_triggered(QAction* action)
+void  AtlasMainWindow::menuWindows_triggered(QAction *action)
 {
-	auto it = _dockWidgets.begin();
+  auto  it = _dockWidgets.begin();
+
 	for (; it != _dockWidgets.end(); it++)
 	{
 		if ((*it)->getMenuAction() == action)
-			break;
-	}
+    {
+      break;
+    }
+  }
 
 	if (it == _dockWidgets.end())
-		return;
+  {
+    return;
+  }
 
-	NXDockWidget* dockWidget = *it;
+  NXDockWidget *dockWidget = *it;
+
 	if (dockWidget->isHidden())
 	{
 		hideDockWidget(_dockWidget);
