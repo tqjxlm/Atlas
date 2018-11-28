@@ -406,15 +406,15 @@ void  PosterPrinter::frame(const osg::FrameStamp *fs, osg::Node *node)
         else
         {
           if (_currentRow < _tileRows - 1)
-          {
+					{
             _currentRow++;
             _currentColumn = 0;
-          }
+					}
           else
-					{
+          {
             _isRunning   = false;
             _isFinishing = true;
-					}
+          }
         }
       }
 

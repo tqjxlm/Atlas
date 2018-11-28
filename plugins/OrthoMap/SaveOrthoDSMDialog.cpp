@@ -3,7 +3,11 @@
 
 #include <osg/ComputeBoundsVisitor>
 #include <QFileDialog>
+#include <QThread>
+#include <iostream>
+#include <gdal/gdal.h>
 
+using namespace std;
 const double  modelZOffset   = 0.2;
 const double  captureZOffset = 100;
 
@@ -88,7 +92,7 @@ void  SaveOrthoDSMDialog::startCapturing()
 	timer = new QTimer;
 	timer->setInterval(1000);
 	connect(timer, SIGNAL(timeout()), _waitDialog, SLOT(updateTime()));
-	timerThread = new QThread();
+  timerThread = new QThread();
 	timer->moveToThread(timerThread);
 	connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
 	timerThread->start();

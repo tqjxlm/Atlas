@@ -70,12 +70,10 @@ void  PluginManager::loadPlugins()
 	// Parsing plugin dependencies
   foreach(QString fileName, pluginsDir.entryList(QDir::Files))
   {
-    if (fileName.split('.').back() != "so")
+    if ((fileName.split('.').back() == "so") || (fileName.split('.').back() == "dll"))
     {
-      continue;
+      parseDependency(fileName, pluginsDir);
     }
-
-		parseDependency(fileName, pluginsDir);
 	}
 
 	// Load plugins based on denpendency tree
