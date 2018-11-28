@@ -177,7 +177,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="resources\earth_files\base.earth">
+    <CustomBuild Include="resources\earth_files\geocentric.earth">
       <SubType>Designer</SubType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </Command>
@@ -252,6 +252,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Atlas.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\earth_files\projected.earth" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

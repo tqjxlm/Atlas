@@ -17,7 +17,6 @@
 
 #include <DataManager/DataManager.h>
 #include <SettingsManager/SettingsManager.h>
-#include <MapController/MapController.h>
 #include <ViewerWidget/ViewerWidget.h>
 #include <AtlasMainWindow/AtlasMainWindow.h>
 #include <AtlasMainWindow/NXDockWidget.h>
@@ -45,9 +44,6 @@ void Locator::setupUi(QToolBar * toolBar, QMenu * menu)
 
 	_action->setChecked(true);
 
-	MapController* manipu = dynamic_cast<MapController*>(_mainViewer->getMainView()->getCameraManipulator());
-	connect(this, SIGNAL(spinOn(bool)), manipu, SLOT(screenSaving(bool)));
-
 	setupQueryDock();
 }
 
@@ -61,12 +57,12 @@ bool Locator::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& 
 	switch (ea.getEventType())
 	{
 	case(osgGA::GUIEventAdapter::DOUBLECLICK):
-		if (ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
-			flyToPoint(_currentWorldPos, view);
-		return true;
-	case(osgGA::GUIEventAdapter::PUSH):
-	case(osgGA::GUIEventAdapter::KEYDOWN):
-		emit spinOn(false);
+        if (ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+        {
+            osgEarth::Viewpoint vp;
+            vp.focalPoint() = _currentGeoPos;
+            emit setViewPoint(vp);
+        }
 		return false;
 	default:
 		return false;
@@ -75,16 +71,9 @@ bool Locator::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& 
 
 void Locator::flyToPoint(osg::Vec3 target, osgViewer::View* view)
 {
-	if (!view)
-		view = _mainViewer->getMainView();
-
-	osg::ref_ptr<MapController> manip = dynamic_cast<MapController*>
-		(view->getCameraManipulator());
-
-	manip->flyToPoint(target, osg::Vec3(0.0f, 0.0f, 1.0f), 500.0f);
-
-	if (getOrAddPluginSettings("SpinOn", false).toBool())
-		emit spinOn(true);
+    osgEarth::Viewpoint vp;
+    vp.focalPoint() = _currentGeoPos;
+    emit setViewPoint(vp);
 }
 
 void Locator::flyToQueriedCoord()

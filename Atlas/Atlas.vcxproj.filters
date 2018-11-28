@@ -54,14 +54,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="resources\earth_files\base.earth">
-      <Filter>Earth Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="Atlas.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="AtlasSplashScreen.h">
       <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="resources\earth_files\geocentric.earth">
+      <Filter>Earth Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -73,5 +73,10 @@
     <ResourceCompile Include="Atlas.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\earth_files\projected.earth">
+      <Filter>Earth Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

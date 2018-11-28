@@ -1,10 +1,13 @@
-<map name="base" type="geocentric" version="2">
+<map name="base" type="projected">
 
     <options>
         <profile>spherical-mercator</profile>
-        <terrain driver="rex" morph_imagery="false"/>
+        <terrain morph_imagery="false"
+            lighting = "true"
+            blending = "true"
+            color = "#ffffff00"/>
 
-        <cache driver = "leveldb">
+        <cache driver = "filesystem">
             <path>../../cache</path>
             <max_size_mb>1000</max_size_mb>
         </cache>

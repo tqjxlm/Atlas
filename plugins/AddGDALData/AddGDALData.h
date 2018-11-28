@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <QtPlugin>
-#include <../EarthDataInterface/EarthDataInterface.h>
+#include <EarthDataInterface/EarthDataInterface.h>
 
 QT_BEGIN_NAMESPACE
 class QToolBar;

@@ -1,0 +1,20 @@
+<map name="base" type="geocentric">
+
+    <options>
+        <profile>spherical-mercator</profile>
+        <terrain morph_imagery="false"
+            lighting = "true"
+            blending = "true"
+            color = "#ffffff00"/>
+
+        <cache driver = "filesystem">
+            <path>../../cache</path>
+            <max_size_mb>1000</max_size_mb>
+        </cache>
+    </options>
+
+    <image driver = "gdal" name = "base-world" visible = "true">
+        <url>./world.tif</url>
+    </image>
+
+</map>
