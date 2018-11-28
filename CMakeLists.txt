@@ -174,4 +174,7 @@ file(REMOVE_RECURSE ${DIST_PLUGINS_PATH})
 file(GLOB resdata res/*)
 file(COPY ${resdata} DESTINATION ${DIST_RESOURCES_PATH})
 
+
+add_subdirectory(libs)
+
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
