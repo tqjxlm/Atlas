@@ -26,10 +26,6 @@ public:
 public slots:
 	void flyToQueriedCoord();
 
-signals:
-	// Spinning on the target point
-	void spinOn(bool);
-
 private:
 	void setupQueryDock();
 

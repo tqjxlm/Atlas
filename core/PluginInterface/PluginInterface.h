@@ -3,8 +3,9 @@
 #include <MousePicker/MousePicker.h>
 #include "../../NameSpace.h"
 
-#include <QtCore/QVariant>
-#include <QtCore/QMap>
+#include <QVariant>
+#include <QMap>
+#include <osgEarth/Viewpoint>
 
 QT_BEGIN_NAMESPACE
 class QToolBar;
@@ -199,6 +200,7 @@ signals:
 	void switchData(const QString&, bool);
 	void loadingProgress(int);
 	void loadingDone();
+    void setViewPoint(const osgEarth::Viewpoint&);
 
 public slots:
 	// Default function to toggle the plugin on or off

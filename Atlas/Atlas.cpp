@@ -9,6 +9,7 @@ using namespace std;
 #include <QLabel>
 #include <QMessageBox>
 #include <QDateTime>
+#include <QProcess>
 #include <QTreeWidgetItem>
 
 #include <osg/Notify>
@@ -24,6 +25,7 @@ using namespace std;
 #include <osgDB/FileUtils>
 #include <osgEarth/Map>
 #include <osgEarth/MapNode>
+#include <osgEarthUtil/EarthManipulator>
 
 #include <gdal_priv.h>
 
@@ -33,7 +35,7 @@ using namespace std;
 #include <SettingsManager/SettingsManager.h>
 #include <PluginManager/PluginManager.h>
 #include <MapController/MapController.h>
-#include "ui_AtlasMainWindow.h"
+#include <AtlasMainWindow/GeneratedFiles/ui_AtlasMainWindow.h>
 
 Atlas::Atlas(QWidget *parent, Qt::WindowFlags flags):
   AtlasMainWindow(parent, flags)
@@ -46,7 +48,7 @@ Atlas::Atlas(QWidget *parent, Qt::WindowFlags flags):
   CPLSetConfigOption("GDAL_DATA", ".\\resources\\GDAL_data");
 
   osg::DisplaySettings::instance()->setNumOfHttpDatabaseThreadsHint(4);
-  osg::DisplaySettings::instance()->setNumOfDatabaseThreadsHint(2);
+  osg::DisplaySettings::instance()->setNumOfDatabaseThreadsHint(4);
 }
 
 Atlas::~Atlas()
@@ -145,8 +147,21 @@ void  Atlas::initDataStructure()
 
 	// Init osgEarth node using the predefined .earth file
 	for (int i = 0; i < MAX_SUBVIEW; i++)
-	{
-    osg::Node *baseMap = osgDB::readNodeFile("resources/earth_files/base.earth");
+  {
+    QString mode = _settingsManager->getOrAddSetting("Base mode", "projected").toString();
+    QString baseMapPath;
+    if (mode == "projected")
+      baseMapPath = QStringLiteral("resources/earth_files/projected.earth");
+    else if (mode == "geocentric")
+      baseMapPath = QStringLiteral("resources/earth_files/geocentric.earth");
+    else
+    {
+      QMessageBox::warning(nullptr, "Warning", "Base map settings corrupted, reset to projected");
+      _settingsManager->setOrAddSetting("Base mode", "projected");
+      baseMapPath = QStringLiteral("resources/earth_files/projected.earth");
+    }
+
+    osg::Node* baseMap = osgDB::readNodeFile(baseMapPath.toStdString());
 		_mapNode[i] = osgEarth::MapNode::get(baseMap);
 		_mapNode[i]->setName(QString("Map%1").arg(i).toStdString());
 		_mapNode[i]->setNodeMask(SHOW_IN_WINDOW_1 << i);
@@ -181,26 +196,39 @@ void  Atlas::initDataStructure()
 
 void  Atlas::resetCamera()
 {
-  MapController *manipulator = _mainViewerWidget->getManipulator();
-
-  if (manipulator == NULL)
+  if (_mainMap[0]->isGeocentric())
   {
-    // Init a manipulator if not inited yet
-    manipulator = new MapController(_dataRoot);
-    _mainViewerWidget->getMainView()->setCameraManipulator(manipulator);
-    manipulator->setAutoComputeHomePosition(false);
-
-    manipulator->setCenterIndicator(_mainViewerWidget->createCameraIndicator());
+    osg::ref_ptr<osgEarth::Util::EarthManipulator> manipulator = dynamic_cast<osgEarth::Util::EarthManipulator *>(_mainViewerWidget->getMainView()->getCameraManipulator());
+    if (!manipulator.valid())
+    {
+      _mainViewerWidget->getMainView()->setCameraManipulator(new osgEarth::Util::EarthManipulator);
+    }
+    else
+    {
+      manipulator->home(0);
+    }
   }
+  else
+  {
+    MapController *manipulator = dynamic_cast<MapController *>(_mainViewerWidget->getMainView()->getCameraManipulator());
+    if (!manipulator)
+    {
+      // Init a manipulator if not inited yet
+      manipulator = new MapController(_dataRoot);
+      _mainViewerWidget->getMainView()->setCameraManipulator(manipulator);
+      manipulator->setAutoComputeHomePosition(false);
 
-	_mainViewerWidget->resetCamera(_mapNode[0]);
+      manipulator->setCenterIndicator(_mainViewerWidget->createCameraIndicator());
 
-  connect(_dataManager, SIGNAL(moveToNode(const osg::Node *,double)),
-          manipulator, SLOT(fitViewOnNode(const osg::Node *,double)),
-          Qt::UniqueConnection);
-  connect(_dataManager, SIGNAL(moveToBounding(const osg::BoundingSphere *,double)),
-          manipulator, SLOT(fitViewOnBounding(const osg::BoundingSphere *,double)),
-          Qt::UniqueConnection);
+      connect(_dataManager, SIGNAL(moveToNode(const osg::Node *, double)),
+              manipulator, SLOT(fitViewOnNode(const osg::Node *, double)),
+              Qt::UniqueConnection);
+      connect(_dataManager, SIGNAL(moveToBounding(const osg::BoundingSphere *, double)),
+              manipulator, SLOT(fitViewOnBounding(const osg::BoundingSphere *, double)),
+              Qt::UniqueConnection);
+    }
+    manipulator->fitViewOnNode(_mapNode[0]);
+  }
 }
 
 void  qtLogToFile(QtMsgType type, const QMessageLogContext &context, const QString &msg)

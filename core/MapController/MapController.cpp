@@ -109,12 +109,12 @@ void MapController::updateCamera(osg::Camera &camera)
 		_centerIndicator->setPosition(_center);
 }
 
-void MapController::enableAnimation(bool enabled)
+void MapController::toggleAnimation(bool enabled)
 {
 	_inAnimation = enabled;
 }
 
-void MapController::flyToPoint(osg::Vec3 targetPosition, osg::Vec3 targetNormal, float targetDistance)
+void MapController::flyToPoint(osg::Vec3 targetPosition, float targetDistance)
 {
 	// Set up target
 	_targetPosition = targetPosition;
@@ -124,7 +124,7 @@ void MapController::flyToPoint(osg::Vec3 targetPosition, osg::Vec3 targetNormal,
 	_speed = osg::Vec3();
 
 	// Set action flags
-	enableAnimation(true);
+	toggleAnimation(true);
 	_stepCount = 0;
 	_timeStamp = 0;
 	_isFlying = true;
@@ -193,6 +193,22 @@ void MapController::fitViewOnBounding(const osg::BoundingSphere* bs, double addH
 	osg::Vec3d eye, center, up;
 	getTransformation(eye, center, up);
 	setHomePosition(eye, center, up);
+}
+
+void MapController::setViewPoint(const osgEarth::Viewpoint & vp)
+{
+    if (!vp.isValid())
+        return;
+
+    double distance = vp.range().value().getValue();
+    if (vp.nodeIsSet())
+    {
+        fitViewOnNode(vp.getNode(), distance);
+    }
+    else
+    {
+        flyToPoint(vp.focalPoint().value().vec3d(), distance);
+    }
 }
 
 bool MapController::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
@@ -441,7 +457,7 @@ void MapController::screenSaversMovement()
 	setHeading(getHeading() + 0.002);
 }
 
-void MapController::screenSaving(bool on)
+void MapController::toggleScreenSaving(bool on)
 {
 	_inAnimation = on;
 	_isScreenSaving = on;

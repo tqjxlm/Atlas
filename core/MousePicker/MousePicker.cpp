@@ -15,13 +15,14 @@
 
 #include <DataManager/FindNode.hpp>
 
+osgEarth::GeoPoint MousePicker::_currentGeoPos;
 osg::Vec3d MousePicker::_currentLocalPos;
 osg::Vec3d MousePicker::_currentWorldPos;
 osgUtil::LineSegmentIntersector::Intersections MousePicker::_intersections;
-
-osg::ref_ptr<osgSim::OverlayNode> MousePicker::_overlayNode = NULL;
+osgUtil::LineSegmentIntersector::Intersection MousePicker::_nearestIntesection;
 
 osg::ref_ptr<osg::Group> MousePicker::_root = NULL;
+osg::ref_ptr<osgSim::OverlayNode> MousePicker::_overlayNode = NULL;
 osg::ref_ptr<osg::PositionAttitudeTransform> MousePicker::_subgraph = NULL;
 osg::ref_ptr<osg::PositionAttitudeTransform> MousePicker::_drawRoot = NULL;
 osg::ref_ptr<osg::PositionAttitudeTransform> MousePicker::_dataRoot = NULL;
@@ -32,16 +33,16 @@ DataManager* MousePicker::_dataManager = NULL;
 SettingsManager* MousePicker::_settingsManager = NULL;
 ViewerWidget* MousePicker::_mainViewer = NULL;
 QWidget* MousePicker::_mainWindow = NULL;
-const char* MousePicker::_globalWKT = NULL;
 
 bool MousePicker::_isValid = false;
 QLabel* MousePicker::_labelWorldCoord;
 QLabel* MousePicker::_labelGeoCoord;
 
 osg::ref_ptr<const osgEarth::SpatialReference> MousePicker::_globalSRS = NULL;
+const char* MousePicker::_globalWKT = NULL;
+
 
 static osg::ref_ptr<const osgEarth::SpatialReference> srs_wgs84 = osgEarth::SpatialReference::get("wgs84");
-
 static const double DBL_LMT = 0.0000001;
 
 MousePicker::MousePicker()
@@ -85,17 +86,16 @@ void MousePicker::pick(osgViewer::View* view, const osgGA::GUIEventAdapter& ea)
 	getPos(view, ea);
 	if (pointValid())
 	{
-        osgEarth::GeoPoint currentGeoPos;
-        currentGeoPos.fromWorld(_mapNode[0]->getMapSRS(), _currentWorldPos);
+        _currentGeoPos.fromWorld(_mapNode[0]->getMapSRS(), _currentWorldPos);
 
 		_labelWorldCoord->setText(tr("World Coordinate: [%1, %2, %3]")
 			.arg(_currentWorldPos.x(), 0, 'f', 2)
 			.arg(_currentWorldPos.y(), 0, 'f', 2)
 			.arg(_currentWorldPos.z(), 0, 'f', 2));
 		_labelGeoCoord->setText(tr("Geographic Coordinate: [%1, %2, %3]")
-			.arg(currentGeoPos.x(), 0, 'f', 2)
-			.arg(currentGeoPos.y(), 0, 'f', 2)
-			.arg(currentGeoPos.z(), 0, 'f', 2));
+			.arg(_currentGeoPos.x(), 0, 'f', 2)
+			.arg(_currentGeoPos.y(), 0, 'f', 2)
+			.arg(_currentGeoPos.z(), 0, 'f', 2));
 	}
 	else
 	{
@@ -118,11 +118,12 @@ void MousePicker::getPos(osgViewer::View* view,
 			{
 				if (parent == _overlayNode)
 				{
-					_currentLocalPos = intersection.getLocalIntersectPoint();
+          _nearestIntesection = intersection;
+          _currentLocalPos = _nearestIntesection.getLocalIntersectPoint();
 
-                    osg::Vec3d world;
-                    _mapNode[0]->getTerrain()->getWorldCoordsUnderMouse(view, ea.getX(), ea.getY(), world);
-                    _currentWorldPos = world;
+          osg::Vec3d world;
+          _mapNode[0]->getTerrain()->getWorldCoordsUnderMouse(view, ea.getX(), ea.getY(), world);
+          _currentWorldPos = world;
 
 					_isValid = true;
 					return;

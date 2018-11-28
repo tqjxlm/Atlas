@@ -15,8 +15,6 @@ namespace osg {
 	class PositionAttitudeTransform;
 }
 
-class MapController;
-
 #include <QWidget>
 #include <QTimer>
 #include <QMap>
@@ -41,12 +39,6 @@ public:
 
 	 // Get the main graphics widget of the viewer, by default the viewer at position (0, 0)
 	 osgQt::GraphicsWindowQt* getMainContext();
-
-	 // Get camera manipulator of the main view
-	 MapController* getManipulator();
-
-	 // Reset camera manipulator to the default position
-	 void resetCamera(osg::ref_ptr<osg::Node> centerNode);
 
 	// Add a widget to the viewer layout at specified position
 	void setWidgetInLayout(QWidget* widget, int row, int column, bool visible = true);
@@ -83,7 +75,6 @@ protected:
 	QWidget* _mainWidget;
 	QMap<osgViewer::View*, QWidget*> _widgets;
 	osgQt::GraphicsWindowQt* _mainContext;
-	osg::ref_ptr<MapController> _mainManipulator;
 	osgViewer::View* _mainView;
 	QTimer _timer;
 	QGridLayout* _grid;

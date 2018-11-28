@@ -9,6 +9,7 @@
 #include <osgGA/OrbitManipulator>
 #include <osgViewer/View>
 #include <osg/PositionAttitudeTransform>
+#include <osgEarth/Viewpoint>
 
 namespace osgViewer {
 	class View;
@@ -64,19 +65,21 @@ protected:
 
 public slots:
 	// Begin or stop predefined movement
-	void enableAnimation(bool enabled);
+	void toggleAnimation(bool enabled);
 
 	// Begin or stop screen saving movement
-	void screenSaving(bool on);
+	void toggleScreenSaving(bool on);
 
 	// Move to the given point with a predefined movement
-	void flyToPoint(osg::Vec3 targetPosition, osg::Vec3 targetNormal, float targetDistance = 500.0f);
+	void flyToPoint(osg::Vec3 targetPosition, float targetDistance = 500.0f);
 
 	// Fit view on node immediately
-	void fitViewOnNode(const osg::Node* scene, double addHeight);
+	void fitViewOnNode(const osg::Node* scene, double addHeight = 500.0f);
 
-	// Fit view on bouding immediately
+	// Fit view on bounding immediately
 	void fitViewOnBounding(const osg::BoundingSphere* bs, double addHeight);
+
+    void setViewPoint(const osgEarth::Viewpoint& vp);
 
 protected slots:
 	void screenSaversMovement();

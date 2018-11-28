@@ -6,6 +6,7 @@
 
 #include <QObject>
 #include <osgGA/GUIEventHandler>
+#include <osgEarth/GeoData>
 
 QT_BEGIN_NAMESPACE
 class QStatusBar;
@@ -88,11 +89,13 @@ protected:
   bool  _activated;
 
 	// Infomation of the intersected point
-  static osg::Vec3                                       _currentLocalPos;
-  static osg::Vec3                                       _currentWorldPos;
-  static osgUtil::LineSegmentIntersector::Intersections  _intersections;
+  static osgEarth::GeoPoint _currentGeoPos;
+  static osg::Vec3d _currentLocalPos;
+  static osg::Vec3d _currentWorldPos;
+  static osgUtil::LineSegmentIntersector::Intersections _intersections;
+  static osgUtil::LineSegmentIntersector::Intersection _nearestIntesection;
 
-	// Global nodes defined and initialized in main program
+  // Global nodes defined and initialized in main program
   static osg::ref_ptr<osg::Group>                      _root;
   static osg::ref_ptr<osgSim::OverlayNode>             _overlayNode;
   static osg::ref_ptr<osg::PositionAttitudeTransform>  _subgraph;

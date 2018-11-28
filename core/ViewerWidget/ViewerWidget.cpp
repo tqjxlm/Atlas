@@ -12,7 +12,6 @@
 #include <osgViewer/ViewerEventHandlers>
 #include <osgQt/GraphicsWindowQt>
 
-#include <MapController/MapController.h>
 #include <DataManager/DataManager.h>
 
 #include "Compass.h"
@@ -234,19 +233,6 @@ osg::ref_ptr<osg::Camera> ViewerWidget::createLegendHud(QString titleString, QVe
 	hudCamera->addChild(pGeode);
 
 	return hudCamera;
-}
-
-void ViewerWidget::resetCamera(osg::ref_ptr<osg::Node> centerNode)
-{
-	if (centerNode.valid())
-	{
-		(dynamic_cast<MapController*>(_mainView->getCameraManipulator()))->fitViewOnNode(centerNode, 0);
-	}
-}
-
-MapController * ViewerWidget::getManipulator()
-{
-	return dynamic_cast<MapController*>(_mainView->getCameraManipulator());
 }
 
 osg::ref_ptr<osg::PositionAttitudeTransform> ViewerWidget::createCameraIndicator()

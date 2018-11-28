@@ -26,6 +26,7 @@ public:
 	SettingsManager();
 	~SettingsManager();
 
+    void setOrAddSetting(const QString& key, const QVariant& value);
     QVariant getOrAddSetting(const QString& key, const QVariant& defaultValue);
 
     void setupUi(QMenu* menu);

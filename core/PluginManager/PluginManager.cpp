@@ -12,6 +12,7 @@
 #include <ViewerWidget/ViewerWidget.h>
 #include <PluginInterface/PluginInterface.h>
 #include <DataManager/DataManager.h>
+#include <MapController/MapController.h>
 
 struct PluginEntry
 {
@@ -47,6 +48,11 @@ void  PluginManager::registerPlugin(PluginInterface *plugin)
 
 	connect(plugin, SIGNAL(loadingProgress(int)), _dataManager, SIGNAL(loadingProgress(int)));
 	connect(plugin, SIGNAL(loadingDone()), _dataManager, SIGNAL(loadingDone()));
+
+    osg::ref_ptr<MapController> controller = 
+        dynamic_cast<MapController*>(_viewerWidget->getMainView()->getCameraManipulator());
+    if (controller.valid())
+        connect(plugin, &PluginInterface::setViewPoint, controller, &MapController::setViewPoint);
 
 	_loadedPlugins.push_back(plugin);
 }
