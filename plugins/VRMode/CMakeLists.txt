@@ -21,6 +21,7 @@ include_directories(
     ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS}
     ${Qt5OpenGL_INCLUDE_DIRS}
+    ${OPENVR_INCLUDE_DIRS}
     ../../libs
 )
 
@@ -45,5 +46,5 @@ set(${PROJECT_NAME}_JSONS
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_JSONS} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS})
 
 target_link_libraries(${PROJECT_NAME}
-
+  ${OPENVR_LIBRARY}
 )
