@@ -11,7 +11,7 @@ endif()
 set(DIST_PATH ${PROJECT_BINARY_DIR}/dist)
 set(DIST_PLUGINS_PATH ${DIST_PATH}/plugins)
 set(DIST_LIB_PATH ${DIST_PATH}/lib)
-set(DIST_RESOURCES_PATH ${DIST_PATH}/res)
+set(DIST_RESOURCES_PATH ${DIST_PATH}/resources)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INSTALL_PREFIX, "/usr")
@@ -172,7 +172,7 @@ endforeach()
 file(REMOVE_RECURSE ${DIST_PLUGINS_PATH})
 
 # Copying resources.
-file(GLOB resdata res/*)
+file(GLOB resdata resources/*)
 file(COPY ${resdata} DESTINATION ${DIST_RESOURCES_PATH})
 
 
