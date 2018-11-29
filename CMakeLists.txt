@@ -13,6 +13,7 @@ set(DIST_PLUGINS_PATH ${DIST_PATH}/plugins)
 set(DIST_LIB_PATH ${DIST_PATH}/lib)
 set(DIST_RESOURCES_PATH ${DIST_PATH}/resources)
 
+set(CMAKE_MODULE_PATH "${Atlas_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INSTALL_PREFIX, "/usr")
 set(CMAKE_AUTOMOC ON)
@@ -21,16 +22,18 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DIST_PATH})
 set(QT_MIN_VERSION 5.11.0)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Svg REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-find_package(Qt5Network REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Widgets Svg OpenGL Network Xml REQUIRED)
+find_package(OpenSceneGraph 3.4.0 REQUIRED osgViewer osgGA osgQt osgDB osgManipulator osgSim osgParticle osgText osgUtil)
+find_package(OsgEarth 2.9 REQUIRED osgEarthFeatures osgEarthUtil osgEarthSymbology osgEarthAnnotation)
+find_package(FriBiDi)
+find_package(GDAL)
 
 include_directories(
     ${PROJECT_BINARY_DIR}
-    /usr/include/gdal
+    ${OSG_INCLUDE_DIR}
+    ${GDAL_INCLUDE_DIR}
+    ${OSGEARTH_INCLUDE_DIRS}
+    ${OSGEARTH_INCLUDE_DIR}
     core
 )
 
@@ -118,25 +121,16 @@ target_link_libraries(${PROJECT_NAME}
   Qt5::Widgets
   Qt5::OpenGL
   Qt5::Network
+  Qt5::Xml
   -lpthread
-  -lgdal
-  -lOpenThreads
-  -losg
-  -losgViewer
-  -losgGA
-  -losgQt5
-  -losgDB
-  -losgManipulator
-  -losgSim
-  -losgParticle
-  -losgText
-  -losgUtil
-  -losgEarth
-  -losgEarthSymbology
-  -losgEarthFeatures
-  -losgEarthAnnotation
-  -losgEarthUtil
-  -lfribidi
+  ${OPENSCENEGRAPH_LIBRARIES}
+  ${GDAL_LIBRARY}
+  ${OSGEARTH_LIBRARY}
+  ${OSGEARTHANNOTATION_LIBRARY}
+  ${OSGEARTHFEATURES_LIBRARY}
+  ${OSGEARTHUTIL_LIBRARY}
+  ${OSGEARTHSYMBOLOGY_LIBRARY}
+  ${FRIBIDI_LIBRARY}
 )
 
 # Defining plugins.
