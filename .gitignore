@@ -408,6 +408,7 @@ CMakeLists.txt.user*
 
 # IDE
 .vs
+.vscode
 
 # generated directories
 **/cache/
@@ -418,3 +419,6 @@ Atlas/resources/Sky
 resources.rar
 thirdparty/
 thirdparty.rar
+
+# build
+build*/

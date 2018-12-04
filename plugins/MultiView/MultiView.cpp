@@ -14,11 +14,11 @@
 #include <ViewerWidget/ViewerWidget.h>
 #include <DataManager/DataManager.h>
 
-MultiView::MultiView()
-	: _subView(NULL)
-	, _subViewWidget(NULL)
+MultiView::MultiView():
+  _subView(NULL),
+  _subViewWidget(NULL)
 {
-	_pluginName = tr("Multi View");
+  _pluginName     = tr("Multi View");
 	_pluginCategory = "Effect";
 }
 
@@ -26,12 +26,12 @@ MultiView::~MultiView()
 {
 }
 
-void MultiView::setupUi(QToolBar * toolBar, QMenu * menu)
+void  MultiView::setupUi(QToolBar *toolBar, QMenu *menu)
 {
 	_action = new QAction(_mainWindow);
 	_action->setObjectName(QStringLiteral("compareAction"));
 	_action->setCheckable(true);
-	QIcon icon;
+  QIcon  icon;
 	icon.addFile(QStringLiteral("resources/icons/window.png"), QSize(), QIcon::Normal, QIcon::Off);
 	_action->setIcon(icon);
 	_action->setText(tr("Multi View"));
@@ -57,46 +57,48 @@ void MultiView::setupUi(QToolBar * toolBar, QMenu * menu)
 	connect(showInWindow2Action, SIGNAL(triggered()), this, SLOT(moveToWindow()));
 }
 
-void MultiView::loadContextMenu(QMenu* contextMenu, QTreeWidgetItem* selectedItem)
+void  MultiView::loadContextMenu(QMenu *contextMenu, QTreeWidgetItem *selectedItem)
 {
-	int mask = _dataManager->getMask(selectedItem->text(0));
+  int  mask = _dataManager->getMask(selectedItem->text(0));
+
 	showInWindow1Action->setChecked((mask & SHOW_IN_WINDOW_1) != 0x00000000);
 	showInWindow2Action->setChecked((mask & SHOW_IN_WINDOW_2) != 0x00000000);
 	contextMenu->addAction(showInWindow1Action);
 	contextMenu->addAction(showInWindow2Action);
 }
 
-void MultiView::toggle(bool checked)
+void  MultiView::toggle(bool checked)
 {
 	_mainViewer->stopRendering();
 
 	if (checked)
 	{
 #ifdef SINGLE_VIEW
+
 		if (!subCamera.valid())
 		{
 			subCamera = new osg::Camera;
 		}
 
-		osg::DisplaySettings* ds = osg::DisplaySettings::instance().get();
-		osg::ref_ptr<osg::GraphicsContext::Traits> traits = new osg::GraphicsContext::Traits;
+    osg::DisplaySettings                       *ds     = osg::DisplaySettings::instance().get();
+    osg::ref_ptr<osg::GraphicsContext::Traits>  traits = new osg::GraphicsContext::Traits;
 		traits->windowDecoration = false;
-		traits->x = 0;
-		traits->y = 0;
-		traits->width = 1280;
-		traits->height = 1024;
-		traits->doubleBuffer = true;
-		traits->alpha = ds->getMinimumNumAlphaBits();
-		traits->stencil = ds->getMinimumNumStencilBits();
-		traits->sampleBuffers = ds->getMultiSamples();
-		traits->samples = ds->getNumMultiSamples();
-		traits->sharedContext = _mainViewerWidget->getMainContext();
+    traits->x                = 0;
+    traits->y                = 0;
+    traits->width            = 1280;
+    traits->height           = 1024;
+    traits->doubleBuffer     = true;
+    traits->alpha            = ds->getMinimumNumAlphaBits();
+    traits->stencil          = ds->getMinimumNumStencilBits();
+    traits->sampleBuffers    = ds->getMultiSamples();
+    traits->samples          = ds->getNumMultiSamples();
+    traits->sharedContext    = _mainViewerWidget->getMainContext();
 
-		osg::ref_ptr<osgQt::GraphicsWindowQt> gw = new osgQt::GraphicsWindowQt(traits.get());
+    osg::ref_ptr<osgQt::GraphicsWindowQt>  gw = new osgQt::GraphicsWindowQt(traits.get());
 		subCamera->setGraphicsContext(gw);
 		subCamera->setViewport(new osg::Viewport(0, 0, traits->width, traits->height));
 
-		GLuint buffer = gw->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
+    GLuint  buffer = gw->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
 		subCamera->setReadBuffer(buffer);
 		subCamera->setDrawBuffer(buffer);
 		subCamera->setProjectionResizePolicy(osg::Camera::VERTICAL);
@@ -111,41 +113,46 @@ void MultiView::toggle(bool checked)
 		mainViewerWidget->addWidgetToLayout(subWidget, 0, 1);
 
 #else
+
 		if (!_subViewWidget)
-			initSubView();
-		_mainViewer->setWidgetInLayout(_subViewWidget, 0, 1);
+    {
+      initSubView();
+    }
+
+    _mainViewer->setWidgetInLayout(_subViewWidget, 0, 1);
 #endif
 	}
 	else
 	{
 #ifdef SINGLE_VIEW
 		mainViewerWidget->getMainView()->removeSlave(0);
-#else		
+#else
 		_subViewWidget->hide();
 #endif
 	}
+
 	_mainViewer->startRendering();
 }
 
-void MultiView::initSubView()
+void  MultiView::initSubView()
 {
 	_subViewWidget = _mainViewer->createViewWidget(_mainViewer->createGraphicsWindow(0, 0, 1280, 1024, "Window2", true), _root);
-	_subView = _mainViewer->getView(_mainViewer->getNumViews() - 1);
+  _subView       = _mainViewer->getView(_mainViewer->getNumViews() - 1);
 	_subView->getCamera()->setCullMask(SHOW_IN_WINDOW_2 | SHOW_IN_NO_WINDOW);
 
 	_subView->setCameraManipulator(_mainViewer->getMainView()->getCameraManipulator(), false);
 }
 
-void MultiView::moveToWindow()
+void  MultiView::moveToWindow()
 {
-	QList<QTreeWidgetItem *> itemList = _dataManager->getSelectedItems();
-	foreach(QTreeWidgetItem *item, itemList)
+  QList<QTreeWidgetItem *>  itemList = _dataManager->getSelectedItems();
+  foreach(QTreeWidgetItem * item, itemList)
 	{
-		QTreeWidgetItem* parent = item->parent();
+    QTreeWidgetItem *parent   = item->parent();
+    auto             nodeName = item->text(0);
+    int              mask     = (showInWindow1Action->isChecked() ? SHOW_IN_WINDOW_1 : 0)
+                                | (showInWindow2Action->isChecked() ? SHOW_IN_WINDOW_2 : 0);
 
-		QString& nodeName = item->text(0);
-		int mask = (showInWindow1Action->isChecked() ? SHOW_IN_WINDOW_1 : 0) |
-			(showInWindow2Action->isChecked() ? SHOW_IN_WINDOW_2 : 0);
 		_dataManager->setMask(nodeName, mask);
 	}
 }

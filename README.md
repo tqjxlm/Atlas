@@ -58,6 +58,15 @@ You are welcome to give comments on issues page, or just contact me via tqjxlm@g
 
 See __"To Do"__ card on [trello board](https://trello.com/b/Z7r1N9yJ).
 
+# On Linux 
+This Fork work on linux with cmake
+
+mkdir build
+cd build
+cmake-gui ../ #Select Plugins ...
+
+make
+
 ## Development
 
 See [build_guide.md](docs/build_guide.md), [plugin_guide.md](docs/plugin_guide.md) and [project structure](https://www.mindomo.com/mindmap/63290a5a387b4e1a85ad713953be0372).

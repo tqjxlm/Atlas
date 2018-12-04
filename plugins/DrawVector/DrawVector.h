@@ -11,16 +11,18 @@ QT_END_NAMESPACE
 class OGRPolygon;
 class OGRLineString;
 
-namespace osgText {
-	class Text;
+namespace osgText
+{
+class Text;
 }
 
-namespace osg {
-	class Geode;
-	class Geometry;
+namespace osg
+{
+class Geode;
+class Geometry;
 }
 
-class DrawVector : public PluginInterface
+class DrawVector: public PluginInterface
 {
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID "io.tqjxlm.Atlas.PluginInterface" FILE "DrawVector.json")
@@ -28,43 +30,51 @@ class DrawVector : public PluginInterface
 
 public:
 	DrawVector();
+
 	~DrawVector();
-	virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
 
-	void DrawVector::OpenVectorFile(const QString& path);
+  virtual void                 setupUi(QToolBar *toolBar, QMenu *menu) override;
 
-	public slots:
+  void                         OpenVectorFile(const QString &path);
 
-	void DrawVectorFromFile(QString filePath = "", QString nodeName = "ffg");
-
-protected:
-	osg::Vec3 MiddlePointOfPolygon(osg::ref_ptr<osg::Vec3Array> pointsArr, osg::Vec3 centerpoint);
-
-	osg::ref_ptr<osg::Geometry> createPolyGem(osg::ref_ptr<osg::Vec3Array> polygonArr);
-	osg::ref_ptr<osg::Geometry> createLineGem(osg::ref_ptr<osg::Vec3Array> polygonArr);
-
-	osg::ref_ptr<osgText::Text> DrawVector::createTextGeode(std::string& txt, osg::Vec3 position);
-	void createFeatureNoteText(QMap<int, QString> featurefieldmap, QMap<int, osg::Vec3> featuregeomMap, osg::ref_ptr<osg::Group> labelGroup);
-
-	osg::ref_ptr<osg::Geode> drawPolygon(OGRPolygon *poly, osg::Vec3 &centerpoint);
-	osg::ref_ptr<osg::Geometry> drawLineString(OGRLineString *linestring);
-
-	void convtGeoCoorToProCoor(osg::Vec3 &proPos, osg::Vec3 geoPos);
-
-	void styleSetting(QString name);
-	void lodSetting(double dis, osg::Group* vectorGroup, QString name);
+public slots:
+  void                         DrawVectorFromFile(QString filePath = "", QString nodeName = "ffg");
 
 protected:
-	QAction* _action;
-	osg::ref_ptr<osg::LOD> _vectorLod;
+  osg::Vec3                    MiddlePointOfPolygon(osg::ref_ptr<osg::Vec3Array> pointsArr, osg::Vec3 centerpoint);
 
-	osg::ref_ptr<osg::Group> _labelGroup;
+  osg::ref_ptr<osg::Geometry>  createPolyGem(osg::ref_ptr<osg::Vec3Array> polygonArr);
 
-	float _vecFontSize;
+  osg::ref_ptr<osg::Geometry>  createLineGem(osg::ref_ptr<osg::Vec3Array> polygonArr);
 
-	int _highestVisibleHeight;
+  osg::ref_ptr<osgText::Text>  createTextGeode(std::string &txt, osg::Vec3 position);
 
-	unsigned int _textCharactorMode;
+  void                         createFeatureNoteText(QMap<int, QString> featurefieldmap, QMap<int, osg::Vec3> featuregeomMap,
+                                                     osg::ref_ptr<osg::Group> labelGroup);
 
-	char* _origlSRS;
+  osg::ref_ptr<osg::Geode>     drawPolygon(OGRPolygon *poly, osg::Vec3 &centerpoint);
+
+  osg::ref_ptr<osg::Geometry>  drawLineString(OGRLineString *linestring);
+
+  void                         convtGeoCoorToProCoor(osg::Vec3 &proPos, osg::Vec3 geoPos);
+
+  void                         styleSetting(QString name);
+
+  void                         lodSetting(double dis, osg::Group *vectorGroup, QString name);
+
+protected:
+  QAction                *_action;
+  osg::ref_ptr<osg::LOD>  _vectorLod;
+
+  osg::ref_ptr<osg::Group>  _labelGroup;
+
+  float         _vecFontSize;
+  int           _highestVisibleHeight;
+  unsigned int  _textCharactorMode;
+  char         *_origlSRS;
+
+  osg::Group *_drawVectorRoot;
+  osg::Vec4   lineColor;
+  osg::Vec4   _textColor;
+  osg::Vec4   _pointColor;
 };
