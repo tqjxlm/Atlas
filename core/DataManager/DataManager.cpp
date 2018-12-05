@@ -312,13 +312,6 @@ void DataManager::registerDataRoots(osg::Group* root)
 	}
 }
 
-void DataManager::setCenterNode(osg::Node* node)
-{
-	emit moveToNode(node, 0);
-
-	emit loadingDone();
-}
-
 const osgEarth::GeoExtent* DataManager::getExtent(const QString& name)
 {
 	DataRecord* record = _nodeTree->getRecord(name);
@@ -408,7 +401,7 @@ void DataManager::doubleClickTreeSlot(QTreeWidgetItem* item, int column)
 		return;
 
 	// Fly to and center on the target node based on previously calculated bounding
-	if (record->extent())
+	if (record->extent() && record->extent()->isValid())
 	{
 		// When the record is an OSGEarth layer
 		double xmin, xmax, ymin, ymax;
@@ -429,7 +422,7 @@ void DataManager::doubleClickTreeSlot(QTreeWidgetItem* item, int column)
 
 		emit moveToBounding(&bs, 0);
 	}
-	else if (record->bounding())
+	else if (record->bounding() && record->bounding()->valid())
 	{
 		// When the record is a plain OSG node
 		QString str = item->text(column);
@@ -438,28 +431,11 @@ void DataManager::doubleClickTreeSlot(QTreeWidgetItem* item, int column)
 		else
 			emit moveToNode(record->node(), str.contains("info ") ? 1000 : 0);
 	}
+  else
+  {
+    osg::notify(osg::WARN) << "Failed to fit view: no valid bounding";
+  }
 
-}
-
-void DataManager::activateNode(QTreeWidgetItem* item, int column)
-{
-	QString nodeName = item->text(column);
-
-	DataRecord* record = _nodeTree->getRecord(nodeName);
-
-	osg::Node* activatedNode = record->node();
-
-	if (record->isLayer())
-		activatedNode = NULL;
-
-	//if (activatedNode != NULL)
-	//{
-	//	setActivatedNode(activatedNode);
-	//	QString groupName = nodeName.split("_")[0];
-	//	emit requestDrawStyle(groupName);
-
-	//	tabWidget->setCurrentIndex(0);
-	//}
 }
 
 void DataManager::showDataTreeContextMenu(const QPoint &pos)
@@ -691,7 +667,7 @@ void DataManager::showDataTreeContextMenu(const QPoint &pos)
 //}
 
 //osgEarth::ModelLayer* DataManager::changeLayerStyle(
-//	std::string path, QString gemtype, FileType addType, std::string iconPath, float layerHeight)
+//	std::string path, const QString& gemtype, FileType addType, std::string iconPath, float layerHeight)
 //{
 //	//return _modellyermanager->changeLayerStyle(path, gemtype, addType, iconPath, layerHeight);
 //

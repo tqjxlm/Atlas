@@ -114,6 +114,6 @@ void AddTMSData::addImage()
 		opt.url() = nodeName;
 		auto layer = new ImageLayer(ImageLayerOptions(nodeName, opt));
 
-		addLayerToMap(layer, IMAGE_LAYER, fileName, attribute, extent);
+		addLayerToMap(fileName, layer, IMAGE_LAYER, attribute, extent);
 	}
 }

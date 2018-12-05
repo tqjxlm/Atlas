@@ -31,7 +31,7 @@ void AtlasSplashScreen::setTotalInitSteps(int num) {
 	totalSteps = num;
 }
 
-void AtlasSplashScreen::setNowInitName(QString name)
+void AtlasSplashScreen::setNowInitName(const QString& name)
 {
 	nowStep++;
 	progressBar->setValue(nowStep);

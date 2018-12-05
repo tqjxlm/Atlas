@@ -26,6 +26,8 @@ using namespace std;
 #include <osgEarth/Map>
 #include <osgEarth/MapNode>
 #include <osgEarthUtil/EarthManipulator>
+#include <osgEarthUtil/AutoClipPlaneHandler>
+#include <osgEarthUtil/LogarithmicDepthBuffer>
 
 #include <gdal_priv.h>
 
@@ -47,8 +49,8 @@ Atlas::Atlas(QWidget *parent, Qt::WindowFlags flags):
   GDALAllRegister();
   CPLSetConfigOption("GDAL_DATA", ".\\resources\\GDAL_data");
 
-  osg::DisplaySettings::instance()->setNumOfHttpDatabaseThreadsHint(4);
-  osg::DisplaySettings::instance()->setNumOfDatabaseThreadsHint(4);
+  osg::DisplaySettings::instance()->setNumOfHttpDatabaseThreadsHint(12);
+  osg::DisplaySettings::instance()->setNumOfDatabaseThreadsHint(6);
 }
 
 Atlas::~Atlas()
@@ -96,7 +98,7 @@ void  Atlas::initCore()
   _root = new osg::Group;
 	_root->setName("Root");
 
-	_settingsManager = new SettingsManager();
+	_settingsManager = new SettingsManager(this);
   _settingsManager->setupUi(_ui->projectMenu);
 
 	_dataManager = new DataManager(_settingsManager, this);
@@ -179,6 +181,8 @@ void  Atlas::initDataStructure()
   _overlayNode->setName("World Overlay");
   _overlayNode->getOrCreateStateSet()->setAttributeAndModes(
     new osg::BlendFunc(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA));
+  _overlayNode->setOverlayBaseHeight(-1);
+  _overlayNode->setOverlayTextureSizeHint(2048);
 
   _overlaySubgraph = new osg::PositionAttitudeTransform;
   _overlayNode->setOverlaySubgraph(_overlaySubgraph);
@@ -201,7 +205,14 @@ void  Atlas::resetCamera()
     osg::ref_ptr<osgEarth::Util::EarthManipulator> manipulator = dynamic_cast<osgEarth::Util::EarthManipulator *>(_mainViewerWidget->getMainView()->getCameraManipulator());
     if (!manipulator.valid())
     {
-      _mainViewerWidget->getMainView()->setCameraManipulator(new osgEarth::Util::EarthManipulator);
+      manipulator = new osgEarth::Util::EarthManipulator;
+      auto settings = manipulator->getSettings();
+      settings->setSingleAxisRotation(true);
+      settings->setMinMaxDistance(10000.0, settings->getMaxDistance());
+      settings->setMaxOffset(5000.0, 5000.0);
+      settings->setMinMaxPitch(-90, 90);
+
+      _mainViewerWidget->getMainView()->setCameraManipulator(manipulator);
     }
     else
     {
@@ -215,17 +226,21 @@ void  Atlas::resetCamera()
     {
       // Init a manipulator if not inited yet
       manipulator = new MapController(_dataRoot);
-      _mainViewerWidget->getMainView()->setCameraManipulator(manipulator);
       manipulator->setAutoComputeHomePosition(false);
 
       manipulator->setCenterIndicator(_mainViewerWidget->createCameraIndicator());
 
-      connect(_dataManager, SIGNAL(moveToNode(const osg::Node *, double)),
-              manipulator, SLOT(fitViewOnNode(const osg::Node *, double)),
-              Qt::UniqueConnection);
-      connect(_dataManager, SIGNAL(moveToBounding(const osg::BoundingSphere *, double)),
-              manipulator, SLOT(fitViewOnBounding(const osg::BoundingSphere *, double)),
-              Qt::UniqueConnection);
+      // Nearfar mode and ratio affect scene clipping
+      auto camera = _mainViewerWidget->getMainView()->getCamera();
+      camera->setComputeNearFarMode(osg::Camera::COMPUTE_NEAR_FAR_USING_BOUNDING_VOLUMES);
+      camera->setNearFarRatio(0.0001);
+
+      connect(_dataManager, &DataManager::moveToNode,
+              manipulator, &MapController::fitViewOnNode);
+      connect(_dataManager, &DataManager::moveToBounding,
+              manipulator, &MapController::fitViewOnBounding);
+
+      _mainViewerWidget->getMainView()->setCameraManipulator(manipulator);
     }
     manipulator->fitViewOnNode(_mapNode[0]);
   }
@@ -340,7 +355,7 @@ void  Atlas::collectInitInfo()
   pluginsDir.cd("plugins");
 
   // Parsing plugin dependencies
-  foreach(QString fileName, pluginsDir.entryList(QDir::Files))
+  foreach(const QString& fileName, pluginsDir.entryList(QDir::Files))
   {
     if (fileName.split('.').back() != "dll")
     {

@@ -106,7 +106,7 @@
       <OutputFile>$(OutDir)\$(ProjectName)d.dll</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;$(QTDIR)\lib;$(OSG_ROOT)\lib;$(THIRD_PARTY_DIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Widgetsd.lib;openthreadsd.lib;osgd.lib;osgUtild.lib;osgGAd.lib;osgViewerd.lib;ViewerWidgetd.lib;PluginInterfaced.lib;DataManagerd.lib;MapControllerd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Widgetsd.lib;openthreadsd.lib;osgd.lib;osgUtild.lib;osgGAd.lib;osgEarthd.lib;osgViewerd.lib;ViewerWidgetd.lib;PluginInterfaced.lib;DataManagerd.lib;MapControllerd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -138,7 +138,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).dll</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;$(QTDIR)\lib;$(OSG_ROOT)\lib;$(THIRD_PARTY_DIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Widgets.lib;openthreads.lib;osg.lib;osgGA.lib;osgViewer.lib;ViewerWidget.lib;PluginInterface.lib;DataManager.lib;MapController.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Widgets.lib;openthreads.lib;osg.lib;osgGA.lib;osgViewer.lib;osgEarth.lib;ViewerWidget.lib;PluginInterface.lib;DataManager.lib;MapController.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

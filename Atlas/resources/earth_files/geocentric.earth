@@ -1,7 +1,7 @@
 <map name="base" type="geocentric">
 
     <options>
-        <profile>spherical-mercator</profile>
+        <!--<profile>spherical-mercator</profile>-->
         <terrain morph_imagery="false"
             lighting = "true"
             blending = "true"

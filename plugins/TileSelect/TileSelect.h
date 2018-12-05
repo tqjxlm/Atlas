@@ -30,8 +30,8 @@ public:
     virtual void loadContextMenu(QMenu* contextMenu, QTreeWidgetItem* selectedItem) override;
 
 signals:
-	void tileSelected(QString);
-	void tileUnSelected(QString);
+	void tileSelected(const QString&);
+	void tileUnSelected(const QString&);
 	void closeTileSelectDialog();
 
 public slots:

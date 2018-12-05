@@ -39,7 +39,7 @@ public:
 	void addRecord(osgEarth::Layer* layer, const QString& name, const QString& parentName, osgEarth::GeoExtent* extent = NULL, bool hidden = false);
 	void removeRecord(const QString& name);
 
-	bool saveNode(const QString & nodeName);
+	bool saveNode(const QString& nodeName);
 	bool saveNodes(const QStringList & nodeNames);
 
 	void setMask(const QString& name, int mask);

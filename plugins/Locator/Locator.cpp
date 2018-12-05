@@ -15,9 +15,7 @@
 
 #include <osgEarth/SpatialReference>
 
-#include <DataManager/DataManager.h>
 #include <SettingsManager/SettingsManager.h>
-#include <ViewerWidget/ViewerWidget.h>
 #include <AtlasMainWindow/AtlasMainWindow.h>
 #include <AtlasMainWindow/NXDockWidget.h>
 

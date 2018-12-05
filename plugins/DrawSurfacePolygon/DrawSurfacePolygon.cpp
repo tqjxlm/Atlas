@@ -7,11 +7,19 @@ using namespace std;
 #include <osg/PositionAttitudeTransform>
 #include <osgSim/OverlayNode>
 #include <osgUtil/Tessellator>
+#include <osgEarth/MapNode>
+#include <osgEarthAnnotation/LocalGeometryNode>
+#include <osgEarthSymbology/GeometryFactory>
+#include <osgEarthAnnotation/FeatureNode>
+#include <osgEarthAnnotation/ImageOverlay>
 
 #include <QMenu>
 #include <QToolBar>
 #include <QAction>
 #include <QToolButton>
+
+#undef min
+#undef max
 
 QMap<int, osg::PositionAttitudeTransform *>  DrawSurfacePolygon::_polygs;
 int                                          DrawSurfacePolygon::_numSubDraw;
@@ -98,6 +106,8 @@ void  DrawSurfacePolygon::onLeftButton()
 		_currentDrawNode->addDrawable(_lastLine);
 
     _currentAnchor->addChild(_zOffsetNode);
+
+    _contour.clear();
   }
 	else
 	{
@@ -110,8 +120,10 @@ void  DrawSurfacePolygon::onLeftButton()
 
 	_currentDrawNode->addDrawable(createPointGeode(_lastPoint, _intersections.begin()->getLocalIntersectNormal()));
 
-  _contourPoints->push_back({ _lastPoint.x(), _lastPoint.y(), SUBGRAPH_HEIGHT });
+  _contourPoints->push_back({ _lastPoint.x(), _lastPoint.y(), 1000 });
 	_center += _lastPoint;
+
+  _contour.push_back(_currentGeoPos);
 
 	if (_lastPoint.y() < _Ymin)
   {
@@ -163,6 +175,47 @@ void  DrawSurfacePolygon::onMouseMove()
 
 void  DrawSurfacePolygon::drawOverlay()
 {
+  using namespace osgEarth::Symbology;
+  using namespace osgEarth::Annotation;
+  //Geometry* utah = new Polygon();
+
+  //for (auto point : _contour)
+  //{
+  //  utah->push_back(point.x(), point.y());
+  //}
+
+  //Style utahStyle;
+  //utahStyle.getOrCreate<PolygonSymbol>()->fill()->color() = Color(Color::White, 0.8);
+  //utahStyle.getOrCreate<AltitudeSymbol>()->technique() = AltitudeSymbol::TECHNIQUE_DRAPE;
+  //utahStyle.getOrCreate<AltitudeSymbol>()->clamping() = AltitudeSymbol::CLAMP_TO_TERRAIN;
+
+  //Feature*     utahFeature = new Feature(utah, _globalSRS);
+  //FeatureNode* featureNode = new FeatureNode(utahFeature, utahStyle);
+  //
+  //_mapNode[0]->addChild(featureNode);
+
+  //ImageOverlay* imageOverlay = 0L;
+  //osg::ref_ptr<osg::Image> image = osgDB::readRefImageFile("E:/OSG/OpenSceneGraph/data/USFLAG.TGA");
+  //if (image.valid())
+  //{
+  //  imageOverlay = new ImageOverlay(_mapNode[0], image.get());
+
+  //  double minx, maxx, miny, maxy;
+  //  minx = miny = std::numeric_limits<double>::max();
+  //  maxx = maxy = -std::numeric_limits<double>::max();
+  //  for (auto point : _contour)
+  //  {
+  //    if (point.x() > maxx) maxx = point.x();
+  //    if (point.x() < minx) minx = point.x();
+  //    if (point.y() > maxy) maxy = point.y();
+  //    if (point.y() < miny) miny = point.y();
+  //  }
+  //  imageOverlay->setBounds(Bounds(minx, miny, maxx, maxy));
+  //  _mapNode[0]->addChild(imageOverlay);
+
+  //}
+
+
   // Generate an overlay
 	if (_contourPoints->empty())
   {

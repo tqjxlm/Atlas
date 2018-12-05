@@ -33,7 +33,7 @@ void LoadThread::run()
 	}
 
 	emit progress(99);
-	emit done(_model);
+	emit done();
 
 	_loadingLock.unlock();
 }

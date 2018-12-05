@@ -12,10 +12,13 @@
 #include <osg/PositionAttitudeTransform>
 #include <osgEarth/SpatialReference>
 #include <osgEarth/GeoData>
-
-#include <DataManager/DataManager.h>
+#include <osgEarthDrivers/model_simple/SimpleModelOptions>
+#include <osgEarth/ModelLayer>
+#include <osgEarthAnnotation/ModelNode>
 
 #include "LoadThread.h"
+
+static const double zOffset = 0.1;
 
 static inline void  getFolderFile(QString &path, QFileInfoList &file_to_use)
 {
@@ -74,7 +77,29 @@ void  AddObliqueModel::setupUi(QToolBar *toolBar, QMenu *menu)
 	connect(openOpAction, SIGNAL(triggered()), this, SLOT(addObliqueModel()));
 }
 
-void  AddObliqueModel::loadObliqueModel(const QString &pathXML)
+void AddObliqueModel::onLoadingDone(const QString& nodeName, osg::Node *model, const osgEarth::GeoPoint &geoOrigin)
+{
+  //osgEarth::Drivers::SimpleModelOptions opt;
+  //opt.node() = model;
+  //opt.paged() = true;
+  //opt.location() = geoOrigin.vec3d() + osg::Vec3d(0, 0, zOffset);
+
+  //osg::ref_ptr<osgEarth::ModelLayer> layer = new osgEarth::ModelLayer(opt);
+  //addLayerToMap(nodeName, layer, MODEL_LAYER, _pluginName);
+
+  osgEarth::Viewpoint vp;
+  //vp.setNode(layer->getNode());
+  vp.setNode(model);
+  emit setViewPoint(vp);
+  emit loadingDone();
+
+  auto anchorPoint = getNearestAnchorPoint(geoOrigin.vec3d());
+  anchorPoint->addChild(model);
+
+  recordNode(model, nodeName);
+}
+
+void  AddObliqueModel::loadObliqueModel(const QString& pathXML)
 {
   // Check data validity
   QFile  file(pathXML);
@@ -145,19 +170,16 @@ void  AddObliqueModel::loadObliqueModel(const QString &pathXML)
   osg::ref_ptr<osg::PositionAttitudeTransform>  model = new osg::PositionAttitudeTransform;
 	model->setUserData(srs);
 
-  osgEarth::GeoPoint  geoOrigin = osgEarth::GeoPoint(srs,
-                                                     _srsOriginInfo[0].toDouble(), _srsOriginInfo[1].toDouble(), _srsOriginInfo[2].toDouble());
+  QString  nodeName = XMLPath.split("/").back();
+  model->setUserValue("filepath", pathXML.toLocal8Bit().toStdString());
+
+  osg::Vec3d origin(_srsOriginInfo[0].toDouble(), _srsOriginInfo[1].toDouble(), _srsOriginInfo[2].toDouble());
+  osgEarth::GeoPoint  geoOrigin = osgEarth::GeoPoint(srs, origin);
 	geoOrigin = geoOrigin.transform(_globalSRS);
 
-	model->setUserValue("filepath", pathXML.toLocal8Bit().toStdString());
-
-  // Add data to the nearest anchor
-  auto  anchor = getNearestAnchorPoint(geoOrigin.vec3d());
-	model->setPosition(geoOrigin.vec3d() - anchor->getPosition() + osg::Vec3(0, 0, 0.2));
-  anchor->addChild(model);
-
-  QString  nodeName = XMLPath.split("/").back();
-  recordNode(model, nodeName);
+  auto anchorPoint = getNearestAnchorPoint(geoOrigin.vec3d());
+  model->setPosition(geoOrigin.vec3d() - anchorPoint->getPosition());
+  //anchorPoint->addChild(model);
 
   // Begin loading
   QFileInfoList  allFileList;
@@ -166,17 +188,17 @@ void  AddObliqueModel::loadObliqueModel(const QString &pathXML)
   emit        loadingProgress(10);
   LoadThread *loader = new LoadThread(_loadingLock, model, allFileList);
 	connect(loader, &LoadThread::finished, loader, &QObject::deleteLater);
-	connect(loader, SIGNAL(progress(int)), this, SIGNAL(loadingProgress(int)));
-  connect(loader, SIGNAL(done(osg::Node *)), _dataManager, SLOT(setCenterNode(osg::Node *)));
+	connect(loader, &LoadThread::progress, this, &AddObliqueModel::loadingProgress);
+  connect(loader, &LoadThread::done, [this, model, nodeName, geoOrigin]() {
+    onLoadingDone(nodeName, model, geoOrigin);
+  });
 
 	loader->start();
 }
 
 void  AddObliqueModel::addObliqueModel()
 {
-  QStringList  XMLFileNames;
-
-	XMLFileNames = QFileDialog::getOpenFileNames(nullptr, tr("Open File"), " ", tr("XML file(*.xml);;Allfile(*.*)"));
+  QStringList  XMLFileNames = QFileDialog::getOpenFileNames(nullptr, tr("Open File"), " ", tr("XML file(*.xml);;Allfile(*.*)"));
 
   for (auto path : XMLFileNames)
   {

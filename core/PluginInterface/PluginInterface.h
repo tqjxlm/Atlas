@@ -112,11 +112,11 @@ protected:
   // Get or add a setting from the plugin settings
   // The setting is plugin-specific, so different plugin may have the same setting
   // If you don't provide a default value (or provide an invalid value), the setting won't be added
-  QVariant                             getOrAddPluginSettings(const QString &key, const QVariant &defaultValue = QVariant());
+  QVariant                             getOrAddPluginSettings(const QString& key, const QVariant &defaultValue = QVariant());
 
   // Change a setting from the plugin settings
   // The setting is plugin-specific, so different plugin may have the same setting
-  QVariant                             setPluginSettings(const QString &key, const QVariant &value);
+  QVariant                             setPluginSettings(const QString& key, const QVariant &value);
 
   virtual osg::ref_ptr<osg::Geometry>  createPointGeode(const osg::Vec3 &pos, const osg::Vec3 &norm = osg::Vec3(0, 0, 1.0));
 
@@ -129,10 +129,10 @@ protected:
   StyleConfig                          getDefaultStyle();
 
 	// Record current draw node to DataTree
-  virtual void                         recordCurrent(const QString &parent = "");
+  virtual void                         recordCurrent(const QString& parent = "");
 
 	// Record a node to DataTree
-  virtual void                         recordNode(osg::Node *node, const QString &name = "", const QString &parent = "");
+  virtual void                         recordNode(osg::Node *node, const QString& name = "", const QString& parent = "");
 
 	// Record a layer to DataTree
 	virtual void recordLayer(osgEarth::Layer* layer, const QString& name = "", const QString& parent = "");
@@ -194,13 +194,13 @@ protected:
   }
 
 signals:
-	void recordData(osg::Node*, const QString&, const QString&, bool = false);
-	void recordData(osgEarth::Layer*, const QString&, const QString&, osgEarth::GeoExtent* = NULL, bool = false);
+	void recordData(osg::Node*, QString, QString, bool = false);
+	void recordData(osgEarth::Layer*, QString, QString, osgEarth::GeoExtent* = NULL, bool = false);
 	void removeData(const QString&);
-	void switchData(const QString&, bool);
+	void switchData(QString, bool);
 	void loadingProgress(int);
 	void loadingDone();
-    void setViewPoint(const osgEarth::Viewpoint&);
+  void setViewPoint(const osgEarth::Viewpoint &);
 
 public slots:
 	// Default function to toggle the plugin on or off

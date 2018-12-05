@@ -5,7 +5,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-WaitingDialog::WaitingDialog(QString str, QWidget*parent) :
+WaitingDialog::WaitingDialog(const QString& str, QWidget*parent) :
 	QDialog(parent)
 {
 	QPixmap pixmap("resources/icons/bgWaiting.png");

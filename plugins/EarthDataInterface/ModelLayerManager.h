@@ -36,13 +36,13 @@ public:
 
 	~ModelLayerManager();
 
-  osg::ref_ptr<osgEarth::ModelLayer>  changeLayerStyle(std::string path, QString gemtype, std::string iconPath, float layerHeight);
+  osg::ref_ptr<osgEarth::ModelLayer>  changeLayerStyle(std::string path, const QString& gemtype, std::string iconPath, float layerHeight);
 
-  osg::ref_ptr<osgEarth::ModelLayer>  createModelLabelLayer(QString layerPath, std::string fieldName, float height);
+  osg::ref_ptr<osgEarth::ModelLayer>  createModelLabelLayer(const QString& layerPath, std::string fieldName, float height);
 
-  QVector<attrib>                     getVectorMetaData(const QString &path, QStringList &fieldList);
+  QVector<attrib>                     getVectorMetaData(const QString& path, QStringList &fieldList);
 
-  void                                getFeatureAttribute(const QString &path, QVector<attrib> &attributeList, QStringList &featureFieldList,
+  void                                getFeatureAttribute(const QString& path, QVector<attrib> &attributeList, QStringList &featureFieldList,
                                                           osgEarth::Symbology::Style *style);
 
   char                              * getSRS()

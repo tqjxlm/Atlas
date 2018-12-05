@@ -5,7 +5,7 @@
 #include <osgEarth/TerrainLayer>
 #include <osgEarth/GeoData>
 
-DataRecord::DataRecord(const QString &name, DataRecord *parent):
+DataRecord::DataRecord(const QString& name, DataRecord *parent):
   QTreeWidgetItem(parent, QStringList(name)),
   _bs(NULL),
   _extent(NULL),
@@ -15,7 +15,7 @@ DataRecord::DataRecord(const QString &name, DataRecord *parent):
 	setToolTip(0, name);
 }
 
-DataRecord::DataRecord(const QString &name, osg::Node *node, DataRecord *parent, const osg::BoundingSphere *bs):
+DataRecord::DataRecord(const QString& name, osg::Node *node, DataRecord *parent, const osg::BoundingSphere *bs):
   QTreeWidgetItem(parent, QStringList(name)),
   _node(node),
   _bs(bs ? bs : &node->getBound()),
@@ -29,10 +29,26 @@ DataRecord::DataRecord(const QString& name, osgEarth::Layer* layer, DataRecord* 
 	: QTreeWidgetItem(parent, QStringList(name))
 	, _layer(layer)
 	, _bs(NULL)
-	, _extent(extent ? extent : &(layer->getExtent()))
 	, _mask(mask)
 	, _isLayer(true)
 {
+  if (extent)
+    _extent = extent;
+  else if (layer->getExtent().isValid())
+    _extent = &layer->getExtent();
+  else
+  {
+    auto node = _layer->getNode();
+    if (node)
+    {
+      _extent = NULL;
+      _bs = &node->getBound();
+    }
+    else
+    {
+      _bs = NULL;
+    }
+  }
 	setToolTip(0, name);
 }
 

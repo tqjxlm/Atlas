@@ -7,7 +7,8 @@
 #include <QAction>
 #include <QMenu>
 
-SettingsManager::SettingsManager():
+SettingsManager::SettingsManager(QObject* parent):
+  QObject(parent),
   _globalSettings()
 {
 }
@@ -17,7 +18,7 @@ SettingsManager::~SettingsManager()
 	_globalSettings.sync();
 }
 
-void SettingsManager::setOrAddSetting(const QString & key, const QVariant & value)
+void SettingsManager::setOrAddSetting(const QString& key, const QVariant & value)
 {
   if (value.isValid())
   {
@@ -26,7 +27,7 @@ void SettingsManager::setOrAddSetting(const QString & key, const QVariant & valu
   }
 }
 
-QVariant SettingsManager::getOrAddSetting(const QString & key, const QVariant & defaultValue)
+QVariant SettingsManager::getOrAddSetting(const QString& key, const QVariant & defaultValue)
 {
   auto  found = _globalSettings.value(key);
 

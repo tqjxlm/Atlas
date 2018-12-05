@@ -86,21 +86,21 @@ void MousePicker::pick(osgViewer::View* view, const osgGA::GUIEventAdapter& ea)
 	getPos(view, ea);
 	if (pointValid())
 	{
-        _currentGeoPos.fromWorld(_mapNode[0]->getMapSRS(), _currentWorldPos);
-
-		_labelWorldCoord->setText(tr("World Coordinate: [%1, %2, %3]")
-			.arg(_currentWorldPos.x(), 0, 'f', 2)
-			.arg(_currentWorldPos.y(), 0, 'f', 2)
-			.arg(_currentWorldPos.z(), 0, 'f', 2));
-		_labelGeoCoord->setText(tr("Geographic Coordinate: [%1, %2, %3]")
+    osgEarth::GeoPoint latLon;
+    _currentGeoPos.transform(srs_wgs84, latLon);
+		_labelWorldCoord->setText(tr("Coordinate: [%1, %2, %3]")
 			.arg(_currentGeoPos.x(), 0, 'f', 2)
 			.arg(_currentGeoPos.y(), 0, 'f', 2)
 			.arg(_currentGeoPos.z(), 0, 'f', 2));
+		_labelGeoCoord->setText(tr("Lat Lon: [%1, %2, %3]")
+			.arg(latLon.x(), 0, 'f', 2)
+			.arg(latLon.y(), 0, 'f', 2)
+			.arg(latLon.z(), 0, 'f', 2));
 	}
 	else
 	{
-        _labelWorldCoord->setText(tr("World Coordinate: NULL"));
-        _labelGeoCoord->setText(tr("Geographic Coordinate: NULL"));
+     _labelWorldCoord->setText(tr("World Coordinate: NULL"));
+     _labelGeoCoord->setText(tr("Geographic Coordinate: NULL"));
 	}
 }
 
@@ -120,10 +120,9 @@ void MousePicker::getPos(osgViewer::View* view,
 				{
           _nearestIntesection = intersection;
           _currentLocalPos = _nearestIntesection.getLocalIntersectPoint();
+          _currentWorldPos = _nearestIntesection.getWorldIntersectPoint();
 
-          osg::Vec3d world;
-          _mapNode[0]->getTerrain()->getWorldCoordsUnderMouse(view, ea.getX(), ea.getY(), world);
-          _currentWorldPos = world;
+          _currentGeoPos.fromWorld(_globalSRS, _currentWorldPos);
 
 					_isValid = true;
 					return;

@@ -15,7 +15,7 @@ class WaitingDialog :
 	 Q_OBJECT 
 
 public:
-	explicit WaitingDialog(QString str="Loading...",QWidget *parent = 0); 
+	explicit WaitingDialog(const QString& str=tr("Loading..."),QWidget *parent = 0);
 	~WaitingDialog(void);
 	void startAnimation();
 

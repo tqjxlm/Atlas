@@ -27,6 +27,7 @@ PluginManager::PluginManager(QObject *parent, DataManager *dataManager, ViewerWi
   _dataManager(dataManager),
   _viewerWidget(viewer)
 {
+  qRegisterMetaType<osgEarth::Viewpoint>("osgEarth::Viewpoint");
 }
 
 PluginManager::~PluginManager()
@@ -37,17 +38,17 @@ void  PluginManager::registerPlugin(PluginInterface *plugin)
 {
 	_viewerWidget->getMainView()->addEventHandler(plugin);
 
-  connect(plugin, SIGNAL(recordData(osg::Node *,const QString&,const QString&,bool)),
-          _dataManager, SLOT(recordData(osg::Node *,const QString&,const QString&,bool)));
+  connect(plugin, SIGNAL(recordData(osg::Node *,QString,QString,bool)),
+          _dataManager, SLOT(recordData(osg::Node *,QString,QString,bool)));
 
-	connect(plugin, SIGNAL(recordData(osgEarth::Layer*, const QString&, const QString&, osgEarth::GeoExtent*, bool)),
-		_dataManager, SLOT(recordData(osgEarth::Layer*, const QString&, const QString&, osgEarth::GeoExtent*, bool)));
+	connect(plugin, SIGNAL(recordData(osgEarth::Layer*, QString, QString, osgEarth::GeoExtent*, bool)),
+		_dataManager, SLOT(recordData(osgEarth::Layer*, QString, QString, osgEarth::GeoExtent*, bool)));
 
-	connect(plugin, SIGNAL(removeData(const QString&)), _dataManager, SLOT(removeData(const QString&)));
-  connect(plugin, SIGNAL(switchData(const QString&,bool)), _dataManager, SLOT(switchData(const QString&,bool)));
+	connect(plugin, &PluginInterface::removeData, _dataManager, &DataManager::removeData);
+  connect(plugin, &PluginInterface::switchData, _dataManager, &DataManager::switchData);
 
-	connect(plugin, SIGNAL(loadingProgress(int)), _dataManager, SIGNAL(loadingProgress(int)));
-	connect(plugin, SIGNAL(loadingDone()), _dataManager, SIGNAL(loadingDone()));
+	connect(plugin, &PluginInterface::loadingProgress, _dataManager, &DataManager::loadingProgress);
+	connect(plugin, &PluginInterface::loadingDone, _dataManager, &DataManager::loadingDone);
 
     osg::ref_ptr<MapController> controller = 
         dynamic_cast<MapController*>(_viewerWidget->getMainView()->getCameraManipulator());
@@ -74,7 +75,7 @@ void  PluginManager::loadPlugins()
 	pluginsDir.cd("plugins");
 
 	// Parsing plugin dependencies
-  foreach(QString fileName, pluginsDir.entryList(QDir::Files))
+  foreach(const QString& fileName, pluginsDir.entryList(QDir::Files))
   {
     if ((fileName.split('.').back() == "so") || (fileName.split('.').back() == "dll"))
     {
@@ -123,7 +124,7 @@ PluginInterface * PluginManager::instantiate(QObject *instance)
 	return nullptr;
 }
 
-PluginEntry * PluginManager::getOrCreatePluginEntry(const QString &pluginName)
+PluginEntry * PluginManager::getOrCreatePluginEntry(const QString& pluginName)
 {
   PluginEntry *pluginEntry;
 
@@ -141,7 +142,7 @@ PluginEntry * PluginManager::getOrCreatePluginEntry(const QString &pluginName)
 	return pluginEntry;
 }
 
-void  PluginManager::parseDependency(const QString &fileName, const QDir &pluginsDir)
+void  PluginManager::parseDependency(const QString& fileName, const QDir &pluginsDir)
 {
   try
   {
@@ -240,7 +241,7 @@ void  PluginManager::loadContextMenu(QMenu *contextMenu, QTreeWidgetItem *select
 	}
 }
 
-void  PluginManager::registerPluginGroup(QString name, QToolBar *toolBar, QMenu *menu)
+void  PluginManager::registerPluginGroup(const QString& name, QToolBar *toolBar, QMenu *menu)
 {
 	_pluginGroups[name] = { name, toolBar, menu };
 }

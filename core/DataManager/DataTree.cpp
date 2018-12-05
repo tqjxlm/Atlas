@@ -38,7 +38,7 @@ void  DataTree::clear()
   }
 }
 
-void  DataTree::addRecord(osg::Node *node, const QString &name, const QString &parentName, bool hidden)
+void  DataTree::addRecord(osg::Node *node, const QString& name, const QString& parentName, bool hidden)
 {
   QString  nodeName = resolveName(name);
 
@@ -60,7 +60,7 @@ void  DataTree::addRecord(osg::Node *node, const QString &name, const QString &p
 	parent->addChild(newRecord);
 }
 
-void DataTree::addRecord(osgEarth::Layer * layer, const QString & name, const QString& parentName, osgEarth::GeoExtent* extent, bool hidden)
+void DataTree::addRecord(osgEarth::Layer * layer, const QString& name, const QString& parentName, osgEarth::GeoExtent* extent, bool hidden)
 {
   QString  nodeName = resolveName(name);
 
@@ -77,7 +77,7 @@ void DataTree::addRecord(osgEarth::Layer * layer, const QString & name, const QS
 
 void  DataTree::switchDataSlot(QTreeWidgetItem *item, int column)
 {
-  const QString &nodeName = item->text(column);
+  auto nodeName = item->text(column);
 
 	switchRecord(nodeName, item->checkState(0) == Qt::Checked);
 }
@@ -108,7 +108,7 @@ void  DataTree::switchAll(DataRecord *item, bool isVisible)
   }
 }
 
-QString  DataTree::resolveName(const QString &expectedName)
+QString  DataTree::resolveName(const QString& expectedName)
 {
 	// Name format: ExpectedName + _ + Index
   QString  newName = expectedName;
@@ -183,7 +183,7 @@ void  DataTree::removeNode(osg::Node *node)
   }
 }
 
-void  DataTree::switchRecord(const QString &nodeName, bool checked)
+void  DataTree::switchRecord(const QString& nodeName, bool checked)
 {
   auto  record = getRecord(nodeName);
 
@@ -248,7 +248,7 @@ void  DataTree::switchNode(osg::Node *node, bool checked)
   }
 }
 
-DataRecord * DataTree::getParent(const QString &parentName)
+DataRecord * DataTree::getParent(const QString& parentName)
 {
   DataRecord *parent = getRecord(parentName);
 
@@ -295,7 +295,7 @@ void  DataTree::saveNodeSlot()
   }
 }
 
-void  DataTree::removeRecord(const QString &name)
+void  DataTree::removeRecord(const QString& name)
 {
   auto  record = _dataRecords.find(name);
 
@@ -332,7 +332,7 @@ void  DataTree::deleteNodeSlot()
   removeRecord(item->text(0));
 }
 
-bool  DataTree::saveNode(const QString &nodeName)
+bool  DataTree::saveNode(const QString& nodeName)
 {
   osg::ref_ptr<osg::Node>  node = getNode(nodeName);
 
@@ -372,7 +372,7 @@ bool  DataTree::saveNodes(const QStringList &nodeNames)
 	return osgDB::writeNodeFile(*group, path.toStdString());
 }
 
-void  DataTree::setMask(const QString &name, int mask)
+void  DataTree::setMask(const QString& name, int mask)
 {
   auto  record = getRecord(name);
 
@@ -415,7 +415,7 @@ void  DataTree::setMask(const QString &name, int mask)
 	record->setMask(mask);
 }
 
-DataRecord * DataTree::getRecord(const QString &name)
+DataRecord * DataTree::getRecord(const QString& name)
 {
   auto  record = _dataRecords.find(name);
 
@@ -429,7 +429,7 @@ DataRecord * DataTree::getRecord(const QString &name)
   }
 }
 
-osg::Node * DataTree::getNode(const QString &name)
+osg::Node * DataTree::getNode(const QString& name)
 {
   DataRecord *record = getRecord(name);
 

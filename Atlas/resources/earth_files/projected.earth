@@ -13,8 +13,9 @@
         </cache>
     </options>
 
-    <image driver = "gdal" name = "base-world" visible = "true">
-        <url>./world.tif</url>
+    <image name="osm_mapnik" driver="xyz">
+        <url>http://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png</url>
+        <profile>spherical-mercator</profile>
     </image>
 
 </map>

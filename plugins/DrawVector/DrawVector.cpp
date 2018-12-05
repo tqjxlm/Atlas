@@ -53,7 +53,7 @@ void  DrawVector::setupUi(QToolBar *toolBar, QMenu *menu)
 	_action->setVisible(false);
 }
 
-void  DrawVector::OpenVectorFile(const QString &path)
+void  DrawVector::OpenVectorFile(const QString& path)
 {
   QString  nameLine;
   QString  nameN, nameX, nameY;
@@ -339,7 +339,7 @@ osg::ref_ptr<osg::Geometry>  DrawVector::drawLineString(OGRLineString *linestrin
 	return createLineGem(plinearray);
 }
 
-void  DrawVector::DrawVectorFromFile(QString filePath, QString nodeName)
+void  DrawVector::DrawVectorFromFile(const QString& filePath, const QString& nodeName)
 {
 	if (filePath.contains("\\"))
 	{
@@ -619,7 +619,7 @@ void  DrawVector::DrawVectorFromFile(QString filePath, QString nodeName)
 	GDALClose(poDS);
 }
 
-void  DrawVector::lodSetting(double dis, osg::Group *vectorGroup, QString name)
+void  DrawVector::lodSetting(double dis, osg::Group *vectorGroup, const QString& name)
 {
 	if (name == "ChangXing_scope_farmerhouse")
 	{
@@ -660,7 +660,7 @@ void  DrawVector::lodSetting(double dis, osg::Group *vectorGroup, QString name)
 	}
 }
 
-void  DrawVector::styleSetting(QString name)
+void  DrawVector::styleSetting(const QString& name)
 {
 	if (name == "ChangXing_scope_farmerhouse")
 	{

@@ -254,7 +254,9 @@
     <ResourceCompile Include="Atlas.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\earth_files\projected.earth" />
+    <None Include="resources\earth_files\projected.earth">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -61,7 +61,6 @@ public:
 
 	// Settings and registration
 	void registerDataRoots(osg::Group* root);
-	void setActivatedNode(osg::Node* node);
 
 	// Node visibility management
 	void setMask(const QString& nodeName, int mask);
@@ -88,12 +87,10 @@ public slots:
 	//void fontChangeSlot(osgText::Font* font, int size);
 	//void sizeChangeSlot(PrimType type, int size);
 	//osgEarth::ModelLayer* changeLayerStyle(
-	//	std::string path, QString gemtype, FileType addType, std::string iconPath, float layerHeight);
+	//	std::string path, const QString& gemtype, FileType addType, std::string iconPath, float layerHeight);
 	//void changeLayerStyleSlot();
 
 	// Data manipulation
-	void setCenterNode(osg::Node* node);
-	void activateNode(QTreeWidgetItem* item, int column);
 	void showDataTreeContextMenu(const QPoint &pos);
 	void doubleClickTreeSlot(QTreeWidgetItem* item, int column);
 
@@ -113,7 +110,7 @@ signals:
 	void loadingDone();
 	void requestContextMenu(QMenu*, QTreeWidgetItem*);
 	void resetCamera();
-	void showDataAttributes(QString);
+	void showDataAttributes(const QString&);
 
 private:
 	void setupUi();

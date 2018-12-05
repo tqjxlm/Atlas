@@ -53,7 +53,7 @@ public:
 		int x, int y, int w, int h, const std::string& name = "", bool shareMainContext = false, bool windowDecoration = false);	
 
 	// Create a legend that's rendered above the whole view
-	static osg::ref_ptr<osg::Camera> createLegendHud(QString titleString, QVector<osg::Vec4> colorVec, QVector<QString> txtVec);
+	static osg::ref_ptr<osg::Camera> createLegendHud(const QString& titleString, QVector<osg::Vec4> colorVec, QVector<QString> txtVec);
 
 	// Viewer paint event, it is called automatically every UI update
 	virtual void paintEvent(QPaintEvent* event) override;
