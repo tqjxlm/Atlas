@@ -155,7 +155,7 @@ public:
 
 	void setSRS(const std::string& srs) { _srsWKT = srs; }
 	void setPixel(double pixelPerMeter) { _pixelPerMeter = pixelPerMeter; }
-	void setPath(QString path) { _qPath = path; }
+	void setPath(const QString& path) { _qPath = path; }
 	void setViewCamera( osg::Camera* camera) { _viewCamera = camera; }
 	void setOutputType(OutputType outputType) { 
 		_outputType = outputType; 
@@ -347,7 +347,7 @@ public:
 	}
 
 signals:
-	void nextStage(QString);
+	void nextStage(const QString&);
 	void isWorking(bool);
 
 protected:
@@ -360,7 +360,7 @@ class WaitProgressDialog : public QProgressDialog
 	Q_OBJECT
 
 public:
-	WaitProgressDialog(const QString &labelText, const QString &cancelButtonText,
+	WaitProgressDialog(const QString& labelText, const QString& cancelButtonText,
 		int minimum, int maximum, QWidget *parent = 0, Qt::WindowFlags flags = 0)
 		: QProgressDialog(labelText, cancelButtonText, minimum, maximum, parent, flags)
 	{
@@ -378,7 +378,7 @@ public:
 		setLabelText(_msg + "\n" + _processTime.toString());
 	}
 
-	void updateMessage(QString msg)
+	void updateMessage(const QString& msg)
 	{
 		_msg = msg;
 		setLabelText(_msg + "\n" + _processTime.toString());

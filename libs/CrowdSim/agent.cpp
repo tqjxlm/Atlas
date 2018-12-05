@@ -175,17 +175,6 @@ int  Ped::Agent::plannedDirection()
       PathPlanner *pather       = currentScene->getPathPlanner();
       auto         pathResult   = pather->SolvePath(_currentCell, currentDestination);
 
-#ifdef _DEBUG
-
-			if (pathResult != MicroPather::SOLVED)
-			{
-        char  error[80];
-				sprintf_s(error, "[Error]: no valid path from (%d, %d) to (%d, %d)",
-                  _currentCell->idX(), _currentCell->idY(), currentDestination->idX(), currentDestination->idY());
-				OutputDebugStringA(error);
-			}
-
-#endif
 			nextCell = _currentCell->getNextCellInPath(currentDestination);
 		}
 

@@ -28,7 +28,7 @@ TileSelectDialog::~TileSelectDialog()
 
 }
 
-void TileSelectDialog::selectTileSlot(QString tileName)
+void TileSelectDialog::selectTileSlot(const QString& tileName)
 {
 	QListWidgetItem *item = new QListWidgetItem(tileName);
 	QList<QListWidgetItem*> list = _ui->listWidget->findItems(tileName, Qt::MatchFixedString);
@@ -38,7 +38,7 @@ void TileSelectDialog::selectTileSlot(QString tileName)
 	updateLabelCount();
 }
 
-void TileSelectDialog::unselectTileSlot(QString tileName)
+void TileSelectDialog::unselectTileSlot(const QString& tileName)
 {
 	QList<QListWidgetItem*> list=_ui->listWidget->findItems(tileName, Qt::MatchFixedString);
 	QListWidgetItem* item = list.at(0);

@@ -15,8 +15,8 @@ public:
 	QString getUrl();
 
 private slots:
-	void pickExample(QString name);
-	void resetComboBox(const QString &);
+	void pickExample(const QString& name);
+	void resetComboBox(const QString&);
 
 private:
 	Ui_urlDialog _ui;

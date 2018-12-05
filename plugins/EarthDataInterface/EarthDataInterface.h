@@ -39,13 +39,14 @@ public:
 	virtual void init() override;
 
 public slots:
-	void showDataAttributes(QString nodeName);
+	void showDataAttributes(const QString& nodeName);
 
 protected:
-	enum DataType {
+	enum LayerType {
 		IMAGE_LAYER,
 		TERRAIN_LAYER,
 		FEATURE_LAYER,
+    MODEL_LAYER,
 		ALL_TYPE
 	};
 
@@ -57,12 +58,12 @@ protected:
 		QString toolTip;
 	};
 
-	QMenu* getOrAddMenu(DataType datType);
-	QToolButton* getOrAddToolButton(DataType dataType, QMenu* menu);
-
+	QMenu* getOrAddMenu(LayerType datType);
+	QToolButton* getOrAddToolButton(LayerType dataType, QMenu* menu);
 	void getFeatureAttribute(const QString& path, QVector<attrib> &attributeList, QStringList &featureFieldList, osgEarth::Symbology::Style* style);
-	void addLayerToMap(const QString& path, osgEarth::ModelLayer* layer);
-	void addLayerToMap(osg::ref_ptr<osgEarth::Layer> layer, DataType dataType, QString & fileName, QVector<attrib>& attribute, osgEarth::GeoExtent * extent = nullptr);
+
+  void addLayerToMap(const QString& name, osg::ref_ptr<osgEarth::ModelLayer> layer, LayerType dataType, const QString& parent = "");
+	void addLayerToMap(const QString& name, osg::ref_ptr<osgEarth::Layer> layer, LayerType dataType, QVector<attrib>& attribute, osgEarth::GeoExtent * extent = nullptr);
 
 private:
 	// Parse the earth node and record all of its content

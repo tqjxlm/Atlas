@@ -1,8 +1,5 @@
 ﻿#include "AddModel.h"
 
-#include <DataManager/DataManager.h>
-#include <ViewerWidget/ViewerWidget.h>
-
 #include <QDateTime>
 #include <osgDB/ReadFile>
 #include <osg/PositionAttitudeTransform>
@@ -85,20 +82,10 @@ void AddModel::setupUi(QToolBar* toolBar, QMenu* menu)
 	registerMutexAction(_modelAction2);
 	registerMutexAction(_modelAction3);
 
-	// Init button
-	QIcon iconModel;
-	iconModel.addFile(QString::fromUtf8("resources/icons/model.png"), QSize(), QIcon::Normal, QIcon::Off);
-
-	QToolButton *addModelBt = new QToolButton(static_cast<QWidget*>(parent()));
-	addModelBt->setIcon(iconModel);
-	addModelBt->setText(tr("Model"));
-	addModelBt->setToolTip(tr("Add Single Model"));
-	addModelBt->setPopupMode(QToolButton::InstantPopup);
-	addModelBt->setCheckable(true);
-
 	// Group actions in a menu
-	QMenu *addModelMenu = new QMenu(addModelBt);
-	QMenu *addSampleMenu = new QMenu(addModelMenu);
+	menu = getOrAddMenu(MODEL_LAYER);
+
+	QMenu *addSampleMenu = new QMenu(menu);
 	QIcon iconModelSample;
 	iconModelSample.addFile(QString::fromUtf8("resources/icons/model.png"), QSize(), QIcon::Normal, QIcon::Off);
 	addSampleMenu->setIcon(iconModelSample);
@@ -108,12 +95,6 @@ void AddModel::setupUi(QToolBar* toolBar, QMenu* menu)
 	addSampleMenu->addAction(_modelAction3);
 
 	// Add actions to tool bar
-	addModelMenu->addMenu(addSampleMenu);
-	addModelMenu->addAction(_modelFromFileAction);
-	addModelBt->setMenu(addModelMenu);
-	toolBar->addWidget(addModelBt);
-
-	// Add actions to menu bar
 	menu->addMenu(addSampleMenu);
 	menu->addAction(_modelFromFileAction);
 	menu->addSeparator();
@@ -156,7 +137,7 @@ void AddModel::toggle(bool checked)
 	_activated = checked;
 }
 
-void AddModel::addModelFromDB(QString modelName,QString modelFilePath,osg::Vec3 pos,osg::Vec3 norl)
+void AddModel::addModelFromDB(const QString& modelName,const QString& modelFilePath,osg::Vec3 pos,osg::Vec3 norl)
 {
 	bool isok = loadModel(modelFilePath.toLocal8Bit().toStdString());
 

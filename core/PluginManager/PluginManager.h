@@ -37,14 +37,14 @@ public:
 public:
 	PluginManager(QObject *parent, DataManager* dataManager, ViewerWidget* viewer);
 	~PluginManager();
-	void registerPluginGroup(QString name, QToolBar* toolBar, QMenu* menu);
+	void registerPluginGroup(const QString& name, QToolBar* toolBar, QMenu* menu);
 	void loadPlugins();
 
 public slots:
 	void loadContextMenu(QMenu* contextMenu, QTreeWidgetItem* selectedItem);
 
 signals:
-    void sendNowInitName(QString);
+    void sendNowInitName(const QString&);
 
 protected:
 	PluginEntry* getOrCreatePluginEntry(const QString& pluginName);

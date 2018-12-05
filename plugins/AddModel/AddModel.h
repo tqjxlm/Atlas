@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <QtPlugin>
-#include <PluginInterface/PluginInterface.h>
+#include <EarthDataInterface/EarthDataInterface.h>
 
 namespace osg {
 	class Node;
@@ -13,11 +13,11 @@ class QAction;
 class QMenu;
 QT_END_NAMESPACE
 
-class AddModel : public PluginInterface
+class AddModel : public EarthDataInterface
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID "io.tqjxlm.Atlas.PluginInterface" FILE "AddModel.json")
-	Q_INTERFACES(PluginInterface)
+  Q_OBJECT
+  Q_PLUGIN_METADATA(IID "io.tqjxlm.Atlas.PluginInterface" FILE "AddModel.json")
+  Q_INTERFACES(PluginInterface)
 
 public:
 	AddModel();
@@ -32,7 +32,7 @@ public:
 	virtual void setupUi(QToolBar* toolBar, QMenu* menu);
 
 public slots:
-	void addModelFromDB(QString modelName,QString modelFilePath,osg::Vec3 pos,osg::Vec3 norl);
+	void addModelFromDB(const QString& modelName,const QString& modelFilePath,osg::Vec3 pos,osg::Vec3 norl);
 	virtual void toggle(bool checked = true) override;
 
 protected:

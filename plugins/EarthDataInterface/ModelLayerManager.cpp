@@ -146,7 +146,7 @@ void ModelLayerManager::getFeatureAttribute(const QString& path, QVector<attrib>
 }
 
 // Vector annotation layer
-osg::ref_ptr<osgEarth::ModelLayer> ModelLayerManager::createModelLabelLayer(QString layerPath, std::string fieldName, float height)
+osg::ref_ptr<osgEarth::ModelLayer> ModelLayerManager::createModelLabelLayer(const QString& layerPath, std::string fieldName, float height)
 {
 	//StyleConfig _config = _settingmanager->gemStyleConfig("");
 
@@ -198,7 +198,7 @@ osg::ref_ptr<osgEarth::ModelLayer> ModelLayerManager::createModelLabelLayer(QStr
 	return lableLayer;
 }
 
-osg::ref_ptr<osgEarth::ModelLayer> ModelLayerManager::changeLayerStyle(std::string path, QString gemtype, std::string iconPath, float layerHeight)
+osg::ref_ptr<osgEarth::ModelLayer> ModelLayerManager::changeLayerStyle(std::string path, const QString& gemtype, std::string iconPath, float layerHeight)
 {
 	Style style;
 

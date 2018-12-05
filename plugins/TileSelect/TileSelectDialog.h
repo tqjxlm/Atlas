@@ -16,8 +16,8 @@ public:
     ~TileSelectDialog();
 
 public slots:
-    void selectTileSlot(QString tileName);
-    void unselectTileSlot(QString tileName);
+    void selectTileSlot(const QString& tileName);
+    void unselectTileSlot(const QString& tileName);
     void okAllBtClicked();
     void cancleAllBtClicked();
     void updateLabelCount();

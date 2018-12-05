@@ -57,6 +57,6 @@ void AddXYZData::addImage()
 
 		QVector<attrib> attribute;
 
-		addLayerToMap(layer, IMAGE_LAYER, url, attribute);
+		addLayerToMap(url, layer, IMAGE_LAYER, attribute);
 	}
 }

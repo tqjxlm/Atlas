@@ -92,10 +92,12 @@ void MapController::updateCamera(osg::Camera &camera)
 	if (_inAnimation && ++_timeStamp == _interval)
 	{
 		// The flying action is performed in three stages
-		if (_isFlying)
-			flyingMovement();
-		else if (_isScreenSaving)
-			screenSaversMovement();
+    if (_isFlying)
+      flyingMovement();
+    else if (_isScreenSaving)
+      screenSaversMovement();
+    else
+      _inAnimation = false;
 		_timeStamp = 0;
 	}
 
@@ -187,7 +189,7 @@ void MapController::fitViewOnNode(const osg::Node* scene, double addHeight)
 void MapController::fitViewOnBounding(const osg::BoundingSphere* bs, double addHeight)
 {
 	setCenter(osg::Vec3(bs->center().x(), bs->center().y(), bs->center().z()));
-	setDistance(bs->radius() * 3 + addHeight);
+	setDistance(bs->radius() * 3);
 	setHeading(ZERO_LIMIT);
 	setElevation(osg::PI/2 - ZERO_LIMIT);
 	osg::Vec3d eye, center, up;
@@ -195,7 +197,7 @@ void MapController::fitViewOnBounding(const osg::BoundingSphere* bs, double addH
 	setHomePosition(eye, center, up);
 }
 
-void MapController::setViewPoint(const osgEarth::Viewpoint & vp)
+void MapController::setViewPoint(const osgEarth::Viewpoint &vp)
 {
     if (!vp.isValid())
         return;
@@ -328,7 +330,7 @@ void MapController::rotateWithFixedVertical(const float dx, const float dy)
 	Vec3d localUp = getUpVector(coordinateFrame);
 
 	// Keep elevation above certain value
-	if (getElevation() > -0.0 && dy > 0)
+	if (getElevation() > osg::DegreesToRadians(-30.0) && dy > 0)
 		rotateYawPitch(_rotation, dx, 0, localUp);
 	else
 		rotateYawPitch(_rotation, dx, dy, localUp);

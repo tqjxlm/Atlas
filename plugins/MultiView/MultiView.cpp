@@ -62,7 +62,7 @@ void  MultiView::loadContextMenu(QMenu *contextMenu, QTreeWidgetItem *selectedIt
   int  mask = _dataManager->getMask(selectedItem->text(0));
 
 	showInWindow1Action->setChecked((mask & SHOW_IN_WINDOW_1) != 0x00000000);
-	showInWindow2Action->setChecked((mask & SHOW_IN_WINDOW_2) != 0x00000000);
+	showInWindow2Action->setChecked((mask & SHOW_IN_WINDOW_1 << 1) != 0x00000000);
 	contextMenu->addAction(showInWindow1Action);
 	contextMenu->addAction(showInWindow2Action);
 }
@@ -138,7 +138,7 @@ void  MultiView::initSubView()
 {
 	_subViewWidget = _mainViewer->createViewWidget(_mainViewer->createGraphicsWindow(0, 0, 1280, 1024, "Window2", true), _root);
   _subView       = _mainViewer->getView(_mainViewer->getNumViews() - 1);
-	_subView->getCamera()->setCullMask(SHOW_IN_WINDOW_2 | SHOW_IN_NO_WINDOW);
+	_subView->getCamera()->setCullMask(SHOW_IN_WINDOW_1 << 1 | SHOW_IN_NO_WINDOW);
 
 	_subView->setCameraManipulator(_mainViewer->getMainView()->getCameraManipulator(), false);
 }
@@ -146,12 +146,12 @@ void  MultiView::initSubView()
 void  MultiView::moveToWindow()
 {
   QList<QTreeWidgetItem *>  itemList = _dataManager->getSelectedItems();
-  foreach(QTreeWidgetItem * item, itemList)
+  for(auto item : itemList)
 	{
     QTreeWidgetItem *parent   = item->parent();
     auto             nodeName = item->text(0);
     int              mask     = (showInWindow1Action->isChecked() ? SHOW_IN_WINDOW_1 : 0)
-                                | (showInWindow2Action->isChecked() ? SHOW_IN_WINDOW_2 : 0);
+                                | (showInWindow2Action->isChecked() ? SHOW_IN_WINDOW_1 << 1 : 0);
 
 		_dataManager->setMask(nodeName, mask);
 	}

@@ -26,7 +26,7 @@ using namespace osgEarth::Drivers;
 #include <ogr_geometry.h>
 #include <ogr_feature.h>
 
-static QVector<attrib>  getGDALinfo_Raster(const QString &path)
+static QVector<attrib>  getGDALinfo_Raster(const QString& path)
 {
   QVector<attrib>  attribList;
   char             str[1000];
@@ -133,7 +133,7 @@ static QVector<attrib>  getGDALinfo_Raster(const QString &path)
 	return attribList;
 }
 
-static QVector<attrib>  getGDALinfo_Vector(const QString &path, QVector<feature> &featureTable)
+static QVector<attrib>  getGDALinfo_Vector(const QString& path, QVector<feature> &featureTable)
 {
   QVector<attrib>  attribList;
   char             str[1000];
@@ -266,7 +266,7 @@ void  AddGDALData::addTerrain()
 
     QVector<attrib>  attribute = getGDALinfo_Raster(fileName);
 
-		addLayerToMap(layer, TERRAIN_LAYER, fileName, attribute);
+		addLayerToMap(fileName, layer, TERRAIN_LAYER, attribute);
 
 		progress += step;
     emit  loadingProgress(progress);
@@ -313,7 +313,7 @@ void  AddGDALData::addFeature()
     ModelLayerOptions *options = new ModelLayerOptions(nodeName, geomOptions);
     auto               layer   = new ModelLayer(*options);
 
-		addLayerToMap(fileName, layer);
+		addLayerToMap(fileName, layer, FEATURE_LAYER);
 		progress += step;
     emit  loadingProgress(progress);
 	}
@@ -346,7 +346,7 @@ void  AddGDALData::addImage()
 
     QVector<attrib>  attribute = getGDALinfo_Raster(fileName);
 
-		addLayerToMap(layer, IMAGE_LAYER, fileName, attribute);
+		addLayerToMap(fileName, layer, IMAGE_LAYER, attribute);
 
 		progress += step;
     emit  loadingProgress(progress);

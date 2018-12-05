@@ -33,10 +33,6 @@ CrowdSim::~CrowdSim()
 	{
 		delete _pathPlanner;
 	}
-
-#ifdef _DEBUG
-	OutputDebugStringA("CrowdSim destructed.");
-#endif
 }
 
 AgentGroup * CrowdSim::addAgentGroup(int numAgents, double x, double y, double dx, double dy)
@@ -199,12 +195,6 @@ void  CrowdSim::init(double x, double y, double w, double h)
 	{
 		delete _pathPlanner;
 	}
-
-#ifdef _DEBUG
-  char  debug[80];
-	sprintf_s(debug, "Simulator inited with: %lf, %lf, %lf, %lf\n", x, y, w, h);
-	OutputDebugStringA(debug);
-#endif
 
   _scene       = new Scene(x, y, w, h);
 	_pathPlanner = new PathPlanner(_scene->getGrid());

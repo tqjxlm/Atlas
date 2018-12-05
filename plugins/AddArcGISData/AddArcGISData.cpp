@@ -164,7 +164,7 @@ void  AddArcGISData::addImage()
 		layerOpt.magFilter() = osg::Texture::LINEAR;
     osg::ref_ptr<osgEarth::ImageLayer>  layer = new ImageLayer(layerOpt);
 
-		addLayerToMap(layer, IMAGE_LAYER, fileName, attribute, extent);
+		addLayerToMap(fileName, layer, IMAGE_LAYER, attribute, extent);
 	}
 }
 
@@ -183,7 +183,7 @@ void  AddArcGISData::addTerrain()
     osg::ref_ptr<osgEarth::ElevationLayer>  layer     = new ElevationLayer(ElevationLayerOptions(nodeName, opt));
     QVector<attrib>                         attribute = getArcGISInfo(nodeName, extent);
 
-		addLayerToMap(layer, TERRAIN_LAYER, fileName, attribute, extent);
+		addLayerToMap(fileName, layer, TERRAIN_LAYER, attribute, extent);
 	}
 }
 
@@ -213,6 +213,6 @@ void  AddArcGISData::addFeature()
 		arcGeomOptions.enableLighting() = false;
     auto  layer = new ModelLayer(ModelLayerOptions(nodeName, arcGeomOptions));
 
-		addLayerToMap(fileName, layer);
+		addLayerToMap(fileName, layer, FEATURE_LAYER);
 	}
 }

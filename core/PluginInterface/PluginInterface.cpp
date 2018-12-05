@@ -14,6 +14,7 @@
 #include <osgViewer/View>
 
 #include <osgEarth/TerrainLayer>
+#include <osgEarth/Viewpoint>
 
 #include <SettingsManager/SettingsManager.h>
 
@@ -239,12 +240,12 @@ bool  PluginInterface::handle(const osgGA::GUIEventAdapter &ea, osgGA::GUIAction
 	}
 }
 
-QVariant  PluginInterface::getOrAddPluginSettings(const QString &key, const QVariant &value)
+QVariant  PluginInterface::getOrAddPluginSettings(const QString& key, const QVariant &value)
 {
   return _settingsManager->getOrAddSetting(_pluginName + "/" + key, value);
 }
 
-QVariant  PluginInterface::setPluginSettings(const QString &key, const QVariant &value)
+QVariant  PluginInterface::setPluginSettings(const QString& key, const QVariant &value)
 {
   QSettings().setValue(_pluginName + "/" + key, value);
 
@@ -336,7 +337,7 @@ void  PluginInterface::uncheckMutexActions(QAction *action)
   }
 }
 
-void  PluginInterface::recordCurrent(const QString &parent)
+void  PluginInterface::recordCurrent(const QString& parent)
 {
   QString  nodeName;
 
@@ -352,7 +353,7 @@ void  PluginInterface::recordCurrent(const QString &parent)
   emit  recordData(_currentDrawNode, nodeName, parent.isEmpty() ? _pluginName : parent);
 }
 
-void  PluginInterface::recordNode(osg::Node *node, const QString &name, const QString &parent)
+void  PluginInterface::recordNode(osg::Node *node, const QString& name, const QString& parent)
 {
   QString  nodeName = name.isEmpty() ? QString::fromStdString(node->getName()) : name;
 
@@ -364,7 +365,7 @@ void  PluginInterface::recordNode(osg::Node *node, const QString &name, const QS
   emit  recordData(node, nodeName, parent.isEmpty() ? _pluginName : parent);
 }
 
-void PluginInterface::recordLayer(osgEarth::Layer * layer, const QString & name, const QString & parent)
+void PluginInterface::recordLayer(osgEarth::Layer * layer, const QString& name, const QString& parent)
 {
   emit  recordData(layer, name.isEmpty() ? QString::fromStdString(layer->getName()) : name, parent.isEmpty() ? _pluginName : parent);
 }

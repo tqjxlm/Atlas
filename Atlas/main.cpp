@@ -24,7 +24,7 @@ int  main(int argc, char *argv[])
   AtlasSplashScreen *splash = new AtlasSplashScreen(a);
   Atlas              w;
 	QObject::connect(&w, SIGNAL(sendTotalInitSteps(int)), splash, SLOT(setTotalInitSteps(int)));
-	QObject::connect(&w, SIGNAL(sendNowInitName(QString)), splash, SLOT(setNowInitName(QString)));
+	QObject::connect(&w, SIGNAL(sendNowInitName(const QString&)), splash, SLOT(setNowInitName(const QString&)));
 
 	splash->show();
   w.initAll();

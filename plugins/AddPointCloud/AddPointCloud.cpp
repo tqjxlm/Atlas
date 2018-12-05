@@ -160,7 +160,7 @@ void  AddPointCloud::setPointSize(int size)
 	_pluginRoot->getStateSet()->setAttribute(point);
 }
 
-void  AddPointCloud::loadPointCloudModel(const QString &fileName)
+void  AddPointCloud::loadPointCloudModel(const QString& fileName)
 {
 	if (fileName.section(".", 1, 1) == "txt")
 	{

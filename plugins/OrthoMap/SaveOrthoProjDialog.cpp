@@ -67,7 +67,7 @@ void SaveOrthoProjDialog::startCapturing()
 		return;
 
 	_waitDialog = new WaitProgressDialog("", "", 0, ((osg::MatrixTransform*)_scene)->getNumChildren(), this, Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-	connect(this, SIGNAL(updateWaitMessage(QString)), _waitDialog, SLOT(updateMessage(QString)));
+	connect(this, SIGNAL(updateWaitMessage(const QString&)), _waitDialog, SLOT(updateMessage(const QString&)));
 	connect(this, SIGNAL(updateTime()), _waitDialog, SLOT(updateTime()));
 	_waitDialog->adjustSize();
 	_waitDialog->setWindowModality(Qt::WindowModal);
@@ -371,7 +371,7 @@ void SaveOrthoProjDialog::finish()
 	_finished = true;
 }
 
-void SaveOrthoProjDialog::captureFailed(QString msg)
+void SaveOrthoProjDialog::captureFailed(const QString& msg)
 {
 	QMessageBox::critical(this,tr("Error"),tr("Insufficient memory. Please lower pixel number or increase tile number and retry.")); 
 	_waitDialog->close();
@@ -397,7 +397,7 @@ void SaveOrthoProjDialog::waitForCapturing(bool started)
 	}
 }
 
-void SaveOrthoProjDialog::advanceCapturing(QString msg)
+void SaveOrthoProjDialog::advanceCapturing(const QString& msg)
 {
 	if (!_successed)
 	{

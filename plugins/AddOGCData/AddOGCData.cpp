@@ -158,7 +158,7 @@ void  AddOGCData::addTerrain()
     auto  layer = new ElevationLayer(ElevationLayerOptions(nodeName, opt));
 
     QVector<attrib>  attribute;
-		addLayerToMap(layer, TERRAIN_LAYER, fileName, attribute);
+		addLayerToMap(fileName, layer, TERRAIN_LAYER, attribute);
 	}
 }
 
@@ -190,7 +190,7 @@ void  AddOGCData::addFeature()
 		geomOptions.enableLighting() = false;
     auto  layer = new ModelLayer(ModelLayerOptions(nodeName, geomOptions));
 
-		addLayerToMap(fileName, layer);
+		addLayerToMap(fileName, layer, FEATURE_LAYER);
 	}
 }
 
@@ -218,6 +218,6 @@ void  AddOGCData::addImage()
 
     auto  layer = new ImageLayer(ImageLayerOptions(nodeName, opt));
 
-		addLayerToMap(layer, TERRAIN_LAYER, fileName, attribute, extent);
+		addLayerToMap(fileName, layer, TERRAIN_LAYER, attribute, extent);
 	}
 }

@@ -79,7 +79,7 @@ public slots:
 	// Fit view on bounding immediately
 	void fitViewOnBounding(const osg::BoundingSphere* bs, double addHeight);
 
-    void setViewPoint(const osgEarth::Viewpoint& vp);
+    void setViewPoint(const osgEarth::Viewpoint & vp);
 
 protected slots:
 	void screenSaversMovement();

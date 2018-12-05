@@ -24,7 +24,7 @@ public:
 
 signals:
 	void progress(int);
-	void done(osg::Node*);
+	void done();
 
 private:
 	QFileInfoList _allFileList;

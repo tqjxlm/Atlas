@@ -70,7 +70,7 @@ signals:
 	// For splash screen
   void  sendTotalInitSteps(int);
 
-  void  sendNowInitName(QString);
+  void  sendNowInitName(const QString&);
 
 private:
 	// Core components
@@ -79,9 +79,9 @@ private:
 	// Managers
   DataManager     *_dataManager;
   SettingsManager *_settingsManager;
-  ViewerWidget    *_mainViewerWidget;
   PluginManager   *_pluginManager;
-  MousePicker     *_mousePicker;
+  osg::ref_ptr<ViewerWidget>    _mainViewerWidget;
+  osg::ref_ptr<MousePicker>     _mousePicker;
 
 	// OSG main roots and nodes
   osg::ref_ptr<osg::Group>                      _root;

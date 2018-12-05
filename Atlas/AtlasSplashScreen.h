@@ -18,7 +18,7 @@ private:
 
 private slots:
 	void setTotalInitSteps(int num);
-	void setNowInitName(QString name);
+	void setNowInitName(const QString& name);
 
 };
 

@@ -33,20 +33,20 @@ public:
   }
 
 signals:
-  void  updateWaitMessage(QString);
+  void  updateWaitMessage(const QString&);
 
   void  updateTime();
 
 public slots:
   void  waitForCapturing(bool started);
 
-  void  advanceCapturing(QString msg);
+  void  advanceCapturing(const QString& msg);
 
   void  startCapturing();
 
   void  writeWithGDAL();
 
-  void  captureFailed(QString msg);
+  void  captureFailed(const QString& msg);
 
   void  fixNodata(int exitCode, QProcess::ExitStatus exitStatus);
 

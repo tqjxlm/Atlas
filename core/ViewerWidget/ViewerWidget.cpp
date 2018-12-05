@@ -12,7 +12,7 @@
 #include <osgViewer/ViewerEventHandlers>
 #include <osgQt/GraphicsWindowQt>
 
-#include <DataManager/DataManager.h>
+#include <DataManager/FindNode.hpp>
 
 #include "Compass.h"
 
@@ -39,12 +39,6 @@ ViewerWidget::ViewerWidget(osg::Node* mainScene, int x, int y, int w, int h, osg
 	_grid->addWidget(_mainWidget, 0, 0);
 	_grid->setMargin(1);
 	setLayout(_grid);
-
-	// Camera recording capability
-	osg::ref_ptr<osgViewer::RecordCameraPathHandler> rcph = new osgViewer::RecordCameraPathHandler;
-	rcph->setKeyEventToggleRecord('z');
-	rcph->setKeyEventTogglePlayback('x');
-	_mainView->addEventHandler(rcph);
 
 	initCompass(mainScene->asGroup());
 
@@ -82,17 +76,7 @@ QWidget* ViewerWidget::createViewWidget(osgQt::GraphicsWindowQt* gw, osg::Node* 
 	camera->setGraphicsContext(gw);
 	camera->setClearColor(osg::Vec4(0.95, 0.95, 0.95, 1.0));
 	camera->setViewport(new osg::Viewport(0, 0, traits->width, traits->height));
-	camera->setProjectionMatrixAsPerspective(
-		30.0f, static_cast<double>(traits->width) / static_cast<double>(traits->height), 0.1f, 100000.0f);
-
-	// Nearfar mode and ratio affect scene clipping
-	camera->setComputeNearFarMode(osg::Camera::COMPUTE_NEAR_FAR_USING_BOUNDING_VOLUMES);
-	camera->setNearFarRatio(0.000002);
-
-	// Double buffer, not sure if it is neccesary
-	GLuint buffer = gw->getTraits()->doubleBuffer ? GL_BACK : GL_FRONT;
-	camera->setReadBuffer(buffer);
-	camera->setDrawBuffer(buffer);
+  camera->setSmallFeatureCullingPixelSize(-1.0f);
 
 	// Init the scene
 	view->setSceneData(scene);
@@ -175,7 +159,7 @@ void ViewerWidget::setFrameRate(int FPS)
 	startRendering();
 }
 
-osg::ref_ptr<osg::Camera> ViewerWidget::createLegendHud(QString titleString, QVector<osg::Vec4> colorVec, QVector<QString> txtVec)
+osg::ref_ptr<osg::Camera> ViewerWidget::createLegendHud(const QString& titleString, QVector<osg::Vec4> colorVec, QVector<QString> txtVec)
 {
 	// An hud camera
 	osg::ref_ptr<osg::Camera> hudCamera = new osg::Camera;

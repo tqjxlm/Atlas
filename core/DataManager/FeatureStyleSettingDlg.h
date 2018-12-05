@@ -13,7 +13,7 @@ public:
 	FeatureStyleSettingDlg(QWidget *parent = 0);
 	~FeatureStyleSettingDlg();
 
-	void setLayerStyle(std::string gemtype,float layerHeight,QString layerName, float layerHeightPre);
+	void setLayerStyle(std::string gemtype,float layerHeight,const QString& layerName, float layerHeightPre);
 
 	QString getIconPath() { return _iconPath; }
 	float getLayerHeight() { return _layerHeight; }

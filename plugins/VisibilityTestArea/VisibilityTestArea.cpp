@@ -23,7 +23,6 @@
 #include <osgSim/OverlayNode>
 #include <osgQt/GraphicsWindowQt>
 
-#include <DataManager/DataManager.h>
 #include <ViewerWidget/ViewerWidget.h>
 
 #define SM_TEXTURE_WIDTH 1024
@@ -54,7 +53,7 @@ static osg::Vec4  colorToVec(const QColor &color)
   return osg::Vec4(color.redF(), color.greenF(), color.blueF(), color.alphaF());
 }
 
-static osg::ref_ptr<osg::Program>  generateShader(QString vertFile, QString fragFile, QString geomFile = "")
+static osg::ref_ptr<osg::Program>  generateShader(const QString& vertFile, const QString& fragFile, QString geomFile = "")
 {
   osg::ref_ptr<osg::Program>  program = new osg::Program;
 

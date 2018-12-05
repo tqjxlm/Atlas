@@ -1,4 +1,10 @@
 {
   "Name": "AddModel",
-  "Version": "0.0.1"
+  "Version": "0.0.1",
+  "Dependencies": [
+    {
+      "Name": "EarthDataInterface",
+      "Version": "0.0.1"
+    }
+  ]
 }

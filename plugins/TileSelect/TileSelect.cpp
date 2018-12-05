@@ -219,8 +219,8 @@ void TileSelect::unselectAllTileSlots()
 void TileSelect::initTileSelectDialog(int itemTotalCount)
 {
     _tileSelectDlg = new TileSelectDialog(itemTotalCount, _mainWindow);
-    connect(this, SIGNAL(tileSelected(QString)), _tileSelectDlg, SLOT(selectTileSlot(QString)), Qt::UniqueConnection);
-    connect(this, SIGNAL(tileUnSelected(QString)), _tileSelectDlg, SLOT(unselectTileSlot(QString)), Qt::UniqueConnection);
+    connect(this, SIGNAL(tileSelected(const QString&)), _tileSelectDlg, SLOT(selectTileSlot(const QString&)), Qt::UniqueConnection);
+    connect(this, SIGNAL(tileUnSelected(const QString&)), _tileSelectDlg, SLOT(unselectTileSlot(const QString&)), Qt::UniqueConnection);
     connect(_tileSelectDlg, SIGNAL(closed()), _action, SLOT(toggle()));
     connect(_tileSelectDlg, SIGNAL(selectAllTile()), this, SLOT(selectAllTilesSlots()), Qt::UniqueConnection);
     connect(_tileSelectDlg, SIGNAL(unselectAllTile()), this, SLOT(unselectAllTileSlots()), Qt::UniqueConnection);

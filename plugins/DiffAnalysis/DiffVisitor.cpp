@@ -16,7 +16,7 @@ DiffVisitor::DiffVisitor(osg::Vec2Array *boundary, osg::Node *scene, bool loadHi
 	_intersector = new osgUtil::LineSegmentIntersector(osgUtil::Intersector::MODEL, osg::Vec3(), osg::Vec3());
 	_iv.setIntersector(_intersector);
 	// Compare with window 2 only
-	_iv.setTraversalMask(SHOW_IN_WINDOW_2 | SHOW_IN_NO_WINDOW & INTERSECT_IGNORE);
+	_iv.setTraversalMask(SHOW_IN_WINDOW_1 << 1 | SHOW_IN_NO_WINDOW & INTERSECT_IGNORE);
 
 	_differentPoints = new osg::Vec3Array;
 }

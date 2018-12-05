@@ -55,6 +55,13 @@ EarthDataInterface::EarthDataInterface()
         tr("Feature"),
         tr("Add feature maps")
     };
+    _dataGroups[MODEL_LAYER] = {
+      tr("Models"),
+      QStringLiteral("addModel"),
+      QStringLiteral("resources/icons/model.png"),
+      tr("Model"),
+      tr("Add models")
+    };
 }
 
 EarthDataInterface::~EarthDataInterface()
@@ -68,8 +75,8 @@ void  EarthDataInterface::setupUi(QToolBar *toolBar, QMenu *menu)
 
     for (unsigned i = 0; i < ALL_TYPE; i++)
     {
-        QMenu *menu = getOrAddMenu((DataType)i);
-        getOrAddToolButton((DataType)i, menu);
+        QMenu *menu = getOrAddMenu((LayerType)i);
+        getOrAddToolButton((LayerType)i, menu);
     }
 
     parseEarthNode();
@@ -82,7 +89,7 @@ void  EarthDataInterface::init()
     PluginInterface::init();
 }
 
-void  EarthDataInterface::showDataAttributes(QString nodeName)
+void  EarthDataInterface::showDataAttributes(const QString& nodeName)
 {
     // TODO: Not used yet
 
@@ -103,7 +110,7 @@ void  EarthDataInterface::showDataAttributes(QString nodeName)
     // }
 }
 
-QMenu * EarthDataInterface::getOrAddMenu(DataType dataType)
+QMenu * EarthDataInterface::getOrAddMenu(LayerType dataType)
 {
     if (dataType >= ALL_TYPE)
     {
@@ -131,7 +138,7 @@ QMenu * EarthDataInterface::getOrAddMenu(DataType dataType)
     return menu;
 }
 
-QToolButton * EarthDataInterface::getOrAddToolButton(DataType dataType, QMenu *menu)
+QToolButton * EarthDataInterface::getOrAddToolButton(LayerType dataType, QMenu *menu)
 {
     if (dataType >= ALL_TYPE)
     {
@@ -161,7 +168,7 @@ QToolButton * EarthDataInterface::getOrAddToolButton(DataType dataType, QMenu *m
     return button;
 }
 
-void  EarthDataInterface::getFeatureAttribute(const QString &path, QVector<attrib> &attributeList, QStringList &featureFieldList,
+void  EarthDataInterface::getFeatureAttribute(const QString& path, QVector<attrib> &attributeList, QStringList &featureFieldList,
     osgEarth::Symbology::Style *style)
 {
     _modelLayerManager->getFeatureAttribute(path, attributeList, featureFieldList, style);
@@ -169,11 +176,11 @@ void  EarthDataInterface::getFeatureAttribute(const QString &path, QVector<attri
     _dataManager->updateFeatureFieldList(path, featureFieldList);
 }
 
-void  EarthDataInterface::addLayerToMap(const QString &path, osgEarth::ModelLayer *layer)
+void  EarthDataInterface::addLayerToMap(const QString& name, osg::ref_ptr<osgEarth::ModelLayer> layer, LayerType dataType, const QString& parent)
 {
-    if (!layer)
+    if (!layer.valid())
     {
-        QMessageBox::warning((QWidget *)parent(), tr("Error"), tr("Create node failed!"));
+        QMessageBox::warning((QWidget *)(this->parent()), tr("Error"), tr("Create node failed!"));
         return;
     }
 
@@ -182,16 +189,28 @@ void  EarthDataInterface::addLayerToMap(const QString &path, osgEarth::ModelLaye
         _mainMap[i]->addLayer(layer);
     }
 
-    emit recordData(layer, path, tr("Feature Layers"));
-
     layer->setName(layer->getName());
 
-    layer->setUserValue("gemtype", _modelLayerManager->getGemType().toStdString());
-
-    layer->setUserValue("layerheight", 0);
+    switch (dataType)
+    {
+    case(FEATURE_LAYER):
+      emit recordData(layer, name, tr("Feature Layers"));
+      layer->setUserValue("gemtype", _modelLayerManager->getGemType().toStdString());
+      layer->setUserValue("layerheight", 0);
+      break;
+    case(MODEL_LAYER):
+      if (!parent.isEmpty())
+        emit recordData(layer, name, parent);
+      else
+        osgEarth::notify(osg::WARN) << "Model map adding failed, invalid tree parent";
+      break;
+    default:
+      osgEarth::notify(osg::WARN) << "Model map adding failed, invalid data type";
+      break;
+    }
 }
 
-void EarthDataInterface::addLayerToMap(osg::ref_ptr<osgEarth::Layer> layer, DataType dataType, QString & fileName, QVector<attrib>& attribute, osgEarth::GeoExtent * extent)
+void EarthDataInterface::addLayerToMap(const QString& name, osg::ref_ptr<osgEarth::Layer> layer, LayerType dataType, QVector<attrib>& attribute, osgEarth::GeoExtent * extent)
 {
     if (layer.valid())
     {
@@ -200,9 +219,9 @@ void EarthDataInterface::addLayerToMap(osg::ref_ptr<osgEarth::Layer> layer, Data
             _mainMap[i]->addLayer(layer);
         }
 
-        emit  recordData(layer, fileName, _dataGroups[dataType].dataTreeTitle, extent);
+        emit  recordData(layer, name, _dataGroups[dataType].dataTreeTitle, extent);
 
-        _dataManager->updateAttributeList(fileName, attribute);
+        _dataManager->updateAttributeList(name, attribute);
     }
     else
     {

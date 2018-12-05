@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <QtPlugin>
-#include <PluginInterface/PluginInterface.h>
+#include <EarthDataInterface/EarthDataInterface.h>
 
 #include <QMutex>
 
@@ -10,7 +10,7 @@ class QAction;
 class QMenu;
 QT_END_NAMESPACE
 
-class AddObliqueModel : public PluginInterface
+class AddObliqueModel : public EarthDataInterface
 {
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID "io.tqjxlm.Atlas.PluginInterface" FILE "AddObliqueModel.json")
@@ -26,6 +26,7 @@ protected slots:
 
 protected:
 	void loadObliqueModel(const QString& pathXML);
+  void onLoadingDone(const QString& nodeName, osg::Node *model, const osgEarth::GeoPoint &geoOrigin);
 
 private:
 	QMutex _loadingLock;

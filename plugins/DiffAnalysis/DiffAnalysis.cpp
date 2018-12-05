@@ -306,7 +306,7 @@ void  DiffAnalysis::onDoubleClick()
     // return;
     // osg::ref_ptr<osg::Geometry> polyg = generateContour(_contour);
 
-    // _currentDrawNode->setNodeMask(SHOW_IN_WINDOW_2);
+    // _currentDrawNode->setNodeMask(SHOW_IN_WINDOW_1 << 1);
 
     // _currentAnchor->removeChild(_currentDrawNode);
 

@@ -23,7 +23,7 @@ FeatureStyleSettingDlg::~FeatureStyleSettingDlg()
 
 }
 
-void FeatureStyleSettingDlg::setLayerStyle(std::string gemtype, float layerHeight, QString layerName,float layerHeightPre)
+void FeatureStyleSettingDlg::setLayerStyle(std::string gemtype, float layerHeight, const QString& layerName,float layerHeightPre)
 {
 	if (QString::fromStdString(gemtype).contains("Point")|| QString::fromStdString(gemtype).contains("Icon"))
 		_ui.iconComboBox->setEnabled(true);
