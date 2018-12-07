@@ -183,6 +183,7 @@ void  Atlas::initDataStructure()
     new osg::BlendFunc(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA));
   _overlayNode->setOverlayBaseHeight(-1);
   _overlayNode->setOverlayTextureSizeHint(2048);
+  _overlayNode->setOverlayTextureUnit(5);
 
   _overlaySubgraph = new osg::PositionAttitudeTransform;
   _overlayNode->setOverlaySubgraph(_overlaySubgraph);

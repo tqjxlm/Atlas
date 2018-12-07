@@ -10,6 +10,11 @@
 #include <QToolBar>
 #include <QAction>
 #include <QFileDialog>
+#include <QMessageBox>
+
+#include <osgEarthAnnotation/ModelNode>
+#include <osgEarthSymbology/GeometryFactory>
+using namespace osgEarth::Annotation;
 
 AddModel::AddModel()
 {
@@ -23,20 +28,15 @@ AddModel::~AddModel(void)
 
 bool AddModel::loadModel(std::string filePath)
 {
-	_filepath = QString::fromStdString(filePath);
-	_modelFile = osgDB::readNodeFile(filePath);
-	if (!_modelFile.valid())
-		return false;
-	
-	return true;
-}
+  osg::ref_ptr<osg::Node> node = osgDB::readRefNodeFile(filePath);
+  if (!node)
+    return false;
 
-void AddModel::showNewModel()
-{
-	_pat = new osg::PositionAttitudeTransform;
-	_pat->setPosition(_anchoredWorldPos);
-	_pat->addChild(_modelFile.get());
-	_currentAnchor->addChild(_pat);
+  _modelNode = new osg::PositionAttitudeTransform;
+  _modelNode->addChild(node);
+  _drawRoot->addChild(_modelNode);
+
+	return true;
 }
 
 void AddModel::setupUi(QToolBar* toolBar, QMenu* menu)
@@ -123,98 +123,64 @@ void AddModel::toggle(bool checked)
 		}
 		else if (actionName == "addModFromFileAction")
 		{
-			filePath = QFileDialog::getOpenFileName(_mainWindow, tr("Load model"), " ", tr("OSGB model(*.osgb);;obj model(*.obj);;3ds model(*.3ds);;Allfile(*.*);"));
+			filePath = QFileDialog::getOpenFileName(_mainWindow, 
+        tr("Load model"), " ", 
+        tr("Supported models(*.osgb *.osg *.obj *.3ds *.ive *.dae *.fbx);;Allfile(*.*);"));
 		}
 
 		if (filePath.isEmpty())
 			return;
-		if (!loadModel(filePath.toLocal8Bit().toStdString()))
-			return;
-		else
-			showNewModel();
+
+    _filepath = filePath;
+    if (!loadModel(filePath.toLocal8Bit().toStdString()))
+    {
+      QMessageBox::critical(nullptr, tr("Error"), tr("Failed to load model"));
+      return;
+    }
 	}
 
 	_activated = checked;
 }
 
-void AddModel::addModelFromDB(const QString& modelName,const QString& modelFilePath,osg::Vec3 pos,osg::Vec3 norl)
-{
-	bool isok = loadModel(modelFilePath.toLocal8Bit().toStdString());
-
-	_currentAnchor->addChild(_pat.get());
-
-	if (isok)
-	{
-		_pat->setPosition(pos);
-
-		_pat->setUserValue("normal",norl);
-		_pat->setUserValue("position", pos);
-		_pat->setUserValue("filepath",modelFilePath.toLocal8Bit().toStdString());
-
-		PluginInterface::recordNode(_pat,modelName);
-	}
-}
-
 void AddModel::onLeftButton()
 {
-	
-	if (_currentWorldPos.z() < -100)
-		_currentWorldPos.z() = 1;
+  if (_activated)
+  {
+    // Save the temporary model to MapNode
+    Style style;
+    style.getOrCreate<ModelSymbol>()->setModel(_modelNode->getChild(0));
 
-	_pat->setUserValue("position", _currentWorldPos);
-	_pat->setUserValue("normal", _intersections.begin()->getWorldIntersectNormal());
-	_pat->setUserValue("filepath",_filepath.toLocal8Bit().toStdString());
-	_pat->setPosition(_currentWorldPos);
-    
-	if (_pluginRoot->getChildIndex(_pat) != -1)
-		_currentAnchor->removeChild(_pat);
+    osg::ref_ptr<osgEarth::Annotation::ModelNode> model;
+    model = new ModelNode(_mapNode[0], style);
+    model->setPosition(_currentGeoPos);
+    _mapNode[0]->addChild(model);
 
-	 _currentAnchor->addChild(_pat);
-
-	recordCurrent();
-
-	showNewModel();
+    recordNode(model, _filepath);
+  }
 }
 
 void AddModel::onRightButton()
 {
-	finish();
+  if (_activated)
+	  finish();
 }
 
 void AddModel::onMouseMove()
 {
-	if ( pointValid() )
-	{		
-		_pat->setPosition(_anchoredWorldPos);
+	if (_activated && pointValid())
+	{
+    _modelNode->setPosition(_currentWorldPos);
 	}
 }
 
 void AddModel::finish()
 {
-	_modelFile = NULL;
-	_currentAnchor->removeChild(_pat.get());
+  _drawRoot->removeChild(_modelNode);
+  _modelNode = NULL;
 	_activated = false;
 
 	_modelFromFileAction->setChecked(false);
 	_modelAction1->setChecked(false);
 	_modelAction2->setChecked(false);
 	_modelAction3->setChecked(false);
-}
-
-
-void AddModel::recordCurrent()
-{
-	_instanceCount++;
-	
-	int index1 = _filepath.lastIndexOf("/");
-	QString strfile=_filepath.right(_filepath.length()-index1-1);
-	int index2 =  strfile.lastIndexOf(".");
-	QString name =strfile.left(index2);
-	
-	QDateTime time = QDateTime::currentDateTime();
-	QString strcurrntime = time.toString("yyyyMMddhhmmsszzz"); 
-	
-	_modelUniqID = _pluginName + "_" + name + strcurrntime;
-	_modelName = _modelUniqID;
-	PluginInterface::recordNode(_pat,QString((const char *)_modelName.toLocal8Bit()));
 }

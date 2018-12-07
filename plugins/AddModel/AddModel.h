@@ -7,6 +7,12 @@ namespace osg {
 	class PositionAttitudeTransform;
 }
 
+namespace osgEarth {
+  namespace Annotation {
+    class ModelNode;
+  }
+}
+
 QT_BEGIN_NAMESPACE
 class QToolBar;
 class QAction;
@@ -28,22 +34,14 @@ public:
 	virtual void onMouseMove();
 	virtual void finish();
 	virtual bool loadModel(std::string filePath);
-	virtual void showNewModel();
 	virtual void setupUi(QToolBar* toolBar, QMenu* menu);
 
 public slots:
-	void addModelFromDB(const QString& modelName,const QString& modelFilePath,osg::Vec3 pos,osg::Vec3 norl);
 	virtual void toggle(bool checked = true) override;
 
 protected:
-	virtual void recordCurrent();
-
-protected:
-	osg::ref_ptr<osg::Node> _modelFile;
+  osg::ref_ptr<osg::PositionAttitudeTransform> _modelNode;
 	QString _filepath;
-	osg::ref_ptr<osg::PositionAttitudeTransform> _pat;
-	QString _modelUniqID;
-	QString _modelName;
 
 	QAction* _modelAction1;
 	QAction* _modelAction2;

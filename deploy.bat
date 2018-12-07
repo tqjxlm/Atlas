@@ -53,6 +53,7 @@ xcopy "%THIRD_PARTY_DIR%\bin\libpedsimd.dll" "%OUT_DIR%\" /Y /D
 xcopy "%THIRD_PARTY_DIR%\bin\libpng16.dll" "%OUT_DIR%\" /Y /D
 xcopy "%THIRD_PARTY_DIR%\bin\libpq.dll" "%OUT_DIR%\" /Y /D
 xcopy "%THIRD_PARTY_DIR%\bin\libtiff.dll" "%OUT_DIR%\" /Y /D
+xcopy "%THIRD_PARTY_DIR%\bin\libfbxsdk.dll" "%OUT_DIR%\" /Y /D
 xcopy "%THIRD_PARTY_DIR%\bin\libbz2.dll" "%OUT_DIR%\" /Y /D
 xcopy "%THIRD_PARTY_DIR%\bin\libprotobuf.dll" "%OUT_DIR%\" /Y /D
 xcopy "%THIRD_PARTY_DIR%\bin\libxml2.dll" "%OUT_DIR%\" /Y /D
