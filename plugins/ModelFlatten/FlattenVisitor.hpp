@@ -6,6 +6,10 @@
 #include <osg/MatrixTransform>
 #include <osg/PagedLOD>
 
+#include <QStringList>
+#include <QFileInfo>
+#include <QString>
+
 class FlattenVisitor : public osg::NodeVisitor
 {
 public:

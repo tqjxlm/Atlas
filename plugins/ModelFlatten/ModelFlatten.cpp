@@ -8,158 +8,127 @@
 #include <QAction>
 #include <QToolBar>
 #include <QMenu>
+#include <QTreeWidgetItem>
+#include <QThread>
 
-#include "FlattenVisitor.hpp"
+#include <DataManager/DataRecord.h>
+
+#include "FlattenProcess.h"
 
 ModelFlatten::ModelFlatten()
 {
-    _pluginName = tr("Model Flatten");
+  _pluginName = tr("Model Flatten");
 
-    _pluginCategory = "Edit";
+  _pluginCategory = "Edit";
 }
 
 ModelFlatten::~ModelFlatten()
 {
-    QDir dir;
-    for (auto itr = _tempFileList.begin(); itr != _tempFileList.end(); itr++)
+  QDir dir;
+  for (auto itr = _tempFileList.begin(); itr != _tempFileList.end(); itr++)
+  {
+    for (auto it = itr->begin(); it != itr->end(); it++)
     {
-        for (auto it = itr->begin(); it != itr->end(); it++)
-        {
-            dir.remove(*it);
-        }
+      dir.remove(*it);
     }
+  }
 }
 
 void ModelFlatten::setupUi(QToolBar * toolBar, QMenu * menu)
 {
-    _action = new QAction(_mainWindow);
-    _action->setObjectName(QStringLiteral("flattenAction"));
-    _action->setCheckable(true);
-    _action->setEnabled(true);
-    QIcon icon24;
-    icon24.addFile(QStringLiteral("resources/icons/bulldozer.png"), QSize(), QIcon::Normal, QIcon::Off);
-    _action->setIcon(icon24);
-    _action->setVisible(true);
+  _action = new QAction(_mainWindow);
+  _action->setObjectName(QStringLiteral("flattenAction"));
+  _action->setCheckable(true);
+  _action->setEnabled(true);
+  QIcon icon24;
+  icon24.addFile(QStringLiteral("resources/icons/bulldozer.png"), QSize(), QIcon::Normal, QIcon::Off);
+  _action->setIcon(icon24);
+  _action->setVisible(true);
 
-    _action->setText(tr("Flatten"));
-    _action->setToolTip(tr("Flatten Model to Polygon"));
+  _action->setText(tr("Flatten"));
+  _action->setToolTip(tr("Flatten Model to Polygon"));
 
-    connect(_action, SIGNAL(toggled(bool)), this, SLOT(toggle(bool)));
-    registerMutexAction(_action);
+  connect(_action, SIGNAL(toggled(bool)), this, SLOT(toggle(bool)));
+  registerMutexAction(_action);
+}
 
-    toolBar->addAction(_action);
-    menu->addAction(_action);
+void ModelFlatten::loadContextMenu(QMenu * contextMenu, QTreeWidgetItem * selectedItem)
+{
+  if (selectedItem->parent()->text(0) == tr("Oblique Imagery Model"))
+  {
+    auto dataRecord = dynamic_cast<DataRecord*>(selectedItem);
+    if (dataRecord && !dataRecord->isLayer() && dataRecord->node())
+    {
+      contextMenu->addAction(_action);
+      _selectedNode = dataRecord->node()->asGroup();
+    }
+  }
 }
 
 void ModelFlatten::onLeftButton()
 {
-    if (_isDrawing)
+  if (!_isDrawing)
+  {
+    if (!_selectedNode)
     {
-        if (!_activatedModel)
-        {
-            return;
-        }
-        _boundary->push_back(osg::Vec2(_currentLocalPos.x(), _currentLocalPos.y()));
+      QMessageBox msg(QMessageBox::Warning, "Error", tr("Please operate on a model!"), QMessageBox::Ok);
+      msg.setWindowModality(Qt::WindowModal);
+      msg.exec();
+      DrawSurfacePolygon::onRightButton();
+      return;
     }
-    else
-    {
-        _activatedModel = NULL;
-        auto its = _intersections.begin();
-        for (auto it = its->nodePath.begin(); it != its->nodePath.end(); ++it)
-        {
-            if ((*it)->getNumParents() != 0 && (*it)->getParent(0) == _pluginRoot)
-            {
-                _activatedModel = dynamic_cast<osg::MatrixTransform*>(*it);
-            }
-        }
 
-        if (!_activatedModel)
-        {
-            QMessageBox msg(QMessageBox::Warning, "Error", tr("Please operate on a model!"), QMessageBox::Ok);
-            msg.setWindowModality(Qt::WindowModal);
-            msg.exec();
-            DrawSurfacePolygon::onRightButton();
-            return;
-        }
+    _boundary = new osg::Vec2Array;
+    _avgHeight = 0.0;
+  }
+  _avgHeight += _currentLocalPos.z();
+  _boundary->push_back(osg::Vec2(_currentLocalPos.x(), _currentLocalPos.y()));
 
-        _boundary = new osg::Vec2Array;
-        _boundary->push_back(osg::Vec2(_currentLocalPos.x(), _currentLocalPos.y()));
-        _avgHeight = 0.0;
-    }
-    _avgHeight += _currentLocalPos.z();
-
-    DrawSurfacePolygon::onLeftButton();
+  DrawSurfacePolygon::onLeftButton();
 }
 
 void ModelFlatten::onDoubleClick()
 {
-    if (_isDrawing)
-    {
-        _avgHeight /= _boundary->size();
-        std::vector<osg::ref_ptr<osg::Node>> childToDelete;
-        std::vector<osg::ref_ptr<osg::Node>> childToAdd;
+  if (_isDrawing)
+  {
+    // Prepare parameters for use in platten process
+    _avgHeight /= _boundary->size();
+    QStringList tempList;
 
-        osgUtil::Optimizer::TextureVisitor tv(true, false, false, false, false, false);
-        osg::ref_ptr<osgDB::ReaderWriter::Options> options = new osgDB::ReaderWriter::Options;
-        options->setOptionString("OutputTextureFiles WriteImageHint=IncludeData");
+    // Show a process dialog
+    int processValue = _selectedNode->getNumChildren();
+    QProgressDialog* pDialog = new QProgressDialog;
+    pDialog->setLabelText(tr("Processing..."));
+    pDialog->setRange(0, processValue);
+    pDialog->setCancelButtonText(tr("Cancel"));
+    pDialog->setWindowTitle(tr("Flatten Model"));
+    //process->setAttribute(Qt::WA_DeleteOnClose, true);
 
-        osg::ref_ptr<osgDB::ReaderWriter::Options> read_opt = new osgDB::ReaderWriter::Options;
-        read_opt->setOptionString("OutputTextureFiles WriteImageHint=IncludeData");
+    // Run the process in a second thread
+    QThread* workerThread = new QThread;
+    FlattenProcess* flattenProcess = new FlattenProcess;
+    flattenProcess->moveToThread(workerThread);
 
-        QStringList tempList;
+    connect(this, &ModelFlatten::startProcess, flattenProcess, &FlattenProcess::doFlatten);
+    connect(pDialog, &QProgressDialog::canceled, flattenProcess, &FlattenProcess::cancel);
+    connect(workerThread, &QThread::finished, flattenProcess, &QObject::deleteLater);
+    connect(workerThread, &QThread::finished, pDialog, &QProgressDialog::close);
+    connect(workerThread, &QThread::finished, workerThread, &QObject::deleteLater);
 
-        int processValue = _activatedModel->getNumChildren();
-        QProgressDialog process;
-        process.setLabelText(tr("processing..."));
-        process.setRange(0, processValue);
-        process.setModal(true);
-        process.setWindowModality(Qt::WindowModal);
-        process.setCancelButtonText(tr("cancel"));
-        process.show();
+    connect(flattenProcess, &FlattenProcess::updateProgress, pDialog, &QProgressDialog::setValue);
+    connect(flattenProcess, &FlattenProcess::finished, [=]() {
+      // Clean up
+      _tempFileList[_selectedNode->getName().c_str()] = tempList;
+      workerThread->quit();
+    });
 
-        for (unsigned int i = 0; i < _activatedModel->getNumChildren(); i++)
-        {
-            FlattenVisitor fv(tempList, _boundary, _avgHeight);
-            osg::PagedLOD* origChild = dynamic_cast<osg::PagedLOD*>(_activatedModel->getChild(i));
-            if (!origChild)
-                continue;
-            osg::ref_ptr<osg::Node> node = osgDB::readNodeFile(origChild->getName());
-            fv.setDir(origChild->getDatabasePath());
-            fv.setOption(options);
-            node->setName(origChild->getName());
-            node->accept(tv);
-            node->accept(fv);
-            if (fv.isChanged())
-            {
-                childToDelete.push_back(origChild);
-                childToAdd.push_back(node);
-            }
-            process.setValue(i);
-            if (process.wasCanceled())
-            {
-                process.close();
+    // Reset actions
+    DrawSurfacePolygon::onRightButton();
+    _action->toggle();
 
-                _currentDrawNode->removeDrawables(0, _currentDrawNode->getNumDrawables());
-                endDrawing();
-
-                _tempFileList[_currentDrawNode->getName().c_str()] = tempList;
-
-                return;
-            }
-        }
-        process.close();
-
-        _tempFileList[_currentDrawNode->getName().c_str()] = tempList;
-
-        for (int i = 0; i < childToDelete.size(); i++)
-        {
-            _activatedModel->removeChild(childToDelete[i]);
-            _activatedModel->addChild(childToAdd[i]);
-        }
-
-        _currentDrawNode->removeDrawables(0, _currentDrawNode->getNumDrawables());
-        endDrawing();
-
-        recordCurrent();
-    }
+    // Start it
+    workerThread->start();
+    emit startProcess(_selectedNode, tempList, _boundary, _avgHeight);
+    pDialog->show();
+  }
 }
