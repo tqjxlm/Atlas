@@ -38,12 +38,13 @@ public slots:
 	void radiusSliderChanged(int value);
 	void setAttributes();
 	void updateAttributes();
+  virtual void  toggle(bool checked = true) override;
 
 protected:
     void showControlPanel();
 
     void generateTestSphere(osg::ref_ptr<osg::TextureCubeMap> depthMap, osg::ref_ptr<osg::TextureCubeMap> colorMap);
-    void generateCubeCamera(osg::ref_ptr<osg::TextureCubeMap> cubeMap, unsigned face, osg::Camera::BufferComponent component);
+    osg::Camera* generateCubeCamera(osg::ref_ptr<osg::TextureCubeMap> cubeMap, unsigned face, osg::Camera::BufferComponent component);
 
 private:
 	QAction* _action;
@@ -54,13 +55,13 @@ private:
     osg::ref_ptr<osg::PositionAttitudeTransform> debugNode;
 
 	osg::ref_ptr<osg::Program> _renderProgram;
-	QVector<osg::Camera*> _depthCameras;
-    QVector<osg::Camera*> _colorCameras;
+	osg::ref_ptr<osg::Camera> _depthCameras[6];
+  osg::ref_ptr<osg::Camera> _colorCameras[6];
+    osg::Vec3 _pickedPos;
 
 	int _nodeMask;
 	int _userRadius;
 	int _userHeight;
-	osg::Vec3 _pickPos;
 
 	QWidget* _attributePanel;
 	QDockWidget* _attributeDock;

@@ -73,26 +73,29 @@ signals:
   void  sendNowInitName(const QString&);
 
 private:
-	// Core components
   std::ofstream *_log;
 
-	// Managers
   DataManager     *_dataManager;
   SettingsManager *_settingsManager;
   PluginManager   *_pluginManager;
   osg::ref_ptr<ViewerWidget>    _mainViewerWidget;
   osg::ref_ptr<MousePicker>     _mousePicker;
 
-	// OSG main roots and nodes
+	// Root for all
   osg::ref_ptr<osg::Group>                      _root;
-  osg::ref_ptr<osgSim::OverlayNode>             _overlayNode;
-  osg::ref_ptr<osg::PositionAttitudeTransform>  _overlaySubgraph;
-  osg::ref_ptr<osg::PositionAttitudeTransform>  _drawRoot;
-  osg::ref_ptr<osg::PositionAttitudeTransform>  _dataRoot;
+  // Root for all data that can be projected on
+  osg::ref_ptr<osgSim::OverlayNode>             _dataOverlay;
+  // Node that is projected to the _dataOverlay
+  osg::ref_ptr<osg::Group>  _overlaySubgraph;
+  // Root for all drawings
+  osg::ref_ptr<osg::Group>  _drawRoot;
+  // Root for osgEarth maps
+  osg::ref_ptr<osg::Group>  _mapRoot;
+  // Root for osg format data
+  osg::ref_ptr<osg::Group>  _dataRoot;
 
-	// OSGEarth map roots and nodes
-  osg::ref_ptr<osgEarth::MapNode>  _mapNode[4];
-  osg::ref_ptr<osgEarth::Map>      _mainMap[4];
+  osg::ref_ptr<osgEarth::MapNode>  _mapNode[MAX_SUBVIEW];
+  osg::ref_ptr<osgEarth::Map>      _mainMap[MAX_SUBVIEW];
 };
 
 #endif

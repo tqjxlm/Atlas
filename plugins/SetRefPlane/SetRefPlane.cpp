@@ -107,7 +107,9 @@ void  SetRefPlane::onDoubleClick()
 void  SetRefPlane::createBasicPolygon()
 {
   osg::ComputeBoundsVisitor  boundsVisitor;
-	boundsVisitor.apply(*_dataRoot);
+  osg::ref_ptr<osg::Transform> temp = new osg::Transform;
+  temp->addChild(_dataRoot);
+	boundsVisitor.apply(*temp);
   osg::BoundingBox  boundingBox = boundsVisitor.getBoundingBox();
   osg::Vec3         triaPos1    = _planePoints->at(0);
   osg::Vec3         triaPos2    = _planePoints->at(1);

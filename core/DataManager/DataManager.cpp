@@ -283,9 +283,9 @@ void DataManager::switchData(const QString& nodeName, bool checked)
 	_nodeTree->switchRecord(nodeName, checked);
 }
 
-void DataManager::setMask(const QString& nodeName, int mask)
+void DataManager::setWindowMask(const QString& nodeName, int mask)
 {
-	_nodeTree->setMask(nodeName, mask);
+	_nodeTree->setWindowMask(nodeName, mask);
 }
 
 int DataManager::getMask(const QString& nodeName)
@@ -299,11 +299,11 @@ int DataManager::getMask(const QString& nodeName)
 
 void DataManager::registerDataRoots(osg::Group* root)
 {
-	osg::Group* overlayNode = findNodeInNode("World Overlay", root)->asGroup();
-    _nodeTree->_overlayNode = static_cast<osgSim::OverlayNode*>(overlayNode);
+	osg::Group* mapRoot = findNodeInNode("Map Root", root)->asGroup();
+  _nodeTree->_overlayNode = static_cast<osgSim::OverlayNode*>(findNodeInNode("Data Overlay", root));
 	for (unsigned i = 0; i < MAX_SUBVIEW; i++)
 	{
-		osg::Node* map = findNodeInNode(QString("Map%1").arg(i).toStdString(), overlayNode);
+		osg::Node* map = findNodeInNode(QString("Map%1").arg(i).toStdString(), mapRoot);
 		if (map)
 			_nodeTree->_mainMap[i] = dynamic_cast<osgEarth::MapNode*>(map)->getMap();
 		else

@@ -16,13 +16,15 @@
 
 #include "Compass.h"
 
-static const int DEFAULT_FRAME_RATE = 100;
+static const int DEFAULT_FRAME_RATE = 60;
 
 ViewerWidget::ViewerWidget(osg::Node* mainScene, int x, int y, int w, int h, osgViewer::ViewerBase::ThreadingModel threadingModel/*=osgViewer::CompositeViewer::SingleThreaded*/) 
 	: QWidget()
 {
 	setThreadingModel(threadingModel);
 	setKeyEventSetsDone(0);
+
+  setRunMaxFrameRate(DEFAULT_FRAME_RATE);
 
 	// Turn off all lights by default
 	osg::StateSet* state = mainScene->getOrCreateStateSet();
@@ -117,7 +119,7 @@ osgQt::GraphicsWindowQt* ViewerWidget::createGraphicsWindow(int x, int y, int w,
 		traits->sharedContext = _mainContext;
 
 	osg::ref_ptr<osgQt::GraphicsWindowQt> gw = new osgQt::GraphicsWindowQt(traits.get());
-	osg::GraphicsContext::incrementContextIDUsageCount(gw->getState()->getContextID());
+  osg::GraphicsContext::incrementContextIDUsageCount(gw->getState()->getContextID());
 
 	return gw.release();
 }
