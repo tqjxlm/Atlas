@@ -42,7 +42,7 @@ public:
 	bool saveNode(const QString& nodeName);
 	bool saveNodes(const QStringList & nodeNames);
 
-	void setMask(const QString& name, int mask);
+	void setWindowMask(const QString& name, int mask);
 
 	DataRecord* getRecord(const QString& name);
 	osg::Node* getNode(const QString& name);

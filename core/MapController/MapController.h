@@ -1,11 +1,13 @@
 ﻿#ifndef MAPCONTROLLER_H
 #define MAPCONTROLLER_H
 
+#include "../../NameSpace.h"
+
 #include "MapController_global.h"
 
 #include <QMap>
-
 #include <QObject>
+
 #include <osgGA/OrbitManipulator>
 #include <osgViewer/View>
 #include <osg/PositionAttitudeTransform>
@@ -28,7 +30,7 @@ class MAPCONTROLLER_EXPORT MapController :public QObject, public osgGA::OrbitMan
 	Q_OBJECT
 
 public:
-	MapController(osg::ref_ptr<osg::Node> dataRoot);
+	MapController(osg::ref_ptr<osg::Node> dataRoot, osg::ref_ptr<osg::Node> mapRoot);
 
 	// Event handler that is called every event traversal
 	virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us) override;
@@ -38,6 +40,9 @@ public:
 
 	// Set the center indicator of the camera
 	void setCenterIndicator(osg::PositionAttitudeTransform* center);
+
+  // Register with a specific view to support some cross-view operation
+  void registerWithView(osgViewer::View* view, int index);
 
 protected:
 	// Mouse wheel event defined by OribitManipulator
@@ -115,7 +120,7 @@ private:
 	osg::Vec3 _speed;
 
 	osg::ref_ptr<osg::PositionAttitudeTransform> _centerIndicator;
-	osg::ref_ptr<osgViewer::View> _view;
+  osgViewer::View* _views[MAX_SUBVIEW];
 
     // Driver mode
     bool _isDriving;
@@ -127,6 +132,7 @@ private:
 
     // Data root to stick to
     osg::ref_ptr<osg::Node> _dataRoot;
+    osg::ref_ptr<osg::Node> _mapRoot;
 };
 
 #endif

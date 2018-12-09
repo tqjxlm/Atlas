@@ -13,6 +13,7 @@
 
 #include <ViewerWidget/ViewerWidget.h>
 #include <DataManager/DataManager.h>
+#include <MapController/MapController.h>
 
 MultiView::MultiView():
   _subView(NULL),
@@ -138,21 +139,26 @@ void  MultiView::initSubView()
 {
 	_subViewWidget = _mainViewer->createViewWidget(_mainViewer->createGraphicsWindow(0, 0, 1280, 1024, "Window2", true), _root);
   _subView       = _mainViewer->getView(_mainViewer->getNumViews() - 1);
-	_subView->getCamera()->setCullMask(SHOW_IN_WINDOW_1 << 1 | SHOW_IN_NO_WINDOW);
+	_subView->getCamera()->setCullMask(SHOW_IN_WINDOW_1 << 1);
 
-	_subView->setCameraManipulator(_mainViewer->getMainView()->getCameraManipulator(), false);
+  _subView->setCameraManipulator(_mainViewer->getMainView()->getCameraManipulator(), false);
+  
+  MapController* manipulator = dynamic_cast<MapController*>(_subView->getCameraManipulator());
+  if (manipulator)
+    manipulator->registerWithView(_subView, 1);
 }
 
 void  MultiView::moveToWindow()
 {
   QList<QTreeWidgetItem *>  itemList = _dataManager->getSelectedItems();
+  int mask = (showInWindow1Action->isChecked() ? SHOW_IN_WINDOW_1 : 0)
+              | (showInWindow2Action->isChecked() ? SHOW_IN_WINDOW_1 << 1 : 0);
+
   for(auto item : itemList)
 	{
     QTreeWidgetItem *parent   = item->parent();
     auto             nodeName = item->text(0);
-    int              mask     = (showInWindow1Action->isChecked() ? SHOW_IN_WINDOW_1 : 0)
-                                | (showInWindow2Action->isChecked() ? SHOW_IN_WINDOW_1 << 1 : 0);
 
-		_dataManager->setMask(nodeName, mask);
+		_dataManager->setWindowMask(nodeName, mask);
 	}
 }

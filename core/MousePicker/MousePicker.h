@@ -13,6 +13,10 @@ class QStatusBar;
 class QLabel;
 QT_END_NAMESPACE
 
+namespace osg {
+  class Group;
+}
+
 namespace osgEarth {
 	class MapNode;
 	class Map;
@@ -97,10 +101,11 @@ protected:
 
   // Global nodes defined and initialized in main program
   static osg::ref_ptr<osg::Group>                      _root;
+  static osg::ref_ptr<osg::Group>                      _mapRoot;
+  static osg::ref_ptr<osg::Group>             _dataRoot;
+  static osg::ref_ptr<osg::Group>  _subgraph;
+  static osg::ref_ptr<osg::Group>  _drawRoot;
   static osg::ref_ptr<osgSim::OverlayNode>             _overlayNode;
-  static osg::ref_ptr<osg::PositionAttitudeTransform>  _subgraph;
-  static osg::ref_ptr<osg::PositionAttitudeTransform>  _dataRoot;
-  static osg::ref_ptr<osg::PositionAttitudeTransform>  _drawRoot;
   static osg::ref_ptr<osgEarth::MapNode>               _mapNode[MAX_SUBVIEW];
   static osg::ref_ptr<osgEarth::Map>                   _mainMap[MAX_SUBVIEW];
 

@@ -25,8 +25,7 @@
 
 #include <ViewerWidget/ViewerWidget.h>
 
-#define SM_TEXTURE_WIDTH 1024
-
+static const int SM_TEXTURE_WIDTH = 1024;
 static const bool  SHOW_DEBUG_CAMERA = false;
 
 class SmoothingCallback: public osgDB::Registry::ReadFileCallback
@@ -206,7 +205,7 @@ void  VisibilityTestArea::showControlPanel()
     QSlider *radiusSlider = new QSlider(Qt::Horizontal);
 		radiusSlider->setSingleStep(50);
 		radiusSlider->setPageStep(500);
-		radiusSlider->setRange(50, 5000);
+		radiusSlider->setRange(50, 500);
 		radiusSlider->setValue(_userRadius);
 		radiusSlider->setMinimumWidth(100);
 
@@ -219,11 +218,11 @@ void  VisibilityTestArea::showControlPanel()
 		_radiusBox = new QSpinBox();
 		_radiusBox->setButtonSymbols(QAbstractSpinBox::NoButtons);
 		_radiusBox->setSingleStep(50);
-		_radiusBox->setRange(50, 5000);
+		_radiusBox->setRange(50, 500);
 		_radiusBox->setValue(_userRadius);
 
 		_okButton = new QPushButton(tr("OK"));
-		_okButton->setEnabled(false);
+		_okButton->setEnabled(true);
 
 		mainLayout->addWidget(heightLabel, 0, 0, Qt::AlignLeft);
 		mainLayout->addWidget(radiusLabel, 1, 0, Qt::AlignLeft);
@@ -266,7 +265,7 @@ void  VisibilityTestArea::generateTestSphere(osg::ref_ptr<osg::TextureCubeMap> d
   ss->setTextureAttributeAndModes(0, depthMap, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
   ss->setTextureAttributeAndModes(1, colorMap, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
   ss->setAttribute(depthVisualizer, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-  ss->addUniform(new osg::Uniform("center", _pickPos + osg::Vec3 { 0, 0, 70 }), osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+  ss->addUniform(new osg::Uniform("center", _currentWorldPos + osg::Vec3 { 0, 0, 70 }), osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
   ss->addUniform(new osg::Uniform("depthMap", 0), osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
   ss->addUniform(new osg::Uniform("colorMap", 1), osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
 
@@ -279,7 +278,7 @@ void  VisibilityTestArea::generateTestSphere(osg::ref_ptr<osg::TextureCubeMap> d
   _parentScene->addChild(debugNode);
 }
 
-void  VisibilityTestArea::generateCubeCamera(osg::ref_ptr<osg::TextureCubeMap> cubeMap, unsigned face, osg::Camera::BufferComponent component)
+osg::Camera*  VisibilityTestArea::generateCubeCamera(osg::ref_ptr<osg::TextureCubeMap> cubeMap, unsigned face, osg::Camera::BufferComponent component)
 {
   osg::ref_ptr<osg::Camera>  camera = new osg::Camera;
   camera->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -288,22 +287,14 @@ void  VisibilityTestArea::generateCubeCamera(osg::ref_ptr<osg::TextureCubeMap> c
   camera->setRenderOrder(osg::Camera::PRE_RENDER);
   camera->setRenderTargetImplementation(osg::Camera::FRAME_BUFFER_OBJECT);
   camera->setViewport(0, 0, SM_TEXTURE_WIDTH, SM_TEXTURE_WIDTH);
-  camera->setComputeNearFarMode(osg::Camera::DO_NOT_COMPUTE_NEAR_FAR);
-  camera->setNearFarRatio(0.01);
   camera->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
   camera->attach(component, cubeMap, 0, face);
 
+  camera->setNodeMask(0xffffffff & (~INTERSECT_IGNORE));
   camera->addChild(_shadowedScene);
   _parentScene->addChild(camera);
 
-  if (component == osg::Camera::DEPTH_BUFFER)
-  {
-    _depthCameras.push_back(camera);
-  }
-  else
-  {
-    _colorCameras.push_back(camera);
-  }
+  return camera.release();
 }
 
 void  VisibilityTestArea::heightSliderChanged(int value)
@@ -329,13 +320,13 @@ void  VisibilityTestArea::setAttributes()
 
 	_okButton->setEnabled(false);
 	updateAttributes();
+  _okButton->setEnabled(true);
 }
 
 void  VisibilityTestArea::updateAttributes()
 {
 	// Light source info
-  osg::Vec3  lightPos;
-  lightPos      = _pickPos;
+  osg::Vec3  lightPos = _pickedPos;
 	lightPos.z() += _userHeight;
 
   // Light source in scene
@@ -349,7 +340,7 @@ void  VisibilityTestArea::updateAttributes()
 
   // Light source in shader
   float                     near_plane = 0.1f;
-  float                     far_plane  = 1000.0f;
+  float                     far_plane  = 500.0f;
   osg::Matrix               shadowProj = osg::Matrix::perspective(90.0, SM_TEXTURE_WIDTH / SM_TEXTURE_WIDTH, near_plane, far_plane);
   std::vector<osg::Matrix>  shadowViews;
 	shadowViews.push_back(
@@ -389,8 +380,17 @@ void  VisibilityTestArea::updateAttributes()
   _parentScene->getOrCreateStateSet()->addUniform(new osg::Uniform("far_plane", far_plane));
   _parentScene->getOrCreateStateSet()->addUniform(new osg::Uniform("near_plane", near_plane));
   _parentScene->getOrCreateStateSet()->addUniform(new osg::Uniform("user_area", (float)_userRadius));
+}
 
-	_okButton->setEnabled(true);
+void VisibilityTestArea::toggle(bool checked /*= true*/)
+{
+  if (!checked)
+  {
+    _movingMode = true;
+    onRightButton();
+  }
+
+  PluginInterface::toggle(checked);
 }
 
 void  VisibilityTestArea::onLeftButton()
@@ -406,10 +406,10 @@ void  VisibilityTestArea::onLeftButton()
 
   // Parameters
 	_shadowedScene = _dataRoot;
-  _parentScene   = _overlayNode;
-  _pickPos       = _currentWorldPos;
+  _parentScene   = _dataRoot->getParent(0);
 
 	_mainViewer->getMainContext()->getState()->setUseModelViewAndProjectionUniforms(true);
+  _pickedPos = _currentWorldPos;
 
   // Keep normals updated
   osgUtil::SmoothingVisitor  smoothing;
@@ -428,33 +428,32 @@ void  VisibilityTestArea::onLeftButton()
 	depthMap->setFilter(osg::Texture::MIN_FILTER, osg::Texture::NEAREST);
 	depthMap->setFilter(osg::Texture::MAG_FILTER, osg::Texture::NEAREST);
 
-  osg::ref_ptr<osg::TextureCubeMap>  colorMap = new osg::TextureCubeMap;
-  colorMap->setTextureSize(SM_TEXTURE_WIDTH, SM_TEXTURE_WIDTH);
-  colorMap->setInternalFormat(GL_RGB);
-  colorMap->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
-  colorMap->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
-  colorMap->setWrap(osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE);
-  colorMap->setFilter(osg::Texture::MIN_FILTER, osg::Texture::NEAREST);
-  colorMap->setFilter(osg::Texture::MAG_FILTER, osg::Texture::NEAREST);
-
-	// Generate one camera for each side of the shadow cubemap
+  // Depth shader that writes unnormaized depth into buffer
   osg::ref_ptr<osg::Program>  depthShader = generateShader(
     "resources/shaders/depthMap.vert", "resources/shaders/depthMap.frag");
 
-	for (int i = 0; i < 6; i++)
+  // Generate one camera for each side of the shadow cubemap
+  for (int i = 0; i < 6; i++)
 	{
-    // Only render depth to frame buffer
-    generateCubeCamera(depthMap, i, osg::Camera::DEPTH_BUFFER);
+    _depthCameras[i] = generateCubeCamera(depthMap, i, osg::Camera::DEPTH_BUFFER);
     _depthCameras[i]->getOrCreateStateSet()->setAttribute(depthShader, osg::StateAttribute::ON);
-
-    if (SHOW_DEBUG_CAMERA)
-    {
-      generateCubeCamera(colorMap, i, osg::Camera::COLOR_BUFFER);
-    }
 	}
 
   if (SHOW_DEBUG_CAMERA)
   {
+    osg::ref_ptr<osg::TextureCubeMap>  colorMap = new osg::TextureCubeMap;
+    colorMap->setTextureSize(SM_TEXTURE_WIDTH, SM_TEXTURE_WIDTH);
+    colorMap->setInternalFormat(GL_RGB);
+    colorMap->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
+    colorMap->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
+    colorMap->setWrap(osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE);
+    colorMap->setFilter(osg::Texture::MIN_FILTER, osg::Texture::NEAREST);
+    colorMap->setFilter(osg::Texture::MAG_FILTER, osg::Texture::NEAREST);
+
+    for (int i = 0; i < 6; i++)
+    {
+      _colorCameras[i] = generateCubeCamera(colorMap, i, osg::Camera::COLOR_BUFFER);
+    }
     generateTestSphere(depthMap, colorMap);
   }
 
@@ -478,6 +477,7 @@ void  VisibilityTestArea::onLeftButton()
   _parentScene->getOrCreateStateSet()->addUniform(new osg::Uniform("visibleColor", colorToVec(visibleColor)));
   _parentScene->getOrCreateStateSet()->addUniform(new osg::Uniform("invisibleColor", colorToVec(invisibleColor)));
 
+  updateAttributes();
   _movingMode = true;
 }
 
@@ -502,10 +502,18 @@ void  VisibilityTestArea::onRightButton()
   for (auto camera : _depthCameras)
 	{
     _parentScene->removeChild(camera);
+    camera = NULL;
 	}
 
-	_depthCameras.clear();
-  _parentScene->removeChild(debugNode);
+  if (SHOW_DEBUG_CAMERA)
+  {
+    for (auto camera : _colorCameras)
+    {
+      _parentScene->removeChild(camera);
+      camera = NULL;
+    }
+    _parentScene->removeChild(debugNode);
+  }
 
 	_parentScene->getOrCreateStateSet()->setAttribute(_renderProgram, osg::StateAttribute::OFF);
 	_parentScene->getOrCreateStateSet()->removeAttribute(osg::StateAttribute::PROGRAM);
@@ -518,20 +526,22 @@ void  VisibilityTestArea::onRightButton()
 	_attributeDock->hide();
 
 	_shadowedScene = NULL;
+
+  _movingMode = false;
 }
 
 void  VisibilityTestArea::onMouseMove()
 {
-  if (_activated && _movingMode)
+  if (_isDrawing && _movingMode)
   {
-    _pickPos = _currentWorldPos;
+    _pickedPos = _currentWorldPos;
     updateAttributes();
   }
 }
 
 void  VisibilityTestArea::onDoubleClick()
 {
-  if (_activated)
+  if (_isDrawing)
   {
     _movingMode = false;
   }

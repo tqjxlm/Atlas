@@ -49,8 +49,8 @@ Atlas::Atlas(QWidget *parent, Qt::WindowFlags flags):
   GDALAllRegister();
   CPLSetConfigOption("GDAL_DATA", ".\\resources\\GDAL_data");
 
-  osg::DisplaySettings::instance()->setNumOfHttpDatabaseThreadsHint(12);
-  osg::DisplaySettings::instance()->setNumOfDatabaseThreadsHint(6);
+  osg::DisplaySettings::instance()->setNumOfHttpDatabaseThreadsHint(6);
+  osg::DisplaySettings::instance()->setNumOfDatabaseThreadsHint(3);
 }
 
 Atlas::~Atlas()
@@ -109,7 +109,7 @@ void  Atlas::initCore()
 
   emit  sendNowInitName(tr("Initializing viewer"));
 	_mainViewerWidget = new ViewerWidget(_root, 0, 0, 1280, 1024, osgViewer::ViewerBase::SingleThreaded);
-	_mainViewerWidget->getMainView()->getCamera()->setCullMask(SHOW_IN_WINDOW_1 | SHOW_IN_NO_WINDOW);
+	_mainViewerWidget->getMainView()->getCamera()->setCullMask(SHOW_IN_WINDOW_1);
   emit  sendNowInitName(tr("Initializing viewer"));
   setCentralWidget(_mainViewerWidget);
 
@@ -142,13 +142,19 @@ void  Atlas::initPlugins()
 
 void  Atlas::initDataStructure()
 {
-  // Init data root to contain user data
-  // It is different from draw root in that data root is intersectable and projectable
-  _dataRoot = new osg::PositionAttitudeTransform;
+  _mapRoot = new osg::Group;
+  _mapRoot->setName("Map Root");
+
+  _drawRoot = new osg::Group;
+  _drawRoot->setName("Draw Root");
+  // Draw root should not be intersected
+  _drawRoot->setNodeMask(0xffffffff & (~INTERSECT_IGNORE));
+
+  _dataRoot = new osg::Group;
   _dataRoot->setName("Data Root");
 
-	// Init osgEarth node using the predefined .earth file
-	for (int i = 0; i < MAX_SUBVIEW; i++)
+  // Init osgEarth node using the predefined .earth file
+  for (int i = 0; i < MAX_SUBVIEW; i++)
   {
     QString mode = _settingsManager->getOrAddSetting("Base mode", "projected").toString();
     QString baseMapPath;
@@ -166,35 +172,32 @@ void  Atlas::initDataStructure()
     osg::Node* baseMap = osgDB::readNodeFile(baseMapPath.toStdString());
 		_mapNode[i] = osgEarth::MapNode::get(baseMap);
 		_mapNode[i]->setName(QString("Map%1").arg(i).toStdString());
-		_mapNode[i]->setNodeMask(SHOW_IN_WINDOW_1 << i);
+    _mapNode[i]->setNodeMask((SHOW_IN_WINDOW_1 << i) | SHOW_IN_NO_WINDOW);
 		_mapNode[i]->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-
 		_mainMap[i] = _mapNode[i]->getMap();
-    _dataRoot->addChild(_mapNode[i]);
+
+    _mapRoot->addChild(_mapNode[i]);
   }
 
 	_settingsManager->setGlobalSRS(_mainMap[0]->getSRS());
 
   // Init overlayNode with overlayerSubgraph
   // Everything in overlaySubgraph will be projected to its children
-  _overlayNode = new osgSim::OverlayNode(osgSim::OverlayNode::OBJECT_DEPENDENT_WITH_ORTHOGRAPHIC_OVERLAY);
-  _overlayNode->setName("World Overlay");
-  _overlayNode->getOrCreateStateSet()->setAttributeAndModes(
+  _dataOverlay = new osgSim::OverlayNode(osgSim::OverlayNode::OBJECT_DEPENDENT_WITH_ORTHOGRAPHIC_OVERLAY);
+  _dataOverlay->setName("Data Overlay");
+  _dataOverlay->getOrCreateStateSet()->setAttributeAndModes(
     new osg::BlendFunc(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA));
-  _overlayNode->setOverlayBaseHeight(-1);
-  _overlayNode->setOverlayTextureSizeHint(2048);
-  _overlayNode->setOverlayTextureUnit(5);
+  _dataOverlay->setOverlayBaseHeight(-1);
+  _dataOverlay->setOverlayTextureSizeHint(2048);
+  _dataOverlay->setOverlayTextureUnit(3);
 
-  _overlaySubgraph = new osg::PositionAttitudeTransform;
-  _overlayNode->setOverlaySubgraph(_overlaySubgraph);
-  _overlayNode->addChild(_dataRoot);
+  _overlaySubgraph = new osg::Group;
+  _dataOverlay->setOverlaySubgraph(_overlaySubgraph);
+  _dataOverlay->addChild(_dataRoot);
 
-	// Root for all drawings
-	_drawRoot = new osg::PositionAttitudeTransform;
-	_drawRoot->setName("Draw Root");
-
-  _root->addChild(_overlayNode);
+  _root->addChild(_dataOverlay);
   _root->addChild(_drawRoot);
+  _root->addChild(_mapRoot);
 
   _dataManager->registerDataRoots(_root);
 }
@@ -226,15 +229,13 @@ void  Atlas::resetCamera()
     if (!manipulator)
     {
       // Init a manipulator if not inited yet
-      manipulator = new MapController(_dataRoot);
+      manipulator = new MapController(_dataRoot, _mapRoot);
       manipulator->setAutoComputeHomePosition(false);
-
       manipulator->setCenterIndicator(_mainViewerWidget->createCameraIndicator());
 
       // Nearfar mode and ratio affect scene clipping
       auto camera = _mainViewerWidget->getMainView()->getCamera();
       camera->setComputeNearFarMode(osg::Camera::COMPUTE_NEAR_FAR_USING_BOUNDING_VOLUMES);
-      camera->setNearFarRatio(0.0001);
 
       connect(_dataManager, &DataManager::moveToNode,
               manipulator, &MapController::fitViewOnNode);
@@ -242,6 +243,7 @@ void  Atlas::resetCamera()
               manipulator, &MapController::fitViewOnBounding);
 
       _mainViewerWidget->getMainView()->setCameraManipulator(manipulator);
+      manipulator->registerWithView(_mainViewerWidget->getMainView(), 0);
     }
     manipulator->fitViewOnNode(_mapNode[0]);
   }

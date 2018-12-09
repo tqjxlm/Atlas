@@ -11,6 +11,8 @@
 using namespace osg;
 
 const double ZERO_LIMIT = 0.0001;
+const double MIN_NF_RATIO = 0.000001;
+const double MAX_NF_RATIO = 0.0001;
 
 inline float computeAngle(const osg::Vec3& endVector, const osg::Vec3& startVector)
 {
@@ -33,8 +35,9 @@ inline float computeRoll(const osg::Vec3& endVector, const osg::Vec3& startVecto
 	return asin(v2.z()) - asin(v1.z());
 }
 
-MapController::MapController(osg::ref_ptr<osg::Node> dataRoot)
+MapController::MapController(osg::ref_ptr<osg::Node> dataRoot, osg::ref_ptr<osg::Node> mapRoot)
     : _dataRoot(dataRoot)
+    , _mapRoot(mapRoot)
     , _interval(2)
     , _totalTime(1)
     , _totalSteps(_totalTime / (1 / 60.0 * _interval))
@@ -43,19 +46,20 @@ MapController::MapController(osg::ref_ptr<osg::Node> dataRoot)
     , _isDriving(false)
 	, _isScreenSaving(false)
 	, _centerIndicator(NULL)
-	, _view(NULL)
 {
 	setAllowThrow(false);
 	setVerticalAxisFixed(true);
 	setMinimumDistance(0.000001);
 	setRelativeFlag(_minimumDistanceFlagIndex, true);
+
+  for (auto& view : _views)
+  {
+    view = nullptr;
+  }
 }
 
 bool MapController::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us)
 {
-	osgViewer::View* viewer = dynamic_cast<osgViewer::View*>(&us);
-	_view = viewer;
-
     // In an animation, don't accept events
     if (_inAnimation)
         return true;
@@ -308,9 +312,9 @@ void MapController::zoomModel(const float dy, bool pushForwardIfNeeded)
 
 			osg::ref_ptr<osgUtil::LineSegmentIntersector> ls = new osgUtil::LineSegmentIntersector(eye, center);
 			osgUtil::IntersectionVisitor iv(ls);
-			if (_view.valid())
+			if (_views[0])
 			{
-				_view->getCamera()->accept(iv);
+				_views[0]->getCamera()->accept(iv);
 				auto newCenter = ls->getFirstIntersection().getWorldIntersectPoint();
 				_distance += (newCenter - _center).length();
 				_center = newCenter;
@@ -329,8 +333,19 @@ void MapController::rotateWithFixedVertical(const float dx, const float dy)
 	CoordinateFrame coordinateFrame = getCoordinateFrame(m_center);
 	Vec3d localUp = getUpVector(coordinateFrame);
 
+  for (auto view : _views)
+  {
+    if (view)
+    {
+      if (getElevation() > osg::DegreesToRadians(-25.0))
+        view->getCamera()->setNearFarRatio(MIN_NF_RATIO);
+      else
+        view->getCamera()->setNearFarRatio(MAX_NF_RATIO);
+    }
+  }
+    
 	// Keep elevation above certain value
-	if (getElevation() > osg::DegreesToRadians(-30.0) && dy > 0)
+	if (getElevation() > 0 && dy > 0)
 		rotateYawPitch(_rotation, dx, 0, localUp);
 	else
 		rotateYawPitch(_rotation, dx, dy, localUp);
@@ -416,14 +431,14 @@ void MapController::stickToScene()
     // Check if the view direction intersects with the data root
     osg::ref_ptr<osgUtil::LineSegmentIntersector> ls = new osgUtil::LineSegmentIntersector(eye, center);
     osgUtil::IntersectionVisitor iv(ls);
-    if (_view.valid())
+    if (_views[0] != NULL)
     {
-        _view->getCamera()->accept(iv);
+        _views[0]->getCamera()->accept(iv);
         for (auto intersection : ls->getIntersections())
         {
             for (auto parent : intersection.nodePath)
             {
-                if (parent == _dataRoot.get())
+                if (parent == _dataRoot || parent == _mapRoot)
                 {
                     // If intersected, change the trackball center to the intersected point
                     auto newCenter = intersection.getWorldIntersectPoint();
@@ -450,6 +465,11 @@ void MapController::updateDriveDirection()
         _driveDirection += _right;
 
     _driveDirection.normalize();
+}
+
+void MapController::registerWithView(osgViewer::View* view, int index)
+{
+  _views[index] = view;
 }
 
 // screensavers

@@ -63,7 +63,7 @@ public:
 	void registerDataRoots(osg::Group* root);
 
 	// Node visibility management
-	void setMask(const QString& nodeName, int mask);
+	void setWindowMask(const QString& nodeName, int mask);
 	int getMask(const QString& nodeName);
 
 	// Getters

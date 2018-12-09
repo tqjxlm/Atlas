@@ -23,9 +23,10 @@ osgUtil::LineSegmentIntersector::Intersection MousePicker::_nearestIntesection;
 
 osg::ref_ptr<osg::Group> MousePicker::_root = NULL;
 osg::ref_ptr<osgSim::OverlayNode> MousePicker::_overlayNode = NULL;
-osg::ref_ptr<osg::PositionAttitudeTransform> MousePicker::_subgraph = NULL;
-osg::ref_ptr<osg::PositionAttitudeTransform> MousePicker::_drawRoot = NULL;
-osg::ref_ptr<osg::PositionAttitudeTransform> MousePicker::_dataRoot = NULL;
+osg::ref_ptr<osg::Group> MousePicker::_subgraph = NULL;
+osg::ref_ptr<osg::Group> MousePicker::_drawRoot = NULL;
+osg::ref_ptr<osg::Group> MousePicker::_mapRoot = NULL;
+osg::ref_ptr<osg::Group> MousePicker::_dataRoot = NULL;
 osg::ref_ptr<osgEarth::MapNode> MousePicker::_mapNode[MAX_SUBVIEW];
 osg::ref_ptr<osgEarth::Map> MousePicker::_mainMap[MAX_SUBVIEW];
 
@@ -109,26 +110,17 @@ void MousePicker::getPos(osgViewer::View* view,
 {
 	_isValid = false;
 
-	// Only interact with nodes under _overlayNode
-	if (view->computeIntersections(ea, _intersections, view->getCamera()->getCullMask()))
-	{
-		for (auto intersection : _intersections)
-		{
-			for (auto parent : intersection.nodePath)
-			{
-				if (parent == _overlayNode)
-				{
-          _nearestIntesection = intersection;
-          _currentLocalPos = _nearestIntesection.getLocalIntersectPoint();
-          _currentWorldPos = _nearestIntesection.getWorldIntersectPoint();
+	// Only interact with data nodes and map nodes
+	if (view->computeIntersections(ea, _intersections, INTERSECT_IGNORE))
+  {
+    _nearestIntesection = *_intersections.begin();
+    _currentLocalPos = _nearestIntesection.getLocalIntersectPoint();
+    _currentWorldPos = _nearestIntesection.getWorldIntersectPoint();
 
-          _currentGeoPos.fromWorld(_globalSRS, _currentWorldPos);
+    _currentGeoPos.fromWorld(_globalSRS, _currentWorldPos);
 
-					_isValid = true;
-					return;
-				}
-			}
-		}
+    _isValid = true;
+    return;
 	}
 }
 
@@ -159,14 +151,15 @@ void MousePicker::registerData(
 	_globalWKT = _globalSRS->getWKT().c_str();
 	_root = root;
 
-	_overlayNode = dynamic_cast<osgSim::OverlayNode*>(findNodeInNode("World Overlay", _root));
-	_drawRoot = findNodeInNode("Draw Root", _root)->asTransform()->asPositionAttitudeTransform();
-	_subgraph = _overlayNode->getOverlaySubgraph()->asTransform()->asPositionAttitudeTransform();
-	_dataRoot = findNodeInNode("Data Root", _overlayNode)->asTransform()->asPositionAttitudeTransform();
+	_overlayNode = dynamic_cast<osgSim::OverlayNode*>(findNodeInNode("Data Overlay", _root));
+  _drawRoot = findNodeInNode("Draw Root", _root)->asGroup();
+  _mapRoot = findNodeInNode("Map Root", _root)->asGroup();
+	_subgraph = _overlayNode->getOverlaySubgraph()->asGroup();
+  _dataRoot = findNodeInNode("Data Root", _overlayNode)->asGroup();
 
 	for (unsigned i = 0; i < MAX_SUBVIEW; i++)
 	{
-		osg::Node* map = findNodeInNode(QString("Map%1").arg(i).toStdString(), _overlayNode);
+		osg::Node* map = findNodeInNode(QString("Map%1").arg(i).toStdString(), _mapRoot);
 		if (map)
 		{
 			_mapNode[i] = dynamic_cast<osgEarth::MapNode*>(map);

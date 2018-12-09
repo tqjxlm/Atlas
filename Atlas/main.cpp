@@ -3,10 +3,14 @@
 
 #include <QApplication>
 #include <QFile>
+#include <QSurfaceFormat>
 
 int  main(int argc, char *argv[])
 {
-// _putenv("OSG_ROOT=.");
+  // A trick to get higher fps than 30
+  QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+  format.setSwapInterval(0);
+  QSurfaceFormat::setDefaultFormat(format);
 
   QApplication  app(argc, argv);
 

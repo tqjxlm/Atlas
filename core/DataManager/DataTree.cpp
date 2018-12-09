@@ -372,7 +372,7 @@ bool  DataTree::saveNodes(const QStringList &nodeNames)
 	return osgDB::writeNodeFile(*group, path.toStdString());
 }
 
-void  DataTree::setMask(const QString& name, int mask)
+void  DataTree::setWindowMask(const QString& name, int mask)
 {
   auto  record = getRecord(name);
 
@@ -380,6 +380,8 @@ void  DataTree::setMask(const QString& name, int mask)
   {
     return;
   }
+
+  int windowMask = mask & ~SHOW_IN_NO_WINDOW;
 
 	if (record->isLayer())
 	{
@@ -401,18 +403,18 @@ void  DataTree::setMask(const QString& name, int mask)
 
       osgEarth::Layer *existed = _mainMap[i]->getLayerByName(stdName);
 
-			if (existed && !(mask & (SHOW_IN_WINDOW_1 << i)))
+			if (existed && !(windowMask & (SHOW_IN_WINDOW_1 << i)))
       {
         _mainMap[i]->removeLayer(existed);
       }
-      else if (!existed && mask & (SHOW_IN_WINDOW_1 << i))
+      else if (!existed && windowMask & (SHOW_IN_WINDOW_1 << i))
       {
         _mainMap[i]->addLayer(layer);
       }
     }
 	}
 
-	record->setMask(mask);
+	record->setMask((record->mask() & SHOW_IN_NO_WINDOW) | windowMask);
 }
 
 DataRecord * DataTree::getRecord(const QString& name)
