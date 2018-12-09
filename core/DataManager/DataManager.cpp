@@ -259,7 +259,6 @@ void DataManager::initDataTree()
 
 	// Tree slots
 	connect(_nodeTree, SIGNAL(itemChanged(QTreeWidgetItem*, int)), _nodeTree, SLOT(switchDataSlot(QTreeWidgetItem*, int)));
-	connect(_nodeTree, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(activateNode(QTreeWidgetItem*, int)));
 	connect(_nodeTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(doubleClickTreeSlot(QTreeWidgetItem*, int)));
 	connect(_nodeTree, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(showDataTreeContextMenu(const QPoint &)));
 }

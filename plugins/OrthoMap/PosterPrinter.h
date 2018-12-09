@@ -153,7 +153,6 @@ public:
     PosterVisitor* getPosterVisitor() { return _visitor.get(); }
     const PosterVisitor* getPosterVisitor() const { return _visitor.get(); }
 
-	void setSRS(const std::string& srs) { _srsWKT = srs; }
 	void setPixel(double pixelPerMeter) { _pixelPerMeter = pixelPerMeter; }
 	void setPath(const QString& path) { _qPath = path; }
 	void setViewCamera( osg::Camera* camera) { _viewCamera = camera; }
@@ -199,7 +198,6 @@ protected:
     void removeCullCallbacks( osg::Node* node );
     void bindCameraToImage( osg::Camera* camera, int row, int col );
     void recordImages();
-	void exportImage(osg::Image* image);
 	void calcuZvaluefromDepth(osg::Image * image, int col, int row);
 
 	OutputType _outputType;
@@ -234,7 +232,6 @@ protected:
     osg::ref_ptr<osg::Image> _finalPoster;
     TileImages _images;
 
-	std::string _srsWKT;
 	double _pixelPerMeter;
 	QString _qPath;
 };

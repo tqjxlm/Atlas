@@ -35,59 +35,53 @@ public:
 	SaveOrthoProjDialog(ViewerWidget& vw, osg::Node* scene, std::string srs, ProjectionMode mode, QWidget* parent);
 	~SaveOrthoProjDialog();
 	void setup();
-	void finish();
 	void setMapNode(osg::Node* mapNode) { _mapNode = mapNode; }
+
+protected:
+  void doMosaic();
+  void doTranslate();
+  void buildOverview();
+  void processTile(osg::MatrixTransform* subTile, std::string nodeName);
 
 signals:
 	void updateWaitMessage(const QString&);
 	void updateTime();
 
 public slots:
-	void waitForCapturing(bool started);
 	void advanceCapturing(const QString& msg);
 	void startCapturing();
-	void writeWithGDAL();
+	void writeWithGDAL(std::string fileName, std::string saveName, const unsigned char *data, osg::BoundingBox bounding, int width, int height);
 	void captureFailed(const QString& msg);
+  void finish();
 
 private:
 	Ui_SaveOrthoProjDialog _ui;
 	ProjectionMode _mode;
 
-	osg::ref_ptr<osg::Switch> _captureRoot;
-	osg::ref_ptr<PosterPrinter> _printer;
 	WaitProgressDialog* _waitDialog;
 
-	osg::Node* _scene;
+	osg::PositionAttitudeTransform* _scene;
 	osg::ref_ptr<osg::Node> _mapNode;
-	osg::ref_ptr<osg::Node> _subTile;
 	ViewerWidget& _vw;
 	osgViewer::View& _view;
 
-	// 原视图状态
+	// Original view states
 	osg::ref_ptr<osg::Node> _origScene;
 	osg::ref_ptr<osg::Camera> _orthoCamera;
 	osg::ref_ptr<osgGA::CameraManipulator> _origManip;
 	osg::Matrix _origViewMatrix;
 	osg::Matrix _origProjMatrix;
+  osg::Vec4 _origColor;
 	int _origViewWidth;
 	int _origViewHeight;
 	int _origMaxLOD;
 	osg::CullSettings::ComputeNearFarMode _origNearFarMode;
 
-	osg::Vec4 _bgColor;
-	osg::BoundingBox _boundingBox;
-	float _boundingWidth;
-	float _boundingHeight;
-	int _numTiles;
+  QString _extension = "tiff";
+  int _numTiles;
 	double _pixelPerMeter;
-	int _tileWidth;
-	int _tileHeight;
-	int _posterWidth;
-	int _posterHeight;
-	bool _activeMode;
 	std::string _srsWKT;
 
-	//QTime _processTime;
 	QString _path;
 	bool _successed;
 	bool _finished;

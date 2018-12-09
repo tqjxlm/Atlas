@@ -66,7 +66,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
-    
     <TargetExt>.dll</TargetExt>
     <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
@@ -75,7 +74,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
-    
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -142,6 +140,15 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Widgets.lib;Qt5Gui.lib;openthreads.lib;osg.lib;osgDB.lib;osgUtil.lib;osgGA.lib;osgText.lib;osgManipulator.lib;PluginInterface.lib;MousePicker.lib;osgSim.lib;osgViewer.lib;DrawSurfacePolygon.lib;ViewerWidget.lib;gdal_i.lib;DataManager.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy "$(THIRD_PARTY_DIR)\tools\gdalbuildvrt.exe" "$(SolutionDir)$(Platform)\$(Configuration)\" /Y /D
+xcopy "$(THIRD_PARTY_DIR)\tools\gdal_translate.exe" "$(SolutionDir)$(Platform)\$(Configuration)\" /Y /D
+xcopy "$(THIRD_PARTY_DIR)\tools\gdaladdo.exe" "$(SolutionDir)$(Platform)\$(Configuration)\" /Y /D</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

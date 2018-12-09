@@ -81,6 +81,6 @@ Edit plugins provide tools to edit the scene and generate data products.
 
 | Project Name | Description | Maintainer | Remark | Test |
 | --- | --- | :---: | :---: | :---: |
-| OrthoMap | Generate an orthographic image or height map of the selected model or region. | tqjxlm | | |
+| OrthoMap | Generate an orthographic image or height map of the selected model or region. | tqjxlm | | ✓ |
 | ModelFlatten | Edit a model and make the selected area flatten to a specified height. | tqjxlm | | ✓ |
 | ContourPlot | Generate contour plots based on elevation. | TJoe | | |

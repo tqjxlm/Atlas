@@ -20,7 +20,8 @@ public:
 	OrthoMap();
 	~OrthoMap();
 	virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
-	virtual void onDoubleClick();
+  virtual void loadContextMenu(QMenu * contextMenu, QTreeWidgetItem * selectedItem) override;
+  virtual void onDoubleClick();
 	virtual void onRightButton();
 	virtual void setupWorkingDialog(osg::Node* scene);
 

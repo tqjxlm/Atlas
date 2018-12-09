@@ -10,6 +10,7 @@ using namespace std;
 
 #include <osg/ComputeBoundsVisitor>
 #include <osg/MatrixTransform>
+#include <osg/PositionAttitudeTransform>
 
 #include <gdal_priv.h>
 #include <gdal_alg.h>
@@ -19,591 +20,456 @@ using namespace std;
 #include <ogr_geometry.h>
 #include <ogr_feature.h>
 
-const double modelZOffset = 0.2;
-const double captureZOffset = 50;
+static const double captureZOffset = 50;
+static const osg::Vec4 bgColor = { 0, 0, 0, 0 };
 
 SaveOrthoProjDialog::SaveOrthoProjDialog(ViewerWidget& vw, osg::Node* scene, std::string wkt, ProjectionMode mode, QWidget* parent)
-	: QDialog(parent), 
-	_vw(vw),
-	_view(*vw.getMainView()), 
-	_scene(scene),
-	_srsWKT(wkt),
-	_activeMode(false),
-	_successed(false),
-	_finished(false),
-	_bgColor(1.0, 1.0, 1.0, 1.0),
-	_mode(mode)
+  : QDialog(parent),
+  _vw(vw),
+  _view(*vw.getMainView()),
+  _scene(scene->asTransform()->asPositionAttitudeTransform()),
+  _srsWKT(wkt),
+  _successed(false),
+  _finished(false),
+  _mode(mode)
 {
-	_ui.setupUi(this);
-	connect(_ui.pushButtonOk, SIGNAL(clicked()), this, SLOT(startCapturing()));
-	connect(_ui.tileNumSpinBox, SIGNAL(valueChanged(int)), _ui.tileNumSpinBox_2, SLOT(setValue(int)));
-	this->setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
-	_ui.tileNumSpinBox->setValue(1);
-	_ui.pixelSpinBox->setValue(0.2);
+  _ui.setupUi(this);
+  connect(_ui.pushButtonOk, SIGNAL(clicked()), this, SLOT(startCapturing()));
+  connect(_ui.tileNumSpinBox, SIGNAL(valueChanged(int)), _ui.tileNumSpinBox_2, SLOT(setValue(int)));
+  this->setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+  _ui.tileNumSpinBox->setValue(1);
+  _ui.pixelSpinBox->setValue(0.2);
 }
 
 SaveOrthoProjDialog::~SaveOrthoProjDialog()
 {
-	if (!_finished)
-		finish();
+  if (!_finished)
+    finish();
 }
 
 void SaveOrthoProjDialog::setup()
 {
-	//显示窗口
-	osg::GraphicsContext::WindowingSystemInterface* wsi = osg::GraphicsContext::getWindowingSystemInterface();
-	unsigned int screenWidth, screenHeight;
-	wsi->getScreenResolution(osg::GraphicsContext::ScreenIdentifier(0), screenWidth, screenHeight);
-	this->move((screenWidth - this->width()) / 2, (screenHeight - this->height()) / 2);
-	this->setWindowFlags(this->windowFlags() & ~Qt::CustomizeWindowHint & ~Qt::WindowMinMaxButtonsHint);
-	this->setWindowModality(Qt::WindowModal);
-	this->show();
+  // Show the dialog
+  osg::GraphicsContext::WindowingSystemInterface* wsi = osg::GraphicsContext::getWindowingSystemInterface();
+  unsigned int screenWidth, screenHeight;
+  wsi->getScreenResolution(osg::GraphicsContext::ScreenIdentifier(0), screenWidth, screenHeight);
+  this->move((screenWidth - this->width()) / 2, (screenHeight - this->height()) / 2);
+  this->setWindowFlags(this->windowFlags() & ~Qt::CustomizeWindowHint & ~Qt::WindowMinMaxButtonsHint);
+  this->setWindowModality(Qt::WindowModal);
+  this->show();
+}
+
+void SaveOrthoProjDialog::doMosaic()
+{
+  if (_ui.mergeCheckBox->isChecked())
+  {
+    WaitProgressDialog* waitDialog = new WaitProgressDialog(tr("Merging tiles...") + " (gdalbuildvrt.exe)",
+      "", 0, 1, 0, Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    waitDialog->adjustSize();
+    waitDialog->setWindowModality(Qt::WindowModal);
+
+    // Use gdalbuildvrt.exe to do the mosaic, generating a temprary vrt file
+    QStringList commandList;
+    commandList.push_back("-a_srs");
+    commandList.push_back(_srsWKT.c_str());
+    commandList.push_back("-overwrite");
+    commandList.push_back("output.vrt");
+    commandList.append(_fileList);
+
+    QStringList environment;
+    environment.push_back("GDAL_DATA=./GDAL/data");
+
+    QProcess *process = new QProcess(this);
+    process->setWorkingDirectory(_path);
+    cout << "cd " << _path.toStdString() << endl;
+    cout << "gdalbuildvrt " << commandList.join(' ').toStdString() << endl;
+    process->setStandardOutputFile(_path + "/log.txt");
+    process->setStandardErrorFile(_path + "/error.txt");
+    process->setEnvironment(environment);
+
+    // Generate the output image with vrt file
+    connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+      [=](int exitCode, QProcess::ExitStatus exitStatus) {
+      waitDialog->close();
+      doTranslate();
+    });
+    connect(process, &QProcess::errorOccurred, [=](QProcess::ProcessError error) {
+      QMessageBox::critical(nullptr, tr("Failed to mosaic"), process->errorString());
+      waitDialog->close();
+    });
+    process->start("gdalbuildvrt.exe", commandList);
+    waitDialog->exec();
+  }
+}
+
+void SaveOrthoProjDialog::doTranslate()
+{
+  WaitProgressDialog* waitDialog = new WaitProgressDialog(tr("Merging tiles...") + " (gdal_translate.exe)",
+    "", 0, 1, 0, Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+  waitDialog->adjustSize();
+  waitDialog->setWindowModality(Qt::WindowModal);
+
+  // Convert to tiff file using gdal_translate
+  QStringList commandList;
+  commandList.push_back("-of");
+  commandList.push_back("GTiff");
+  commandList.push_back("-co");
+  commandList.push_back("TILED=YES");
+  commandList.push_back("-co");
+  commandList.push_back("NUM_THREADS=ALL_CPUS");
+  if (_mode == DOM)
+  {
+    commandList.push_back("-co");
+    commandList.push_back("COMPRESS=JPEG");
+  }
+  commandList.push_back("-a_srs");
+  commandList.push_back(_srsWKT.c_str());
+  commandList.push_back("output.vrt");
+  commandList.push_back("output." + _extension);
+
+  QStringList environment;
+  environment.push_back("GDAL_DATA=./GDAL/data");
+
+  QProcess *process = new QProcess(this);
+  process->setWorkingDirectory(_path);
+  cout << "gdal_translate " << commandList.join(' ').toStdString() << endl;
+  process->setStandardOutputFile(_path + "/log.txt");
+  process->setStandardErrorFile(_path + "/error.txt");
+  process->setEnvironment(environment);
+
+  connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+    [=](int exitCode, QProcess::ExitStatus exitStatus) {
+    waitDialog->close();
+    //buildOverview();
+  });
+  connect(process, &QProcess::errorOccurred, [=](QProcess::ProcessError error) {
+    QMessageBox::critical(nullptr, tr("Failed to tranlate"), process->errorString());
+    waitDialog->close();
+  });
+  process->start("gdal_translate.exe", commandList);
+  waitDialog->exec();
+}
+
+void SaveOrthoProjDialog::buildOverview()
+{
+  WaitProgressDialog* waitDialog = new WaitProgressDialog(tr("Building overview..."),
+    "", 0, 1, 0, Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+  waitDialog->adjustSize();
+  waitDialog->setWindowModality(Qt::WindowModal);
+
+  // Build overviews
+  QStringList commandList;
+  commandList.push_back("-r");
+  commandList.push_back("average");
+  commandList.push_back("output." + _extension);
+
+  QStringList environment;
+  environment.push_back("GDAL_DATA=./GDAL/data");
+
+  QProcess *process = new QProcess(this);
+  process->setWorkingDirectory(_path);
+  cout << "gdaladdo " << commandList.join(' ').toStdString() << endl;
+  process->setStandardOutputFile(_path + "/log.txt");
+  process->setStandardErrorFile(_path + "/error.txt");
+  process->setEnvironment(environment);
+
+  connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+    [=](int exitCode, QProcess::ExitStatus exitStatus) {
+    waitDialog->close();
+  });
+  connect(process, &QProcess::errorOccurred, [=](QProcess::ProcessError error) {
+    QMessageBox::critical(nullptr, tr("Failed to build overview"), process->errorString());
+    waitDialog->close();
+  });
+  process->start("gdaladdo.exe", commandList);
+  waitDialog->exec();
+}
+
+void SaveOrthoProjDialog::processTile(osg::MatrixTransform* subScene, std::string nodeName)
+{
+  QString tileName = QString::fromStdString(nodeName).split('/').back().split('.').front();
+  QString saveName = _path + "/" + tileName + '.' + _extension;
+  _fileList.push_back(tileName + '.' + _extension);
+
+  advanceCapturing(tr("Processing ") + tileName);
+  if (!_ui.overwriteCheckBox->isChecked() && QFileInfo(saveName).exists())
+  {
+    cout << "Tile exist, skipped: " << tileName.toStdString() << endl;
+    return;
+  }
+  cout << "Tile export started: " << tileName.toStdString() << endl;
+
+  osg::ComputeBoundsVisitor boundsVisitor;
+  boundsVisitor.apply(*subScene);
+  auto bounding = boundsVisitor.getBoundingBox();
+  float boundingW = bounding.xMax() - bounding.xMin() + 1;
+  float boundingH = bounding.yMax() - bounding.yMin() + 1;
+  unsigned int viewW = boundingW + 1;
+  unsigned int viewH = boundingH + 1;
+
+  // Calculate view size
+  unsigned int widgetWidth, widgetHeight;
+  widgetWidth = _vw.width();
+  widgetHeight = _vw.height();
+  if (viewW >= widgetWidth - 50)
+  {
+    viewH = (double)viewH / viewW * (widgetWidth - 50);
+    viewW = widgetWidth - 50;
+  }
+  if (viewH >= widgetHeight - 50)
+  {
+    viewW = (double)viewW / viewH * (widgetHeight - 50);
+    viewH = widgetHeight - 50;
+  }
+
+  // Set camera attributes for capturing
+  osg::Vec3 eye, center, up;
+  eye = bounding.center();
+
+  // A very large positive z offset to make sure the camera is above the whole model
+  eye.z() = bounding.zMax() + captureZOffset;
+  center = eye - osg::Vec3(0, 0, 1);
+  up = osg::Vec3(0, 1, 0);
+
+  _orthoCamera->setViewport((widgetWidth - 50 - viewW) / 2, 25, viewW, viewH);
+  _orthoCamera->setViewMatrixAsLookAt(eye, center, up);
+  _orthoCamera->setProjectionMatrixAsOrtho(-boundingW / 2, boundingW / 2,
+    -boundingH / 2, boundingH / 2, 1, 10000);
+  _orthoCamera->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
+  _orthoCamera->setClearColor(bgColor);
+
+  // Init capture root
+  osg::ref_ptr<osg::Switch> captureRoot = new osg::Switch;
+  captureRoot->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF & osg::StateAttribute::OVERRIDE);
+  captureRoot->addChild(subScene, true);
+  _view.setSceneData(captureRoot);
+  _view.setCameraManipulator(0);
+
+  // Ouput settings
+  float tileWidth = boundingW / _numTiles * _pixelPerMeter + 1;
+  float tileHeight = boundingH / _numTiles * _pixelPerMeter + 1;
+  int posterWidth = tileWidth * _numTiles;
+  int posterHeight = tileHeight * _numTiles;
+
+  // Init off-screen rendering camera
+  osg::ref_ptr<osg::Camera> captureCamera = new osg::Camera;
+  captureCamera->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  captureCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+  captureCamera->setRenderOrder(osg::Camera::PRE_RENDER);
+  osg::Camera::RenderTargetImplementation renderImplementation = osg::Camera::FRAME_BUFFER_OBJECT;
+  captureCamera->setRenderTargetImplementation(renderImplementation);
+  captureCamera->setViewport(0, 0, tileWidth, tileHeight);
+  captureCamera->addChild(subScene);
+  captureCamera->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+  captureRoot->addChild(captureCamera, true);
+
+  // Init output printer
+  osg::ref_ptr<PosterPrinter> printer = new PosterPrinter;
+  printer->setTileSize(tileWidth, tileHeight);
+  printer->setPosterSize(posterWidth, posterHeight);
+  printer->setOutputType(_mode == DOM ? PosterPrinter::RGB : PosterPrinter::DEPTH);
+  printer->setCamera(captureCamera);
+  printer->setOutputTiles(false);
+  printer->setOutputTileExtension(_extension.toStdString());
+  printer->setPixel(_pixelPerMeter);
+
+  // Prepare the output image
+  osg::ref_ptr<osg::Image> posterImage = 0;
+  posterImage = new osg::Image;
+  if (_mode == DOM)
+    posterImage->allocateImage(posterWidth, posterHeight, 1, GL_RGB, GL_UNSIGNED_BYTE);
+  else
+    posterImage->allocateImage(posterWidth, posterHeight, 1, GL_DEPTH_COMPONENT, GL_FLOAT);
+  printer->setFinalPoster(posterImage.get());
+  printer->setOutputPosterName(_path.toLocal8Bit().toStdString());
+  printer->setPath(_path);
+  printer->setViewCamera(_orthoCamera);
+
+  // Begin capturing
+  printer->init(_view.getCamera());
+
+  osg::Camera* camera = _view.getCamera();
+  osg::ref_ptr<CustomRenderer> renderer = new CustomRenderer(camera);
+  camera->setRenderer(renderer.get());
+
+  while (!printer->done())
+  {
+    _vw.advance();
+
+    // Keep updating and culling until full level of detail is reached
+    renderer->setCullOnly(true);
+    while (_view.getDatabasePager()->getRequestsInProgress())
+    {
+      _vw.updateTraversal();
+      _vw.renderingTraversals();
+    }
+
+    renderer->setCullOnly(false);
+    printer->frame(_view.getFrameStamp(), _view.getSceneData());
+    _vw.renderingTraversals();
+  }
+  writeWithGDAL(tileName.toLocal8Bit().toStdString(), saveName.toLocal8Bit().toStdString(),
+    printer->getFinalPoster()->data(), bounding,
+    posterWidth, posterHeight);
 }
 
 void SaveOrthoProjDialog::startCapturing()
 {
-	_path = QFileDialog::getExistingDirectory(0, tr("Choose save location"), ".");
-	if (_path.isEmpty())
-		return;
+  _path = QFileDialog::getExistingDirectory(0, tr("Choose save location"), ".");
+  if (_path.isEmpty())
+    return;
+  _numTiles = _ui.tileNumSpinBox->value();
+  _pixelPerMeter = 1 / _ui.pixelSpinBox->value();
 
-	_waitDialog = new WaitProgressDialog("", "", 0, ((osg::MatrixTransform*)_scene)->getNumChildren(), this, Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-	connect(this, SIGNAL(updateWaitMessage(const QString&)), _waitDialog, SLOT(updateMessage(const QString&)));
-	connect(this, SIGNAL(updateTime()), _waitDialog, SLOT(updateTime()));
-	_waitDialog->adjustSize();
-	_waitDialog->setWindowModality(Qt::WindowModal);
-	_waitDialog->show();
+  _waitDialog = new WaitProgressDialog("", "", 0, _scene->getNumChildren(), this, Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+  connect(this, SIGNAL(updateWaitMessage(const QString&)), _waitDialog, SLOT(updateMessage(const QString&)));
+  connect(this, SIGNAL(updateTime()), _waitDialog, SLOT(updateTime()));
+  _waitDialog->adjustSize();
+  _waitDialog->setWindowModality(Qt::WindowModal);
+  _waitDialog->show();
 
-	this->hide();
-	_view.getDatabasePager()->setDoPreCompile(false);
+  this->hide();
+  _view.getDatabasePager()->setDoPreCompile(false);
 
-	// 内存充足的情况下，使用300的LOD数以提高程序效率
-	_origMaxLOD = _view.getDatabasePager()->getTargetMaximumNumberOfPageLOD();
-	//_view.getDatabasePager()->setTargetMaximumNumberOfPageLOD(2000);
-	_vw.stopRendering();
+  // TODO: Use more lod to accelerate the process
+  //_origMaxLOD = _view.getDatabasePager()->getTargetMaximumNumberOfPageLOD();
+  //_view.getDatabasePager()->setTargetMaximumNumberOfPageLOD(2000);
+  _vw.stopRendering();
 
-	//保存原视图状态
-	_orthoCamera = _view.getCamera();
-	_origViewWidth = _orthoCamera->getViewport()->width();
-	_origViewHeight = _orthoCamera->getViewport()->height();
-	_origViewMatrix = _orthoCamera->getViewMatrix();
-	_origProjMatrix = _orthoCamera->getProjectionMatrix();
-	_origNearFarMode = _orthoCamera->getComputeNearFarMode();
-	_origManip = _view.getCameraManipulator();
-	_origScene = _view.getSceneData();
+  // Save the original view states
+  _orthoCamera = _view.getCamera();
+  _origColor = _orthoCamera->getClearColor();
+  _origViewWidth = _orthoCamera->getViewport()->width();
+  _origViewHeight = _orthoCamera->getViewport()->height();
+  _origViewMatrix = _orthoCamera->getViewMatrix();
+  _origProjMatrix = _orthoCamera->getProjectionMatrix();
+  _origNearFarMode = _orthoCamera->getComputeNearFarMode();
+  _origManip = _view.getCameraManipulator();
+  _origScene = _view.getSceneData();
 
-	// 计时
-	QTimer* timer;
-	QThread* timerThread;
+  // Timer that show on the waiting dialog
+  QTimer* timer = new QTimer;
+  QThread* timerThread = new QThread();
+  timer->setInterval(1000);
+  timer->moveToThread(timerThread);
+  connect(timer, &QTimer::timeout, _waitDialog, &WaitProgressDialog::updateTime);
+  connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
+  connect(timerThread, &QThread::finished, timer, &QObject::deleteLater);
+  connect(timerThread, &QThread::finished, timerThread, &QObject::deleteLater);
+  timerThread->start();
 
-	timer = new QTimer;
-	timer->setInterval(1000);
-	connect(timer, SIGNAL(timeout()), _waitDialog, SLOT(updateTime()));
-	timerThread = new QThread();
-	timer->moveToThread(timerThread);
-	connect(timerThread, SIGNAL(started()), timer, SLOT(start()));
-	timerThread->start();
+  // Get world transform
+  double modelZOffset = 0;
+  _scene->getUserValue<double>("zOffset", modelZOffset);
+  osg::Matrix worldMatrix = osg::computeLocalToWorld(_scene->getParentalNodePaths()[0]);
+  worldMatrix.postMultTranslate(osg::Vec3d(0, 0, -modelZOffset));
+  auto offset = worldMatrix.getTrans();
 
-	QTime totalTime;
-	totalTime.start();
+  osg::ref_ptr<osg::MatrixTransform> subScene = new osg::MatrixTransform();
+  subScene->setMatrix(worldMatrix);
+  subScene->addChild(_scene);
 
-	QTime tileTime;
-	tileTime.start();
+  // Process tile by tile
+  for (unsigned int i = 0; i < _scene->getNumChildren(); i++)
+  {
+    subScene->removeChildren(0, subScene->getNumChildren());
+    subScene->addChild(_scene->getChild(i));
+    processTile(subScene, _scene->getChild(i)->getName());
+  }
 
-	osg::ref_ptr<osg::MatrixTransform> subScene = new osg::MatrixTransform;
-	osg::Matrix m;
-	m.makeTranslate(((osg::MatrixTransform*)_scene)->getMatrix().getTrans() - osg::Vec3d(0, 0, -modelZOffset));
-	subScene->setMatrix(m);
-
-	// 以切片为单位进行逐个处理
-	for (unsigned int i = 0; i < ((osg::MatrixTransform*)_scene)->getNumChildren(); i++)
-	{
-		subScene->removeChildren(0, subScene->getNumChildren());
-		_subTile = ((osg::MatrixTransform*)_scene)->getChild(i);
-		subScene->addChild(_subTile);
-
-		QString tileName = QString::fromStdString(_subTile->getName()).split('/').back().split('.').front();
-		QString extension = _mode == DOM ? "img" : "tiff";
-		QString saveName = _path + "/" + tileName + '.' + extension;
-		_fileList.push_back(tileName + '.' + extension);
-
-		advanceCapturing(tr("Processing ") + tileName);
-		if (!_ui.overwriteCheckBox->isChecked() && QFileInfo(saveName).exists())
-		{
-			cout << "Tile exist, skipped: " << i << ", " << tileName.toStdString() << endl;
-			continue;
-		}
-		cout << "Tile export started: " << i << ", " << tileName.toStdString() << endl;
-
-		osg::ComputeBoundsVisitor boundsVisitor;
-		boundsVisitor.apply(*subScene);
-		_boundingBox = boundsVisitor.getBoundingBox();
-		_boundingWidth = _boundingBox.xMax() - _boundingBox.xMin()+1;
-		_boundingHeight = _boundingBox.yMax() - _boundingBox.yMin()+1;
-		unsigned int viewWidth = _boundingWidth + 1;
-		unsigned int viewHeight = _boundingHeight + 1;
-
-		//计算视口大小
-		unsigned int widgetWidth, widgetHeight;
-		widgetWidth = _vw.width();
-		widgetHeight = _vw.height();
-		if (viewWidth >= widgetWidth - 50)
-		{
-			viewHeight = (double)viewHeight / viewWidth * (widgetWidth - 50);
-			viewWidth = widgetWidth - 50;
-		}
-		if (viewHeight >= widgetHeight - 50)
-		{
-			viewWidth = (double)viewWidth / viewHeight * (widgetHeight - 50);
-			viewHeight = widgetHeight - 50;
-		}
-		
-		//设置视图和投影
-		osg::Vec3 eye, center, up;
-		eye = _boundingBox.center();
-		// A very large positive z offset to make sure the camera is above the whole model
-		eye.z() = _boundingBox.zMax() + captureZOffset;
-		center = eye - osg::Vec3(0, 0, 1);
-		up = osg::Vec3(0, 1, 0);
-		_orthoCamera->setViewport((widgetWidth - 50 - viewWidth) / 2, 25, viewWidth, viewHeight);
-		_orthoCamera->setViewMatrixAsLookAt(eye, center, up); 
-		_orthoCamera->setProjectionMatrixAsOrtho(-_boundingWidth / 2, _boundingWidth / 2,
-			-_boundingHeight / 2, _boundingHeight / 2, 1, 10000);
-		_orthoCamera->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
-
-		//初始化捕捉节点
-		_captureRoot = new osg::Switch;
-		_captureRoot->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF & osg::StateAttribute::OVERRIDE);
-		_captureRoot->addChild(subScene, true);
-		_view.setSceneData(_captureRoot);
-		_view.setCameraManipulator(0);
-
-		//输出设置
-		_numTiles = _ui.tileNumSpinBox->value();
-		_pixelPerMeter = _ui.pixelSpinBox->value(); 
-		_pixelPerMeter = 1 / _pixelPerMeter;//改为像素分辨率by jt
-		_tileWidth = _boundingWidth / _numTiles * _pixelPerMeter + 1;
-		_tileHeight = _boundingHeight / _numTiles * _pixelPerMeter + 1;
-		_posterWidth = _tileWidth * _numTiles;
-		_posterHeight = _tileHeight * _numTiles;
-
-		//设置离屏渲染相机
-		osg::ref_ptr<osg::Camera> captureCamera = new osg::Camera;
-		captureCamera->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		captureCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-		captureCamera->setRenderOrder(osg::Camera::PRE_RENDER);
-		osg::Camera::RenderTargetImplementation renderImplementation = osg::Camera::FRAME_BUFFER_OBJECT;
-		captureCamera->setRenderTargetImplementation(renderImplementation);
-		captureCamera->setViewport(0, 0, _tileWidth, _tileHeight);
-		captureCamera->addChild(subScene);
-		captureCamera->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-		_captureRoot->addChild(captureCamera, true);
-
-		//初始化输出
-		_printer = new PosterPrinter;
-		_printer->setTileSize(_tileWidth, _tileHeight);
-		_printer->setPosterSize(_posterWidth, _posterHeight);
-		_printer->setOutputType(_mode == DOM ? PosterPrinter::RGB : PosterPrinter::DEPTH);
-		_printer->setCamera(captureCamera);
-		_printer->setOutputTiles(false);
-		_printer->setOutputTileExtension(extension.toStdString());
-		_printer->setSRS(_srsWKT);
-		_printer->setPixel(_pixelPerMeter);
-
-		//初始化图像
-		osg::ref_ptr<osg::Image> posterImage = 0;
-		posterImage = new osg::Image;
-		if (_mode == DOM)
-			posterImage->allocateImage(_posterWidth, _posterHeight, 1, GL_RGB, GL_UNSIGNED_BYTE);
-		else
-			posterImage->allocateImage(_posterWidth, _posterHeight, 1, GL_DEPTH_COMPONENT, GL_FLOAT);
-		_printer->setFinalPoster(posterImage.get());
-		_printer->setOutputPosterName(_path.toLocal8Bit().toStdString());
-		_printer->setPath(_path);
-		_printer->setViewCamera(_orthoCamera);
-
-		//开始捕捉
-
-		_printer->init(_view.getCamera());
-
-		osg::Camera* camera = _view.getCamera();
-		osg::ref_ptr<CustomRenderer> renderer = new CustomRenderer(camera);
-		camera->setRenderer(renderer.get());
-
-		while (!_printer->done())
-		{
-			_vw.advance();
-			
-			// Keep updating and culling until full level of detail is reached
-			renderer->setCullOnly(true);
-			while (_view.getDatabasePager()->getRequestsInProgress())
-			{
-				_vw.updateTraversal();
-				_vw.renderingTraversals();
-				//Sleep(1);
-			}
-
-			renderer->setCullOnly(false);
-			_printer->frame(_view.getFrameStamp(), _view.getSceneData());
-			_vw.renderingTraversals();
-
-			
-		}
-		//waitForCapturing(false);
-		writeWithGDAL();
-		cout << "Finished, time consumed: " << tileTime.restart() / 1000 << endl;
-		cout << "Total time consumed: " << totalTime.elapsed() / 1000 << endl;
-	}
-
-	_successed = true;
-	timerThread->terminate();
-	timer->stop();
-	delete timer;
-	delete timerThread;
-	emit accepted();
-
+  _successed = true;
+  timerThread->quit();
+  emit accepted();
 }
 
 void SaveOrthoProjDialog::finish()
 {
-	if (_successed)
-	{
-		// 镶嵌图片
-		if (_ui.mergeCheckBox->isChecked())
-		{
-			WaitProgressDialog* waitDialog = new WaitProgressDialog(tr("Merging tiles..."), "", 0, 1, 0, Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-			waitDialog->adjustSize();
-			waitDialog->setWindowModality(Qt::WindowModal);
+  if (_successed)
+  {
+    // Mosaic
+    doMosaic();
 
-			// Use gdalbuildvrt.exe to do the mosaic, generating a temprary vrt file
-			QStringList commandList(_fileList);
-			commandList.push_front("output.vrt");
-			commandList.push_front("-overwrite");
-			commandList.push_front(_srsWKT.c_str());
-			commandList.push_front("-a_srs");
+    QMessageBox::information(this, tr("Exporting completed"), tr("Exported to ") + _path, QMessageBox::NoButton);
+    _waitDialog->close();
 
-			QStringList environment;
-			environment.push_back("GDAL_DATA=./GDAL/data");
+    // Recover the original view states
+    _vw.startRendering();
 
-			QProcess *process = new QProcess(this);
-			process->setWorkingDirectory(_path);
-			cout << "cd " << _path.toStdString() << endl;
-			cout << "gdalbuildvrt " << commandList.join(' ').toStdString() << endl;
-			process->setStandardOutputFile(_path + "/mosaicLog.txt");
-			process->setStandardErrorFile(_path + "/mosaicError.txt");
-			process->setEnvironment(environment);
+    _view.getDatabasePager()->setTargetMaximumNumberOfPageLOD(_origMaxLOD);
+    _view.setCameraManipulator(_origManip);
+    _view.setSceneData(_origScene);
 
-			// Generate the output image with vrt file
-			connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-				[=](int exitCode, QProcess::ExitStatus exitStatus) {
+    _orthoCamera->setViewport(0, 0, _origViewWidth, _origViewHeight);
+    _orthoCamera->setProjectionMatrix(_origProjMatrix);
+    _orthoCamera->setViewMatrix(_origViewMatrix);
+    _orthoCamera->setComputeNearFarMode(_origNearFarMode);
+    _orthoCamera->setClearColor(_origColor);
+  }
 
-				// 使用gdal_translate工具转换成tiff文件
-				QStringList commandList;
-				QString extension = _mode == DOM ? "img" : "tiff";
-				commandList.push_front("output." + extension);
-				commandList.push_front("output.vrt");
-				commandList.push_front(_srsWKT.c_str());
-				commandList.push_front("-a_srs");
-				if (_mode == DOM)
-				{
-					commandList.push_front("COMPRESSED=YES");
-					commandList.push_front("-co");
-					commandList.push_front("HFA");
-				}
-				else
-				{
-					commandList.push_front("GTiff");
-				}
-				commandList.push_front("-of");
-
-				QProcess *process = new QProcess(this);
-				process->setWorkingDirectory(_path);
-				cout << "gdal_translate " << commandList.join(' ').toStdString() << endl;
-				process->setStandardOutputFile(_path + "/translateLog.txt");
-				process->setStandardErrorFile(_path + "/translateError.txt");
-				process->setEnvironment(environment);
-
-				// Dealing with noise
-				connect(process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-					[=](int exitCode, QProcess::ExitStatus exitStatus) {
-
-					//cout << "Fixing nodata values" << endl;
-
-					//GDALDataset  *poDataset;
-					//GDALAllRegister();
-					//poDataset = (GDALDataset *)GDALOpen((_path + "/output.tiff").toLocal8Bit().toStdString().c_str(), GA_Update);
-
-					////差值处理坏点
-					//CPLErr success = GDALFillNodata(poDataset->GetRasterBand(1), 0, 5, 0, 0, NULL, 0, 0);
-					//if (success == CE_Failure)
-					//{
-					//	cout << "Nodata fix failed" << endl;
-					//}
-
-					//GDALClose((GDALDatasetH)poDataset);
-
-					waitDialog->close();
-				});
-				process->start("gdal_translate.exe", commandList);
-			});
-			process->start("gdalbuildvrt.exe", commandList);
-			waitDialog->exec();
-		}
-
-		QMessageBox::information(this, tr("Exporting completed"), tr("Exported to ") + _path, QMessageBox::NoButton);
-		_waitDialog->close();
-
-		// 还原视图原始状态
-		_vw.startRendering();
-
-		_view.getDatabasePager()->setTargetMaximumNumberOfPageLOD(_origMaxLOD);
-		_view.setCameraManipulator(_origManip);
-		_view.setSceneData(_origScene);
-
-		_orthoCamera->setViewport(0, 0, _origViewWidth, _origViewHeight);
-		_orthoCamera->setProjectionMatrix(_origProjMatrix);
-		_orthoCamera->setViewMatrix(_origViewMatrix);
-		_orthoCamera->setComputeNearFarMode(_origNearFarMode);
-
-		_captureRoot = 0;
-		_printer = 0;
-	}
-
-	_finished = true;
+  _finished = true;
 }
 
 void SaveOrthoProjDialog::captureFailed(const QString& msg)
 {
-	QMessageBox::critical(this,tr("Error"),tr("Insufficient memory. Please lower pixel number or increase tile number and retry.")); 
-	_waitDialog->close();
+  QMessageBox::critical(this, tr("Error"), tr("Insufficient memory. Please lower pixel number or increase tile number and retry."));
+  _waitDialog->close();
 
-	this->show();
-}
-
-void SaveOrthoProjDialog::waitForCapturing(bool started)
-{
-	static QTimer* timer;
-	static QThread* timerThread;
-	if (started)
-	{
-
-
-	}
-	else if (!_successed)
-	{
-		//_waitDialog->close();
-		//_successed = true;
-		//emit accepted();
-
-	}
+  this->show();
 }
 
 void SaveOrthoProjDialog::advanceCapturing(const QString& msg)
 {
-	if (!_successed)
-	{
-		_msg = msg;
-		_waitDialog->setValue(_waitDialog->value() + 1);
-		emit updateWaitMessage(msg);
-	}
+  if (!_successed)
+  {
+    _msg = msg;
+    _waitDialog->setValue(_waitDialog->value() + 1);
+    emit updateWaitMessage(msg);
+  }
 }
 
-void SaveOrthoProjDialog::writeWithGDAL()
+void SaveOrthoProjDialog::writeWithGDAL(std::string fileName, std::string saveName, const unsigned char *data, osg::BoundingBox bounding, int width, int height)
 {
-	GDALAllRegister();
+  GDALAllRegister();
 
-	if (_mode == DOM)
-	{
-		const char *pszFormat = "HFA";
-		GDALDriver *poDriver;
-		//char **papszMetadata;
-		poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
+  // Default to GTiff driver, other drivers are also possible
+  // More details: http://www.gdal.org/frmt_gtiff.html
+  const char *pszFormat = "GTiff";
+  GDALDriver *poDriver;
+  poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
 
-		char **papszOptions = NULL;
-		papszOptions = CSLSetNameValue(papszOptions, "COMPRESSED", "YES");
+  char **papszOptions = NULL;
+  //papszOptions = CSLSetNameValue(papszOptions, "TILED", "YES");
 
-		std::string fileName = QString::fromStdString(_subTile->getName()).split('/').back().split('.').front().toStdString();
-		std::string saveName = _path.toLocal8Bit().toStdString() + "/" + fileName + ".img";
+  // Create the file and copy raster data
+  GDALDataset *poDstDS;
+  if (_mode == DOM)
+  {
+    poDstDS = poDriver->Create(saveName.c_str(), width, height,
+      3, GDT_Byte, papszOptions);
+    poDstDS->RasterIO(GF_Write, 0, 0, width, height,
+      (unsigned char*)data + width * (height - 1) * 3,
+      width, height, GDT_Byte, 3, nullptr,
+      3, -width * 3, 1);
+    poDstDS->GetRasterBand(1)->SetNoDataValue(0);
+    poDstDS->GetRasterBand(2)->SetNoDataValue(0);
+    poDstDS->GetRasterBand(3)->SetNoDataValue(0);
+  }
+  else
+  {
+    poDstDS = poDriver->Create(saveName.c_str(), width, height,
+      1, GDT_Float32, papszOptions);
+    poDstDS->RasterIO(GF_Write, 0, 0, width, height,
+      (float*)data + width * (height - 1),
+      width, height, GDT_Float32, 1, nullptr,
+      sizeof(float), -width * sizeof(float), width * height * sizeof(float));
+    poDstDS->GetRasterBand(1)->SetNoDataValue(10000);
+  }
 
-		// Create the file and copy raster data
-		GDALDataset *poDstDS;
-		poDstDS = poDriver->Create(saveName.c_str(), _posterWidth, _posterHeight,
-			3, GDT_Byte, papszOptions);
-		poDstDS->RasterIO(GF_Write, 0, 0, _posterWidth, _posterHeight,
-			(unsigned char*)(_printer->getFinalPoster()->data()) + _posterWidth * (_posterHeight - 1) * 3,
-			_posterWidth, _posterHeight, GDT_Byte, 3, nullptr,
-			3, -_posterWidth * 3, 1);
-		poDstDS->GetRasterBand(1)->SetNoDataValue(0);
-		poDstDS->GetRasterBand(2)->SetNoDataValue(0);
-		poDstDS->GetRasterBand(3)->SetNoDataValue(0);
+  // Set affine information with origin default to top left
+  double topLeft[2] = { bounding.corner(2)[0], bounding.corner(2)[1] };
+  double adfGeoTransform[6] = { topLeft[0], 1 / _pixelPerMeter, 0, topLeft[1], 0, -1 / _pixelPerMeter };
+  poDstDS->SetProjection(_srsWKT.c_str());
+  poDstDS->SetGeoTransform(adfGeoTransform);
 
-		// Origin default to top left
-		double topLeft[2] = { _boundingBox.corner(2)[0], _boundingBox.corner(2)[1] };
-
-		poDstDS->SetProjection(_srsWKT.c_str());
-
-		// Affine information
-		double adfGeoTransform[6] = { topLeft[0], 1 / _pixelPerMeter, 0, topLeft[1], 0, -1 / _pixelPerMeter };
-		//GDALRasterBand *poBand;
-		poDstDS->SetGeoTransform(adfGeoTransform);
-
-		GDALClose((GDALDatasetH)poDstDS);
-	}
-	else
-	{
-		// Default to GTiff driver, other drivers are also possible
-		const char *pszFormat = "GTiff";
-		GDALDriver *poDriver;
-		//char **papszMetadata;
-		poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
-
-		// TODO: Only use TILED at present, other opetions like compression, preview or multithread should also be available
-		// More details: http://www.gdal.org/frmt_gtiff.html
-		char **papszOptions = NULL;
-		//papszOptions = CSLSetNameValue(papszOptions, "TILED", "YES");
-		//papszOptions = CSLSetNameValue( papszOptions, "COMPRESS", "JPEG" );
-
-		std::string fileName = QString::fromStdString(_subTile->getName()).split('/').back().split('.').front().toStdString();
-		std::string saveName = _path.toLocal8Bit().toStdString() + "/" + fileName + ".tiff";
-
-		// Create the file and copy raster data
-		GDALDataset *poDstDS;
-		poDstDS = poDriver->Create(saveName.c_str(), _posterWidth, _posterHeight,
-			1, GDT_Float32, papszOptions);
-		poDstDS->RasterIO(GF_Write, 0, 0, _posterWidth, _posterHeight,
-			(float*)(_printer->getFinalPoster()->data()) + _posterWidth * (_posterHeight - 1),
-			_posterWidth, _posterHeight, GDT_Float32, 1, nullptr,
-			sizeof(float), -_posterWidth * sizeof(float), _posterWidth * _posterHeight * sizeof(float));
-		poDstDS->GetRasterBand(1)->SetNoDataValue(10000);
-
-		// Origin default to top left
-		double topLeft[2] = { _boundingBox.corner(2)[0], _boundingBox.corner(2)[1] };
-
-		poDstDS->SetProjection(_srsWKT.c_str());
-
-		// Affine information
-		double adfGeoTransform[6] = { topLeft[0], 1 / _pixelPerMeter, 0, topLeft[1], 0, -1 / _pixelPerMeter };
-		//GDALRasterBand *poBand;
-		poDstDS->SetGeoTransform(adfGeoTransform);
-
-		GDALClose((GDALDatasetH)poDstDS);
-	}
+  GDALClose((GDALDatasetH)poDstDS);
 }
-
-//
-//class CameraSyncCallback:public osg::NodeCallback  
-//{  
-//public:  
-//	CameraSyncCallback(osg::Camera* camera): slaveCamera(camera)
-//	{
-//		if (slaveCamera.valid())
-//		{
-//			slaveCamera->getViewMatrixAsLookAt(_eye, _center, _up);
-//		}
-//	}  
-//
-//	virtual ~CameraSyncCallback()
-//	{   }  
-//
-//	virtual void operator()(osg::Node* node,osg::NodeVisitor* nv)
-//	{  
-//		osg::Camera* camera = dynamic_cast<osg::Camera*>(node);  
-//		if(camera && slaveCamera.valid())
-//		{
-//			// 只改变视角旋转方向，视点和视线方向均不变
-//			osg::Vec3 eye,center,up;
-//			camera->getViewMatrixAsLookAt(eye, center, up);
-//			if (eye.z() < 0.0)
-//			{
-//				up = -up;
-//			}
-//			up.z() = 0;
-//			if (up.x() == up.y() == 0.0)
-//				up.y() = 1;
-//			slaveCamera->setViewMatrixAsLookAt(_eye, _center, up);
-//		}  
-//		traverse(node, nv);  
-//	}  
-//private:  
-//	osg::ref_ptr<osg::Camera> slaveCamera; 
-//	osg::Vec3 _eye;
-//	osg::Vec3 _center;
-//	osg::Vec3 _up;
-//};  
-
-//void CaptureThread::run()
-//{
-//	emit isWorking(true);
-//
-//	osgViewer::Viewer& viewer = _viewer;
-//	osg::Camera* camera = viewer.getCamera();
-//	osg::ref_ptr<CustomRenderer> renderer = new CustomRenderer( camera );
-//	//camera->setRenderer( renderer.get() );
-//	viewer.setThreadingModel( osgViewer::Viewer::SingleThreaded );
-//
-//	// Realize and initiate the first PagedLOD request
-//	viewer.realize();
-//	viewer.frame();
-//
-//	_printer->init( camera );
-//	while ( !_printer->done() )
-//	{
-//		viewer.advance();
-//
-//		// Keep updating and culling until full level of detail is reached
-//		renderer->setCullOnly( true );
-//		while ( viewer.getDatabasePager()->getRequestsInProgress() )
-//		{
-//			viewer.updateTraversal();
-//			viewer.renderingTraversals();
-//		}
-//
-//		renderer->setCullOnly( false );
-//		//try{
-//		_printer->frame( viewer.getFrameStamp(), viewer.getSceneData() );
-//		/*}
-//		catch(std::bad_alloc&)
-//		{
-//		emit aborted(tr("终止，内存不足！"));
-//		terminate();
-//		}*/
-//		viewer.renderingTraversals();
-//	}
-//	emit isWorking(false);
-//}
-
-	//_captureRoot->setValue(0, false);
-	//_captureRoot->setValue(1, true);
-	
-	//waitForCapturing(true);
-
-	//osg::ref_ptr<CustomRenderer> renderer = new CustomRenderer( _orthoCamera );
-	//_orthoCamera->setRenderer( renderer.get() );
-
-	//_printer->init( _orthoCamera );
-	//while ( !_printer->done() )
-	//{
-	//	_viewer.advance();
-
-	//	// Keep updating and culling until full level of detail is reached
-	//	renderer->setCullOnly( true );
-	//	while ( _viewer.getDatabasePager()->getRequestsInProgress() )
-	//	{
-	//		_viewer.updateTraversal();
-	//		_viewer.renderingTraversals();
-	//	}
-
-	//	renderer->setCullOnly( false );
-	//	//try{
-	//	_printer->frame( _viewer.getFrameStamp(), _viewer.getSceneData() );
-	//	/*}
-	//	catch(std::bad_alloc&)
-	//	{
-	//	emit aborted(tr("终止，内存不足！"));
-	//	terminate();
-	//	}*/
-	//	_viewer.renderingTraversals();
-	//}
-
-	//
-
-	//waitForCapturing(false);

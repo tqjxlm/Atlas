@@ -173,13 +173,13 @@ void  AddObliqueModel::loadObliqueModel(const QString& pathXML)
   QString  nodeName = XMLPath.split("/").back();
   model->setUserValue("filepath", pathXML.toLocal8Bit().toStdString());
 
-  osg::Vec3d origin(_srsOriginInfo[0].toDouble(), _srsOriginInfo[1].toDouble(), _srsOriginInfo[2].toDouble());
+  osg::Vec3d origin(_srsOriginInfo[0].toDouble(), _srsOriginInfo[1].toDouble(), _srsOriginInfo[2].toDouble() + zOffset);
   osgEarth::GeoPoint  geoOrigin = osgEarth::GeoPoint(srs, origin);
 	geoOrigin = geoOrigin.transform(_globalSRS);
 
   auto anchorPoint = getNearestAnchorPoint(geoOrigin.vec3d());
   model->setPosition(geoOrigin.vec3d() - anchorPoint->getPosition());
-  //anchorPoint->addChild(model);
+  model->setUserValue("zOffset", zOffset);
 
   // Begin loading
   QFileInfoList  allFileList;

@@ -541,9 +541,9 @@ void  PosterPrinter::recordImages()
   {
     osg::Image *image = (itr->second).get();
 
-    if (_outputTiles)   // false
-    { // osgDB::writeImageFile(*image, image->getName() + "." + _outputTileExt);
-			exportImage(image);
+    if (_outputTiles)   
+    {
+      // false
 		}
 		else if (_finalPoster.valid())
 		{
@@ -564,46 +564,6 @@ void  PosterPrinter::recordImages()
   }
 
 	_images.clear();
-}
-
-void  PosterPrinter::exportImage(osg::Image *image)
-{
-  // GDALAllRegister();
-
-	////使用IMG格式影像，HFA标准
-  // const char *pszFormat = "HFA";
-  // GDALDriver *poDriver;
-  // char **papszMetadata;
-  // poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
-
-  // char **papszOptions = NULL;
-  // papszOptions = CSLSetNameValue( papszOptions, "COMPRESSED", "YES" );
-
-	//// Create the file and copy raster data
-	////QString path = _qPath + QString::fromStdString("/" + image->getName() + "." + _outputTileExt);
-	////QDir dir;
-	////dir.remove(path);
-
-  // GDALDataset *poDstDS;
-  // poDstDS = poDriver->Create((_outputPosterName + "/" + image->getName() + "." + _outputTileExt).c_str(), _tileSize.x(), _tileSize.y(),
-  // 3, GDT_Byte, papszOptions);
-  // poDstDS->RasterIO(GF_Write, 0, 0, _tileSize.x(), _tileSize.y(),
-  // (unsigned char*)(image->data()) + _tileSize.x() * (_tileSize.y() - 1) * 3,
-  // _tileSize.x(), _tileSize.y(), GDT_Byte, 3, nullptr, 3, -_tileSize.x() * 3, 1);
-
-	////坐标原点默认为影像左下角
-  // osg::Vec3 topLeft = osg::Vec3(-1, 1, 0) *
-  // osg::Matrix::inverse(_camera->getProjectionMatrix()) *
-  // osg::Matrix::inverse(_camera->getViewMatrix());
-
-  // poDstDS->SetProjection(_srsWKT.c_str());
-
-	//// Affine information
-  // double adfGeoTransform[6] = { topLeft.x(), 1 / _pixelPerMeter, 0, topLeft.y(), 0, -1 / _pixelPerMeter };
-  // GDALRasterBand *poBand;
-  // poDstDS->SetGeoTransform(adfGeoTransform);
-
-  // GDALClose((GDALDatasetH)poDstDS);
 }
 
 void  PosterPrinter::calcuZvaluefromDepth(osg::Image *image, int col, int row)
