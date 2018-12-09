@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>预览</string>
+   <string>Orthographic Generation</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -37,7 +37,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;值越高，输出像素越高，占用内存也越多。&lt;/p&gt;&lt;p&gt;对于大型文件，请设置低于5.0的值，否则可能导致系统内存不足&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>分辨率：</string>
+        <string>Resolution</string>
        </property>
       </widget>
      </item>
@@ -72,7 +72,7 @@
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;值越低，越容易引起内存不足&lt;/p&gt;&lt;p&gt;对于大型文件，至少保证设置在20 X 20以上&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
-        <string>分块数：</string>
+        <string>Tiles</string>
        </property>
       </widget>
      </item>
@@ -136,7 +136,7 @@
         <string>完成导出后自动镶嵌切片为完整文件</string>
        </property>
        <property name="text">
-        <string>自动镶嵌</string>
+        <string>Mosaic</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -149,7 +149,7 @@
         <string>覆盖目标文件夹中已存在的文件。需要重新生成的时候选择此项</string>
        </property>
        <property name="text">
-        <string>覆盖原文件</string>
+        <string>Overwrite</string>
        </property>
       </widget>
      </item>
