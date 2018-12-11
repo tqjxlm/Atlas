@@ -49,7 +49,7 @@ Atlas::Atlas(QWidget *parent, Qt::WindowFlags flags):
   GDALAllRegister();
   CPLSetConfigOption("GDAL_DATA", ".\\resources\\GDAL_data");
 
-  osg::DisplaySettings::instance()->setNumOfHttpDatabaseThreadsHint(6);
+  osg::DisplaySettings::instance()->setNumOfHttpDatabaseThreadsHint(8);
   osg::DisplaySettings::instance()->setNumOfDatabaseThreadsHint(3);
 }
 
@@ -231,7 +231,8 @@ void  Atlas::resetCamera()
       // Init a manipulator if not inited yet
       manipulator = new MapController(_dataRoot, _mapRoot);
       manipulator->setAutoComputeHomePosition(false);
-      manipulator->setCenterIndicator(_mainViewerWidget->createCameraIndicator());
+      if (_settingsManager->getOrAddSetting("Camera indicator", false).toBool())
+        manipulator->setCenterIndicator(_mainViewerWidget->createCameraIndicator());
 
       // Nearfar mode and ratio affect scene clipping
       auto camera = _mainViewerWidget->getMainView()->getCamera();

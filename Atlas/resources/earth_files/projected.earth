@@ -1,7 +1,7 @@
 <map name="base" type="projected">
 
     <options>
-        <profile>spherical-mercator</profile>
+        <profile>plate-carre</profile>
         <terrain morph_imagery="false"
             lighting = "true"
             blending = "true"

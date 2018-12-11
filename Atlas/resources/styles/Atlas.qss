@@ -85,12 +85,13 @@ NXDockWidgetTabBar {
     padding: 0;
 }
 
-AtlasSplashScreen > QProgressBar {
+QProgressBar {
     border: 2px solid grey;
     border-radius: 5px;
+    text-align: center;
 }
 
-AtlasSplashScreen > QProgressBar::chunk {
+QProgressBar::chunk {
     background-color: #05B8CC;
     width: 20px;
 }
