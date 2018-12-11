@@ -68,16 +68,18 @@ bool MapController::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAda
 	{
 	case(osgGA::GUIEventAdapter::PUSH):
 		// Show camera indicator
-		_centerIndicator->setNodeMask(0xffffffff);
+    if (_centerIndicator.valid())
+		  _centerIndicator->setNodeMask(0xffffffff);
 		break;
-    case(osgGA::GUIEventAdapter::RELEASE):
-        // Hide camera indicator
-        _centerIndicator->setNodeMask(0);
-        break;
+  case(osgGA::GUIEventAdapter::RELEASE):
+    // Hide camera indicator
+    if (_centerIndicator.valid())
+      _centerIndicator->setNodeMask(0);
+    break;
 	case(osgGA::GUIEventAdapter::KEYDOWN):
-        // Keyboard: don't pass the event on
-        return handleKeyDown(ea, us);
-    case(osgGA::GUIEventAdapter::KEYUP):
+    // Keyboard: don't pass the event on
+    return handleKeyDown(ea, us);
+  case(osgGA::GUIEventAdapter::KEYUP):
         // Keyboard: don't pass the event on
         return handleKeyUp(ea, us);
 	default:

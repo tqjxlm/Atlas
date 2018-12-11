@@ -11,13 +11,13 @@ IF %REL_DIR:~-1%==\ SET REL_DIR=%REL_DIR:~0,-1%
 IF NOT "%~3".==. set QTDIR=%~3
 IF "%QTDIR%"=="" GOTO INVALID_ARGS
 
+ECHO =================Deploying Atlas...=================
 IF NOT "%REL_DIR%"=="%OUT_DIR%" (
-    ECHO =================Deploying Atlas...=================
     xcopy "%REL_DIR%\*.exe" "%OUT_DIR%\" /Y /D
     xcopy "%REL_DIR%\*.dll" "%OUT_DIR%\" /Y /D
     xcopy "%REL_DIR%\plugins\*.dll" "%OUT_DIR%\plugins" /Y /D /i
-	xcopy "%REL_DIR%\resources" "%OUT_DIR%\resources" /E /Y /D /i
 )
+xcopy ".\Atlas\resources" "%OUT_DIR%\resources" /E /Y /D /i
 
 ECHO =================Deploying Qt...=================
 ECHO %QTDIR%
