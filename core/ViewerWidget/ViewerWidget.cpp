@@ -11,6 +11,9 @@
 #include <osgText/Text>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgQt/GraphicsWindowQt>
+#include <osgGA/StateSetManipulator>
+
+#include <osgEarth/GLUtils>
 
 #include <DataManager/FindNode.hpp>
 
@@ -81,11 +84,17 @@ QWidget* ViewerWidget::createViewWidget(osgQt::GraphicsWindowQt* gw, osg::Node* 
   camera->setSmallFeatureCullingPixelSize(-1.0f);
 
 	// Init the scene
+  osgEarth::GLUtils::setGlobalDefaults(camera->getOrCreateStateSet());
+
 	view->setSceneData(scene);
 	view->addEventHandler(new osgViewer::StatsHandler);
 	view->addEventHandler(new osgViewer::ThreadingHandler);
 	view->addEventHandler(new osgViewer::WindowSizeHandler);
 	view->addEventHandler(new osgViewer::LODScaleHandler);
+  view->addEventHandler(new osgGA::StateSetManipulator(view->getCamera()->getOrCreateStateSet()));
+
+  // Tell the database pager to not modify the unref settings
+  view->getDatabasePager()->setUnrefImageDataAfterApplyPolicy(true, false);
 
 	// We have to pause all threads before a view will be added to the composite viewer
 	stopThreading();

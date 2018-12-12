@@ -26,53 +26,7 @@ ECHO %QTDIR%
 ECHO =================Copying Third Party DLLs...=================
 IF "%THIRD_PARTY_DIR%"=="" GOTO NO_THIRD_PARTY
 
-xcopy "%THIRD_PARTY_DIR%\bin\expat.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\freexl.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\freetype*.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\gdal*.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\geos.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\geos_c.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\geotiff.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\hdf5.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\hdf5_hl.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\iconv-2.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\iconv.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libiconv.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libcharset.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\jpeg.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\jpeg*.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\laszip.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\laszip3.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libcurl.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libeay32.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\liblas.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\liblzma.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libmysql.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libpedsim.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libpedsimd.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libpng16.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libpq.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libtiff.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libfbxsdk.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libbz2.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libprotobuf.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\libxml2.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\lzma.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\lwgeom.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\netcdf.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\webp.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\ogdi.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\openjp2.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\openvr_api.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\proj*.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\zlib*.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\zstd.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\spatialite.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\sqlite3.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\ssleay32.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\szip.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\xerces-c_3_1.dll" "%OUT_DIR%\" /Y /D
-xcopy "%THIRD_PARTY_DIR%\bin\xerces-c_3_2.dll" "%OUT_DIR%\" /Y /D
+xcopy "%THIRD_PARTY_DIR%\bin\*.dll" "%OUT_DIR%\" /Y /D
 
 ECHO =================Copying OSG Core DLLs...=================
 IF "%OSG_ROOT%"=="" GOTO NO_OSG_ROOT

@@ -1,12 +1,16 @@
 ﻿#pragma once
 #ifndef URLDIALOG_HPP
 #define URLDIALOG_HPP
+
 #include <QDialog>
+#include <QMap>
 
-#include "ui_urlDialog.h"
+#include "EarthDataInterface_global.h"
 
-class urlDialog : public QDialog {
-	Q_OBJECT
+class Ui_urlDialog;
+
+class EARTHDATAINTERFACE_EXPORT urlDialog : public QDialog {
+  Q_OBJECT
 
 public:
 	urlDialog(QMap<QString, QString> examples, QWidget * parent = nullptr);
@@ -19,7 +23,7 @@ private slots:
 	void resetComboBox(const QString&);
 
 private:
-	Ui_urlDialog _ui;
+	Ui_urlDialog* _ui;
 	QMap<QString, QString> _examples;
 };
 

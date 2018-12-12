@@ -13,9 +13,9 @@ Data plugins load and stylize external data.
 | EarthDataInterface | Common interface for other data plugins that load osgEarth layers. | Atlas | core | ✓ |
 | AddXYZData | Load image map from tiles services that match standard XYZ url pattern. | Atlas | core | ✓ |
 | AddGDALData | Load local files (image, elevation, shape file) using GDAL. | Atlas | core | ✓ |
-| AddTMSData | Load image or elevation map from Tile Map Service. | Atlas | core |
-| AddOGCData | Load data from WMS, WFS or WTS services. | Atlas | core |
-| AddArcGISData | Load data from an ArcGIS server. | Atlas | core |
+| AddTMSData | Load image or elevation map from Tile Map Service. | Atlas | core | ✓ |
+| AddOGCData | Load data from WMS, WFS or WTS services. | Atlas | core | WMS✓ |
+| AddArcGISData | Load data from an ArcGIS server. | Atlas | core | Image✓ |
 | AddModel | Load common formats of models from file. | Atlas | core | ✓ |
 | AddObliqueModel | Load oblique imagery models organized in *.osgb LOD tiles and annotated by a *.xml file. | tqjxlm |  | ✓ |
 | AddPointCloud | Load point cloud data from a *.txt or *.las file. | TJoe | 3rdparty | |
@@ -56,7 +56,6 @@ Effect plugins provide visualization tools or view control.
 | ShowWeather | Add several weather effect to the scene. | Atlas | core | ✓ |
 | MultiView | Open multiple views that share the same scene and camera but show different contents. | Atlas | core | ✓ |
 | ScreenShot | Export the current rendered scene as image. | Atlas | core | ✓ |
-| PathRoaming | Record a camera moving path and play it for demonstration use. | Atlas | core | |
 | MeshMode | Switch render mode between Fill, Line or Point. | tqjxlm | | ✓ |
 | TileSelect | Select tiles of oblique imagery models. | TJoe | | ✓ |
 | VRMode | Provide 3D view with VR devices supported by OpenVR SDK. | tqjxlm, fwd | 3rdparty | |
