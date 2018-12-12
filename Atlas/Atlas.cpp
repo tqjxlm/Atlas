@@ -15,7 +15,6 @@ using namespace std;
 #include <osg/Notify>
 #include <osg/ShapeDrawable>
 #include <osg/PositionAttitudeTransform>
-
 #include <osg/BlendColor>
 #include <osg/BlendFunc>
 #include <osg/TexGen>
@@ -23,11 +22,14 @@ using namespace std;
 
 #include <osgSim/OverlayNode>
 #include <osgDB/FileUtils>
+
 #include <osgEarth/Map>
 #include <osgEarth/MapNode>
+#include <osgEarth/Registry>
 #include <osgEarthUtil/EarthManipulator>
 #include <osgEarthUtil/AutoClipPlaneHandler>
 #include <osgEarthUtil/LogarithmicDepthBuffer>
+#include <osgEarthUtil/ExampleResources>
 
 #include <gdal_priv.h>
 
@@ -38,6 +40,7 @@ using namespace std;
 #include <PluginManager/PluginManager.h>
 #include <MapController/MapController.h>
 #include <AtlasMainWindow/GeneratedFiles/ui_AtlasMainWindow.h>
+
 
 Atlas::Atlas(QWidget *parent, Qt::WindowFlags flags):
   AtlasMainWindow(parent, flags)
@@ -113,6 +116,10 @@ void  Atlas::initCore()
   emit  sendNowInitName(tr("Initializing viewer"));
   setCentralWidget(_mainViewerWidget);
 
+  // thread-safe initialization of the OSG wrapper manager. Calling this here
+  // prevents the "unsupported wrapper" messages from OSG
+  osgDB::Registry::instance()->getObjectWrapperManager()->findWrapper("osg::Image");
+
 	connect(_dataManager, SIGNAL(startRendering()), _mainViewerWidget, SLOT(startRendering()));
 	connect(_dataManager, SIGNAL(stopRendering()), _mainViewerWidget, SLOT(stopRendering()));
 
@@ -169,7 +176,18 @@ void  Atlas::initDataStructure()
       baseMapPath = QStringLiteral("resources/earth_files/projected.earth");
     }
 
-    osg::Node* baseMap = osgDB::readNodeFile(baseMapPath.toStdString());
+    osg::ref_ptr<osgDB::Options> myReadOptions = osgEarth::Registry::cloneOrCreateOptions(0);
+
+    osgEarth::Config c;
+    c.add("elevation_smoothing", false);
+    osgEarth::TerrainOptions to(c);
+
+    osgEarth::MapNodeOptions defMNO;
+    defMNO.setTerrainOptions(to);
+
+    myReadOptions->setPluginStringData("osgEarth.defaultOptions", defMNO.getConfig().toJSON());
+
+    osg::Node* baseMap = osgDB::readNodeFile(baseMapPath.toStdString(), myReadOptions);
 		_mapNode[i] = osgEarth::MapNode::get(baseMap);
 		_mapNode[i]->setName(QString("Map%1").arg(i).toStdString());
     _mapNode[i]->setNodeMask((SHOW_IN_WINDOW_1 << i) | SHOW_IN_NO_WINDOW);

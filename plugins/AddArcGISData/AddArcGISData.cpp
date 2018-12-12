@@ -22,6 +22,8 @@
 using namespace osgEarth;
 using namespace osgEarth::Drivers;
 
+#include <EarthDataInterface/urlDialog.h>
+
 static QVector<attrib>  getArcGISInfo(std::string &path, osgEarth::GeoExtent * &extent)
 {
   QVector<attrib>  attribList;
@@ -117,7 +119,7 @@ void  AddArcGISData::setupUi(QToolBar *toolBar, QMenu *menu)
   QAction *addArcGISImgAction = new QAction(_mainWindow);
 	addArcGISImgAction->setObjectName(QStringLiteral("addArcGISImgAction"));
 	addArcGISImgAction->setIcon(icon);
-	addArcGISImgAction->setText(tr("Online image (ArcGIS)"));
+	addArcGISImgAction->setText(tr("ArcGIS"));
 	addArcGISImgAction->setToolTip(tr("Load online images from ArcGIS service"));
 
 	menu = getOrAddMenu(IMAGE_LAYER);
@@ -128,18 +130,18 @@ void  AddArcGISData::setupUi(QToolBar *toolBar, QMenu *menu)
   QAction *addArcGISTerAction = new QAction(_mainWindow);
 	addArcGISTerAction->setObjectName(QStringLiteral("addArcGISTerAction"));
 	addArcGISTerAction->setIcon(icon);
-	addArcGISTerAction->setText(tr("Online terrain (ArcGIS)"));
+	addArcGISTerAction->setText(tr("ArcGIS"));
 	addArcGISTerAction->setToolTip(tr("Load online terrain from ArcGIS service"));
 
 	menu = getOrAddMenu(TERRAIN_LAYER);
 	menu->addAction(addArcGISTerAction);
-	connect(addArcGISTerAction, SIGNAL(triggered()), this, SLOT(addImage()));
+	connect(addArcGISTerAction, SIGNAL(triggered()), this, SLOT(addTerrain()));
 
 	// Feature
   QAction *addArcGISShpAction = new QAction(_mainWindow);
 	addArcGISShpAction->setObjectName(QStringLiteral("addArcGISShpAction"));
 	addArcGISShpAction->setIcon(icon);
-	addArcGISShpAction->setText(tr("Online features (ArcGIS)"));
+	addArcGISShpAction->setText(tr("ArcGIS"));
 	addArcGISShpAction->setToolTip(tr("Load online features from ArcGIS service"));
 
 	menu = getOrAddMenu(FEATURE_LAYER);
@@ -149,14 +151,22 @@ void  AddArcGISData::setupUi(QToolBar *toolBar, QMenu *menu)
 
 void  AddArcGISData::addImage()
 {
-  QString  fileName = QInputDialog::getText(dynamic_cast<QWidget *>(parent()), tr("Please enter file location"), "");
+  QMap<QString, QString> examples;
+  examples[tr("ArcGIS Online - world")] = "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer";
+  examples[tr("ArcGIS Online - terrain")] = "http://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer";
+  urlDialog dialog(examples, _mainWindow);
 
-	if (!fileName.isEmpty())
-	{
-    auto                 nodeName = fileName.toLocal8Bit().toStdString();
+  int accepted = dialog.exec();
+  if (accepted == QDialog::Accepted)
+  {
+    QString url = dialog.getUrl();
+    if (url.isEmpty())
+      return;
+
+    auto                 nodeName = url.toLocal8Bit().toStdString();
     osgEarth::GeoExtent *extent   = NULL;
 
-    QVector<attrib>  attribute = getArcGISInfo(nodeName, extent);
+    QVector<attrib>  attribute;
     ArcGISOptions    opt;
 		opt.url() = nodeName;
     ImageLayerOptions  layerOpt(nodeName, opt);
@@ -164,26 +174,33 @@ void  AddArcGISData::addImage()
 		layerOpt.magFilter() = osg::Texture::LINEAR;
     osg::ref_ptr<osgEarth::ImageLayer>  layer = new ImageLayer(layerOpt);
 
-		addLayerToMap(fileName, layer, IMAGE_LAYER, attribute, extent);
+		addLayerToMap(url, layer, IMAGE_LAYER, attribute, extent);
 	}
 }
 
 void  AddArcGISData::addTerrain()
 {
-  QString  fileName = QInputDialog::getText(dynamic_cast<QWidget *>(parent()), tr("Please enter file location"), "");
+  QMap<QString, QString> examples;
+  examples[tr("3DEP")] = "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer";
+  urlDialog dialog(examples, _mainWindow);
 
-	if (!fileName.isEmpty())
-	{
-    auto                 nodeName = fileName.toLocal8Bit().toStdString();
+  int accepted = dialog.exec();
+  if (accepted == QDialog::Accepted)
+  {
+    QString url = dialog.getUrl();
+    if (url.isEmpty())
+      return;
+
+    auto                 nodeName = url.toLocal8Bit().toStdString();
     osgEarth::GeoExtent *extent   = NULL;
 
     ArcGISOptions  opt;
 		opt.url() = nodeName;
 
     osg::ref_ptr<osgEarth::ElevationLayer>  layer     = new ElevationLayer(ElevationLayerOptions(nodeName, opt));
-    QVector<attrib>                         attribute = getArcGISInfo(nodeName, extent);
+    QVector<attrib>                         attribute;
 
-		addLayerToMap(fileName, layer, TERRAIN_LAYER, attribute, extent);
+		addLayerToMap(url, layer, TERRAIN_LAYER, attribute, extent);
 	}
 }
 

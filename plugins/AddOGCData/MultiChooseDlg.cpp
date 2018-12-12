@@ -7,7 +7,7 @@
 MultiChooseDlg::MultiChooseDlg(QWidget *parent, QStringList& itemToChoose)
 	: QDialog(parent)
 {
-	
+  setWindowTitle(tr("Layers"));
 
 	_table = new QTableWidget(this);
 	_table->setRowCount(itemToChoose.size());

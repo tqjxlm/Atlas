@@ -13,7 +13,7 @@
         </cache>
     </options>
 
-    <image name="osm_mapnik" driver="xyz">
+    <image name="open-street-map" driver="xyz">
         <url>http://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png</url>
         <profile>spherical-mercator</profile>
     </image>

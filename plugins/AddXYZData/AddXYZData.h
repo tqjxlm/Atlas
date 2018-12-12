@@ -21,4 +21,5 @@ public:
 
 public slots:
 	void addImage();
+  void addTerrain();
 };

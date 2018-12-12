@@ -273,19 +273,24 @@ bool MapController::handleMouseWheel( const osgGA::GUIEventAdapter& ea, osgGA::G
 
 bool MapController::performMovementMiddleMouseButton(const double eventTimeDelta, const double dx, const double dy)
 {
-	// Pane action
-	float scale = -0.5f * _distance * getThrowScale(eventTimeDelta);
+  return OrbitManipulator::performMovementLeftMouseButton(eventTimeDelta, dx, dy);
+}
 
-	Matrix rotation_matrix;
-	rotation_matrix.makeRotate(_rotation);
+bool MapController::performMovementLeftMouseButton(const double eventTimeDelta, const double dx, const double dy)
+{
+  // Pane action
+  float scale = -0.5f * _distance * getThrowScale(eventTimeDelta);
 
-	Vec3d dv = Vec3d(dx * scale, dy * scale, 0) * rotation_matrix;
-	
-	_center += dv;
+  Matrix rotation_matrix;
+  rotation_matrix.makeRotate(_rotation);
 
-    stickToScene();
+  Vec3d dv = Vec3d(dx * scale, dy * scale, 0) * rotation_matrix;
 
-	return true;
+  _center += dv;
+
+  stickToScene();
+
+  return true;
 }
 
 void MapController::zoomModel(const float dy, bool pushForwardIfNeeded)

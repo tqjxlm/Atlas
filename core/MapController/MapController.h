@@ -51,6 +51,8 @@ protected:
 	// Middle button event defined by OribitManipulator
 	virtual bool performMovementMiddleMouseButton(const double eventTimeDelta, const double dx, const double dy) override;
 
+  virtual bool performMovementLeftMouseButton(const double eventTimeDelta, const double dx, const double dy) override;
+
 	// Zoom function defined by OribitManipulator
 	virtual void zoomModel(const float dy, bool pushForwardIfNeeded) override;
 
