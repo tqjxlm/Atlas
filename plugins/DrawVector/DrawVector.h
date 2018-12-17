@@ -35,10 +35,10 @@ public:
 
   virtual void                 setupUi(QToolBar *toolBar, QMenu *menu) override;
 
-  void                         OpenVectorFile(const QString& path);
+  void                         OpenVectorFile(const QString &path);
 
 public slots:
-  void                         DrawVectorFromFile(const QString& filePath = "", QString nodeName = "ffg");
+  void                         DrawVectorFromFile(QString filePath, QString nodeName = "ffg");
 
 protected:
   osg::Vec3                    MiddlePointOfPolygon(osg::ref_ptr<osg::Vec3Array> pointsArr, osg::Vec3 centerpoint);
@@ -58,23 +58,20 @@ protected:
 
   void                         convtGeoCoorToProCoor(osg::Vec3 &proPos, osg::Vec3 geoPos);
 
-  void                         styleSetting(const QString& name);
+  void                         styleSetting(const QString &name);
 
-  void                         lodSetting(double dis, osg::Group *vectorGroup, const QString& name);
+  void                         lodSetting(double dis, osg::Group *vectorGroup, const QString &name);
 
 protected:
-  QAction                *_action;
-  osg::ref_ptr<osg::LOD>  _vectorLod;
-
+  QAction                  *_action;
+  osg::ref_ptr<osg::LOD>    _vectorLod;
   osg::ref_ptr<osg::Group>  _labelGroup;
-
-  float         _vecFontSize;
-  int           _highestVisibleHeight;
-  unsigned int  _textCharactorMode;
-  char         *_origlSRS;
-
-  osg::Group *_drawVectorRoot;
-  osg::Vec4   lineColor;
-  osg::Vec4   _textColor;
-  osg::Vec4   _pointColor;
+  float                     _vecFontSize;
+  int                       _highestVisibleHeight;
+  unsigned int              _textCharactorMode;
+  char                     *_origlSRS;
+  osg::Group               *_drawVectorRoot;
+  osg::Vec4                 lineColor;
+  osg::Vec4                 _textColor;
+  osg::Vec4                 _pointColor;
 };
