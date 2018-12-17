@@ -53,7 +53,7 @@ void  DrawVector::setupUi(QToolBar *toolBar, QMenu *menu)
 	_action->setVisible(false);
 }
 
-void  DrawVector::OpenVectorFile(const QString& path)
+void  DrawVector::OpenVectorFile(const QString &path)
 {
   QString  nameLine;
   QString  nameN, nameX, nameY;
@@ -125,10 +125,8 @@ void  DrawVector::convtGeoCoorToProCoor(osg::Vec3 &proPos, osg::Vec3 geoPos)
 {
   // 将点从地理坐标转换为世界坐标
   osgEarth::SpatialReference *srs_wgs84 = osgEarth::SpatialReference::get(_origlSRS);
-
-  osgViewer::View *view = _mainViewer->getMainView();
-
-  osgEarth::GeoPoint  aimPos = osgEarth::GeoPoint(srs_wgs84, geoPos).transform(_globalSRS);
+  osgViewer::View            *view      = _mainViewer->getMainView();
+  osgEarth::GeoPoint          aimPos    = osgEarth::GeoPoint(srs_wgs84, geoPos).transform(_globalSRS);
 
 	proPos.x() = aimPos.x();
 
@@ -222,9 +220,8 @@ osg::ref_ptr<osg::Geometry>  DrawVector::createLineGem(osg::ref_ptr<osg::Vec3Arr
 osg::ref_ptr<osg::Geode>  DrawVector::drawPolygon(OGRPolygon *poly, osg::Vec3 &centerpoint)
 {
   osg::ref_ptr<osg::Geode>  geode = new osg::Geode();
-
-  OGRwkbGeometryType  targetGeometryType;
-  int                 innerCount = poly->getNumInteriorRings();
+  OGRwkbGeometryType        targetGeometryType;
+  int                       innerCount = poly->getNumInteriorRings();
 
   if (innerCount == 0)// 如果没有内环
 	{
@@ -320,8 +317,7 @@ osg::ref_ptr<osg::Geode>  DrawVector::drawPolygon(OGRPolygon *poly, osg::Vec3 &c
 
 osg::ref_ptr<osg::Geometry>  DrawVector::drawLineString(OGRLineString *linestring)
 {
-  int  pointCount = linestring->getNumPoints();
-
+  int                           pointCount = linestring->getNumPoints();
   osg::ref_ptr<osg::Vec3Array>  plinearray = new osg::Vec3Array;
 
 	for (int i = 0; i < pointCount; i++)
@@ -339,7 +335,7 @@ osg::ref_ptr<osg::Geometry>  DrawVector::drawLineString(OGRLineString *linestrin
 	return createLineGem(plinearray);
 }
 
-void  DrawVector::DrawVectorFromFile(const QString& filePath, const QString& nodeName)
+void  DrawVector::DrawVectorFromFile(QString filePath, QString nodeName)
 {
 	if (filePath.contains("\\"))
 	{
@@ -456,10 +452,8 @@ void  DrawVector::DrawVectorFromFile(const QString& filePath, const QString& nod
 			case wkbPolygon:
 			{
         osg::ref_ptr<osg::Geode>  geode;
-
-        OGRPolygon *polygon = (OGRPolygon *)poGeometry;
-
-        osg::Vec3  centerpoint;
+        OGRPolygon               *polygon = (OGRPolygon *)poGeometry;
+        osg::Vec3                 centerpoint;
 
 				if (name == "ChangXing_scope_farmerhouse")
 				{
@@ -493,18 +487,15 @@ void  DrawVector::DrawVectorFromFile(const QString& filePath, const QString& nod
 			break;
 			case wkbPoint:
 			{
-        OGRPoint *point = (OGRPoint *)poGeometry;
-
+        OGRPoint  *point = (OGRPoint *)poGeometry;
         osg::Vec3  pos;
 
 				convtGeoCoorToProCoor(pos, osg::Vec3(point->getX(), point->getY(), point->getZ()));
 
         osgUtil::LineSegmentIntersector::Intersections  intersections;
-
-        osg::ref_ptr<osgUtil::LineSegmentIntersector>  ls = new osgUtil::LineSegmentIntersector
-                                                              (osg::Vec3(pos.x(), pos.y(), 1000),
-                                                              osg::Vec3(pos.x(), pos.y(), -300)); // 从水平面点的高程z=1000处到z=-300处
-
+        osg::ref_ptr<osgUtil::LineSegmentIntersector>   ls = new osgUtil::LineSegmentIntersector
+                                                               (osg::Vec3(pos.x(), pos.y(), 1000),
+                                                               osg::Vec3(pos.x(), pos.y(), -300)); // 从水平面点的高程z=1000处到z=-300处
         osg::ref_ptr<osgUtil::IntersectionVisitor>  iv = new osgUtil::IntersectionVisitor(ls);
 
         _overlayNode->accept(*iv);// 对overlayNode求交
@@ -540,10 +531,8 @@ void  DrawVector::DrawVectorFromFile(const QString& filePath, const QString& nod
 			case wkbLineString:
 			{
         osg::ref_ptr<osg::Geode>  geode;
-
-        OGRLineString *plinestring = (OGRLineString *)poGeometry;
-
-        osg::Vec3  centerpoint;
+        OGRLineString            *plinestring = (OGRLineString *)poGeometry;
+        osg::Vec3                 centerpoint;
 
 				if (name == "oldHouseScope")
 				{
@@ -619,7 +608,7 @@ void  DrawVector::DrawVectorFromFile(const QString& filePath, const QString& nod
 	GDALClose(poDS);
 }
 
-void  DrawVector::lodSetting(double dis, osg::Group *vectorGroup, const QString& name)
+void  DrawVector::lodSetting(double dis, osg::Group *vectorGroup, const QString &name)
 {
 	if (name == "ChangXing_scope_farmerhouse")
 	{
@@ -660,7 +649,7 @@ void  DrawVector::lodSetting(double dis, osg::Group *vectorGroup, const QString&
 	}
 }
 
-void  DrawVector::styleSetting(const QString& name)
+void  DrawVector::styleSetting(const QString &name)
 {
 	if (name == "ChangXing_scope_farmerhouse")
 	{
@@ -706,12 +695,9 @@ void  DrawVector::createFeatureNoteText(QMap<int, QString> featurefieldmap, QMap
 
 	for (QList<int>::iterator i = featureIDs.begin(); i != featureIDs.end(); ++i)
 	{
-    osg::ref_ptr<osg::LOD>  labelLod = new osg::LOD;
-
-    QString  sthvalue = featurefieldmap.value((*(i)));// feature某一字段的属性值
-
-    osg::Vec3  posmidle = featuregeomMap.value((*i));
-
+    osg::ref_ptr<osg::LOD>    labelLod  = new osg::LOD;
+    QString                   sthvalue  = featurefieldmap.value((*(i)));// feature某一字段的属性值
+    osg::Vec3                 posmidle  = featuregeomMap.value((*i));
     osg::ref_ptr<osg::Geode>  textGeode = new osg::Geode;
     auto                      str       = sthvalue.toStdString();
     textGeode->addDrawable(createTextGeode(str, posmidle));
