@@ -39,8 +39,7 @@ using namespace std;
 #include <SettingsManager/SettingsManager.h>
 #include <PluginManager/PluginManager.h>
 #include <MapController/MapController.h>
-#include <AtlasMainWindow/GeneratedFiles/ui_AtlasMainWindow.h>
-
+#include <ui_AtlasMainWindow.h>
 
 Atlas::Atlas(QWidget *parent, Qt::WindowFlags flags):
   AtlasMainWindow(parent, flags)
@@ -62,9 +61,9 @@ Atlas::~Atlas()
 	delete _dataManager;
 	delete _settingsManager;
 
-    osg::setNotifyLevel(osg::FATAL);
-    osg::setNotifyHandler(nullptr);
-    osgEarth::setNotifyHandler(nullptr);
+  osg::setNotifyLevel(osg::FATAL);
+  osg::setNotifyHandler(nullptr);
+  osgEarth::setNotifyHandler(nullptr);
 
 	cout << "Program closed: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString().c_str() << endl;
 	_log->close();
@@ -163,12 +162,17 @@ void  Atlas::initDataStructure()
   // Init osgEarth node using the predefined .earth file
   for (int i = 0; i < MAX_SUBVIEW; i++)
   {
-    QString mode = _settingsManager->getOrAddSetting("Base mode", "projected").toString();
-    QString baseMapPath;
+    QString  mode = _settingsManager->getOrAddSetting("Base mode", "projected").toString();
+    QString  baseMapPath;
+
     if (mode == "projected")
+    {
       baseMapPath = QStringLiteral("resources/earth_files/projected.earth");
+    }
     else if (mode == "geocentric")
+    {
       baseMapPath = QStringLiteral("resources/earth_files/geocentric.earth");
+    }
     else
     {
       QMessageBox::warning(nullptr, "Warning", "Base map settings corrupted, reset to projected");
@@ -176,18 +180,16 @@ void  Atlas::initDataStructure()
       baseMapPath = QStringLiteral("resources/earth_files/projected.earth");
     }
 
-    osg::ref_ptr<osgDB::Options> myReadOptions = osgEarth::Registry::cloneOrCreateOptions(0);
-
-    osgEarth::Config c;
+    osg::ref_ptr<osgDB::Options>  myReadOptions = osgEarth::Registry::cloneOrCreateOptions(0);
+    osgEarth::Config              c;
     c.add("elevation_smoothing", false);
-    osgEarth::TerrainOptions to(c);
-
-    osgEarth::MapNodeOptions defMNO;
+    osgEarth::TerrainOptions  to(c);
+    osgEarth::MapNodeOptions  defMNO;
     defMNO.setTerrainOptions(to);
 
     myReadOptions->setPluginStringData("osgEarth.defaultOptions", defMNO.getConfig().toJSON());
 
-    osg::Node* baseMap = osgDB::readNodeFile(baseMapPath.toStdString(), myReadOptions);
+    osg::Node *baseMap = osgDB::readNodeFile(baseMapPath.toStdString(), myReadOptions);
 		_mapNode[i] = osgEarth::MapNode::get(baseMap);
 		_mapNode[i]->setName(QString("Map%1").arg(i).toStdString());
     _mapNode[i]->setNodeMask((SHOW_IN_WINDOW_1 << i) | SHOW_IN_NO_WINDOW);
@@ -224,11 +226,13 @@ void  Atlas::resetCamera()
 {
   if (_mainMap[0]->isGeocentric())
   {
-    osg::ref_ptr<osgEarth::Util::EarthManipulator> manipulator = dynamic_cast<osgEarth::Util::EarthManipulator *>(_mainViewerWidget->getMainView()->getCameraManipulator());
+    osg::ref_ptr<osgEarth::Util::EarthManipulator>  manipulator =
+      dynamic_cast<osgEarth::Util::EarthManipulator *>(_mainViewerWidget->getMainView()->getCameraManipulator());
+
     if (!manipulator.valid())
     {
       manipulator = new osgEarth::Util::EarthManipulator;
-      auto settings = manipulator->getSettings();
+      auto  settings = manipulator->getSettings();
       settings->setSingleAxisRotation(true);
       settings->setMinMaxDistance(10000.0, settings->getMaxDistance());
       settings->setMaxOffset(5000.0, 5000.0);
@@ -244,16 +248,20 @@ void  Atlas::resetCamera()
   else
   {
     MapController *manipulator = dynamic_cast<MapController *>(_mainViewerWidget->getMainView()->getCameraManipulator());
+
     if (!manipulator)
     {
       // Init a manipulator if not inited yet
       manipulator = new MapController(_dataRoot, _mapRoot);
       manipulator->setAutoComputeHomePosition(false);
+
       if (_settingsManager->getOrAddSetting("Camera indicator", false).toBool())
+      {
         manipulator->setCenterIndicator(_mainViewerWidget->createCameraIndicator());
+      }
 
       // Nearfar mode and ratio affect scene clipping
-      auto camera = _mainViewerWidget->getMainView()->getCamera();
+      auto  camera = _mainViewerWidget->getMainView()->getCamera();
       camera->setComputeNearFarMode(osg::Camera::COMPUTE_NEAR_FAR_USING_BOUNDING_VOLUMES);
 
       connect(_dataManager, &DataManager::moveToNode,
@@ -264,6 +272,7 @@ void  Atlas::resetCamera()
       _mainViewerWidget->getMainView()->setCameraManipulator(manipulator);
       manipulator->registerWithView(_mainViewerWidget->getMainView(), 0);
     }
+
     manipulator->fitViewOnNode(_mapNode[0]);
   }
 }
@@ -292,6 +301,7 @@ class LogFileHandler: public osg::NotifyHandler
 	};
 
 public:
+
   LogFileHandler(std::ofstream *outStream):
     _log(outStream)
 	{
@@ -377,7 +387,7 @@ void  Atlas::collectInitInfo()
   pluginsDir.cd("plugins");
 
   // Parsing plugin dependencies
-  foreach(const QString& fileName, pluginsDir.entryList(QDir::Files))
+  foreach(const QString &fileName, pluginsDir.entryList(QDir::Files))
   {
     if (fileName.split('.').back() != "dll")
     {
