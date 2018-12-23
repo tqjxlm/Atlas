@@ -9,7 +9,7 @@ class QMenu;
 class QLineEdit;
 QT_END_NAMESPACE
 
-class Locator : public PluginInterface
+class Locator: public PluginInterface
 {
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID "io.tqjxlm.Atlas.PluginInterface" FILE "Locator.json")
@@ -17,20 +17,21 @@ class Locator : public PluginInterface
 
 public:
 	Locator();
-	~Locator();
-	virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
-	virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa) override;
 
-	void flyToPoint(osg::Vec3 target, osgViewer::View* view = NULL);
+	~Locator();
+
+	virtual void  setupUi(QToolBar *toolBar, QMenu *menu) override;
+
+	virtual bool  handle(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa) override;
 
 public slots:
-	void flyToQueriedCoord();
+	void          flyToQueriedCoord();
 
 private:
-	void setupQueryDock();
+	void          setupQueryDock();
 
 protected:
-	QAction* _action;
-	QLineEdit* _coordQueryX;
-	QLineEdit* _coordQueryY;
+	QAction   *_action;
+	QLineEdit *_coordQueryX;
+	QLineEdit *_coordQueryY;
 };
