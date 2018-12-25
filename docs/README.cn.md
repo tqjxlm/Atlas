@@ -32,13 +32,13 @@ Atlas 是一个三维地图可视化分析项目。Atlas 结合了 [QGIS](https:
 
 * [osg](http://www.openscenegraph.org/index.php/documentation/user-guides/61-osgplugins) 支持格式
 * [osgEarth](http://docs.osgearth.org/en/latest/data.html) 支持格式
-* [插件](docs/plugins.md) 扩展格式
+* [插件](plugins.md) 扩展格式
   
 ### 高度可扩展
 
 本程序的大部分功能都由插件实现。使用插件，可以轻易实现新的功能，或是修改现有的功能。
 
-当前所有插件列表：[plugins.md](docs/plugins.md)
+当前所有插件列表：[plugins.md](plugins.md)
 
 ## Demo
 
@@ -46,21 +46,51 @@ Atlas 是一个三维地图可视化分析项目。Atlas 结合了 [QGIS](https:
 
 地球模式与投影模式
 
+![image not available](https://s1.ax1x.com/2018/12/25/FcBSMt.gif)
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBns0.gif)
+
+载入影像和地形切片
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcB9qf.gif)
+
+载入矢量数据
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBAiQ.gif)
+
 倾斜摄影模型
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBFIg.gif)
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBidS.gif)
 
 绘制与测量
 
+![image not available](https://s1.ax1x.com/2018/12/25/FgEpeU.gif)
+
 数据管理
+
+![image not available](https://s1.ax1x.com/2018/12/25/Fc0xxI.gif)
 
 视域分析
 
-人群仿真
+![image not available](https://s1.ax1x.com/2018/12/25/FcBmMq.gif)
 
 坡度可视化
 
-规划对比（编辑倾斜模型）
+![image not available](https://s1.ax1x.com/2018/12/25/FcBZzn.gif)
 
-正射影像生成（倾斜模型）
+规划对比
+（编辑倾斜模型，添加自定义模型）
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBpsP.gif)
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBVRs.gif)
+
+正射影像生成
+（为倾斜模型生成正射影像DOM和高程DSM）
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBEGj.gif)
 
 ## 征集开发者
 
@@ -72,23 +102,23 @@ Atlas 是一个三维地图可视化分析项目。Atlas 结合了 [QGIS](https:
 * 专题：桌面应用，可视化，界面设计，人机交互
 * 研究：GIS，CG，CV
 
-### 开发步骤
+### 参与开发
 
 你可以从以下步骤开始，参与本项目的开发：
 
 1. 试用[开发者版本](https://pan.baidu.com/s/17LA7XGeUsZpzTZdLmpRWNw)
-2. [编译源码](docs/build_guide.md)
+2. [编译源码](build_guide.md)
 3. 了解[项目结构](https://www.mindomo.com/mindmap/63290a5a387b4e1a85ad713953be0372)
 4. 浏览[任务列表](https://trello.com/b/Z7r1N9yJ)，选择感兴趣的任务或提出新想法
 5. Fork本项目，实现功能后提交一个Pull Request
 
-如果你希望编写插件，可以参考 [插件教程](docs/plugin_guide.md)。
+如果你希望编写插件，可以参考 [插件教程](plugin_guide.md)。
 
 ### 开发资源
 
 * [项目管理页面(trello)](https://trello.com/b/Z7r1N9yJ)
-* [编译教程](docs/build_guide.md)
-* [插件教程](docs/plugin_guide.md)
+* [编译教程](build_guide.md)
+* [插件教程](plugin_guide.md)
 * [项目结构](https://www.mindomo.com/mindmap/63290a5a387b4e1a85ad713953be0372)
 
 ## 联系我们
