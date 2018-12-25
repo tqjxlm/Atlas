@@ -46,23 +46,51 @@ The project is still under development, but a [development release](https://driv
 
 Geodetic & projected modes
 
+![image not available](https://s1.ax1x.com/2018/12/25/FcBSMt.gif)
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBns0.gif)
+
 Online images & terrains
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcB9qf.gif)
+
+ShapeFile or Geo-features
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBAiQ.gif)
 
 Oblique imagery models
 
+![image not available](https://s1.ax1x.com/2018/12/25/FcBFIg.gif)
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBidS.gif)
+
 Draw & measure
+
+![image not available](https://s1.ax1x.com/2018/12/25/FgEpeU.gif)
 
 Data management
 
+![image not available](https://s1.ax1x.com/2018/12/25/Fc0xxI.gif)
+
 Visibility test
 
-Crowd simulation
+![image not available](https://s1.ax1x.com/2018/12/25/FcBmMq.gif)
 
 Slope grade visualization
 
-Plan comparison (by editing oblique model)
+![image not available](https://s1.ax1x.com/2018/12/25/FcBZzn.gif)
 
-Orthographic generation (for oblique model)
+Plan comparison
+(by editing oblique model and insert new models)
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBpsP.gif)
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBVRs.gif)
+
+Orthographic generation
+(generate orthographic DOM and DSM for oblique model)
+
+![image not available](https://s1.ax1x.com/2018/12/25/FcBEGj.gif)
 
 ## Contribute
 
@@ -75,6 +103,8 @@ If you are interested in or skilled at any of the following topics, we are most 
 * research: GIS, CG, CV
 
 ### Getting started
+
+You can get started following these steps:
 
 1. try out the [dev release](https://drive.google.com/open?id=10lZnGS43kjEyBusYYlvUROLRjjqIqwvH)
 2. [build from source](docs/build_guide.md)

@@ -136,9 +136,8 @@ After packages are installed, you can find them at *VCPKG_ROOT*\installed\x64-wi
 
 1. Clone this project
 2. Make sure you have added *__OSG_ROOT__* and *__THIRD_PARTY_DIR__* to system environment variables
-3. Download __resources pack__ ([Google](https://drive.google.com/open?id=1TQhXl1HS5B7jR9sQ9bpaye_PVkqjkxda) / [Baidu](https://pan.baidu.com/s/17LA7XGeUsZpzTZdLmpRWNw)) and extract to [ProjectRoot]/Atlas/resources
-4. Open [ProjectRoot]/Atlas.sln
-5. Build ALL_BUILD project, or simply build the solution
+3. Open [ProjectRoot]/Atlas.sln
+4. Build ALL_BUILD project, or simply build the solution
 
 ### Run program
 
