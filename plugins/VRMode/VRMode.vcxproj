@@ -106,7 +106,7 @@
       <OutputFile>$(OutDir)\$(ProjectName)d.dll</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\plugins;$(SolutionDir)$(Platform)\$(Configuration)\;$(QTDIR)\lib;$(OSG_ROOT)\lib;$(THIRD_PARTY_DIR)\lib;$(SolutionDir)thirdparty\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;qtmaind.lib;Qt5Cored.lib;Qt5Widgetsd.lib;Qt5Guid.lib;Qt5OpenGLd.lib;openthreadsd.lib;osgd.lib;osgDBd.lib;osgUtild.lib;osgGAd.lib;osgTextd.lib;osgViewerd.lib;osgQt5d.lib;osgManipulatord.lib;PluginInterfaced.lib;MousePickerd.lib;OsgOpenVRd.lib;openvr_api.lib;MapControllerd.lib;ViewerWidgetd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;qtmaind.lib;Qt5Cored.lib;Qt5Widgetsd.lib;Qt5Guid.lib;Qt5OpenGLd.lib;openthreadsd.lib;osgd.lib;osgDBd.lib;osgUtild.lib;osgGAd.lib;osgTextd.lib;osgViewerd.lib;osgQt5d.lib;osgManipulatord.lib;PluginInterfaced.lib;MousePickerd.lib;openvr_api.lib;MapControllerd.lib;ViewerWidgetd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -138,7 +138,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).dll</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\plugins;$(SolutionDir)$(Platform)\$(Configuration)\;$(QTDIR)\lib;$(OSG_ROOT)\lib;$(THIRD_PARTY_DIR)\lib;$(SolutionDir)thirdparty\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;qtmain.lib;Qt5Core.lib;Qt5Widgets.lib;Qt5Gui.lib;Qt5OpenGL.lib;openthreads.lib;osg.lib;osgDB.lib;osgUtil.lib;osgGA.lib;osgText.lib;osgViewer.lib;osgQt5.lib;osgManipulator.lib;PluginInterface.lib;MousePicker.lib;OsgOpenVR.lib;openvr_api.lib;MapController.lib;ViewerWidget.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;qtmain.lib;Qt5Core.lib;Qt5Widgets.lib;Qt5Gui.lib;Qt5OpenGL.lib;openthreads.lib;osg.lib;osgDB.lib;osgUtil.lib;osgGA.lib;osgText.lib;osgViewer.lib;osgQt5.lib;osgManipulator.lib;PluginInterface.lib;MousePicker.lib;openvr_api.lib;MapController.lib;ViewerWidget.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -153,6 +153,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="openvrdevice.cpp" />
+    <ClCompile Include="openvreventhandler.cpp" />
+    <ClCompile Include="openvrupdateslavecallback.cpp" />
+    <ClCompile Include="openvrviewer.cpp" />
     <ClCompile Include="VRMode.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +181,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="VRMode.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="openvrdevice.h" />
+    <ClInclude Include="openvreventhandler.h" />
+    <ClInclude Include="openvrupdateslavecallback.h" />
+    <ClInclude Include="openvrviewer.h" />
   </ItemGroup>
   <ProjectExtensions>
     <VisualStudio>

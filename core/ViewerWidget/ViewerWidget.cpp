@@ -19,25 +19,31 @@
 
 #include "Compass.h"
 
-static const int DEFAULT_FRAME_RATE = 60;
+static const int  DEFAULT_FRAME_RATE = 60;
 
-ViewerWidget::ViewerWidget(osg::Node* mainScene, int x, int y, int w, int h, osgViewer::ViewerBase::ThreadingModel threadingModel/*=osgViewer::CompositeViewer::SingleThreaded*/) 
-	: QWidget()
+ViewerWidget::ViewerWidget(osg::Node *mainScene, int x, int y, int w, int h,
+                           osgViewer::ViewerBase::ThreadingModel threadingModel /*=osgViewer::CompositeViewer::SingleThreaded*/):
+	QWidget()
 {
 	setThreadingModel(threadingModel);
 	setKeyEventSetsDone(0);
 
-  setRunMaxFrameRate(DEFAULT_FRAME_RATE);
+	setRunMaxFrameRate(DEFAULT_FRAME_RATE);
 
 	// Turn off all lights by default
-	osg::StateSet* state = mainScene->getOrCreateStateSet();
-	state->setMode(GL_LIGHTING, osg::StateAttribute::OFF & osg::StateAttribute::OVERRIDE);
+	osg::StateSet *state = mainScene->getOrCreateStateSet();
+	state->setMode(GL_LIGHTING, osg::StateAttribute::OFF &osg::StateAttribute::OVERRIDE);
 	state->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+
+	osg::ref_ptr<osg::CullFace>  cf = new osg::CullFace;
+	cf->setMode(osg::CullFace::BACK);
+	state->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
+	state->setAttributeAndModes(cf, osg::StateAttribute::ON);
 
 	// Init a main view
 	_mainContext = createGraphicsWindow(x, y, w, h);
-	_mainWidget = createViewWidget(_mainContext, mainScene);
-	_mainView = getView(0);
+	_mainWidget  = createViewWidget(_mainContext, mainScene);
+	_mainView    = getView(0);
 
 	// Grid layout that contain multiple views
 	_grid = new QGridLayout;
@@ -55,46 +61,47 @@ ViewerWidget::ViewerWidget(osg::Node* mainScene, int x, int y, int w, int h, osg
 
 ViewerWidget::~ViewerWidget()
 {
-
 }
 
-void ViewerWidget::setWidgetInLayout(QWidget* widget, int row, int column, bool visible /*= true*/)
+void  ViewerWidget::setWidgetInLayout(QWidget *widget, int row, int column, bool visible /*= true*/)
 {
 	_grid->addWidget(widget, row, column);
 	widget->setVisible(visible);
 }
 
-void ViewerWidget::removeView(osgViewer::View* view)
+void  ViewerWidget::removeView(osgViewer::View *view)
 {
-	((QGridLayout*)layout())->removeWidget(_widgets[view]);
+	stopRendering();
+	((QGridLayout *)layout())->removeWidget(_widgets[view]);
 	_widgets.remove(view);
 	osgViewer::CompositeViewer::removeView(view);
+	startRendering();
 }
 
-QWidget* ViewerWidget::createViewWidget(osgQt::GraphicsWindowQt* gw, osg::Node* scene)
+QWidget * ViewerWidget::createViewWidget(osgQt::GraphicsWindowQt *gw, osg::Node *scene)
 {
-	osg::ref_ptr<osgViewer::View> view = new osgViewer::View;
-	osg::Camera* camera = view->getCamera();
-	const osg::GraphicsContext::Traits* traits = gw->getTraits();
+	osg::ref_ptr<osgViewer::View>       view   = new osgViewer::View;
+	osg::Camera                        *camera = view->getCamera();
+	const osg::GraphicsContext::Traits *traits = gw->getTraits();
 
 	// Connect and align the camera with the given graphics window
 	camera->setGraphicsContext(gw);
 	camera->setClearColor(osg::Vec4(0.95, 0.95, 0.95, 1.0));
 	camera->setViewport(new osg::Viewport(0, 0, traits->width, traits->height));
-  camera->setSmallFeatureCullingPixelSize(-1.0f);
+	camera->setSmallFeatureCullingPixelSize(-1.0f);
 
 	// Init the scene
-  osgEarth::GLUtils::setGlobalDefaults(camera->getOrCreateStateSet());
+	osgEarth::GLUtils::setGlobalDefaults(camera->getOrCreateStateSet());
 
 	view->setSceneData(scene);
 	view->addEventHandler(new osgViewer::StatsHandler);
-	view->addEventHandler(new osgViewer::ThreadingHandler);
+	// view->addEventHandler(new osgViewer::ThreadingHandler);
 	view->addEventHandler(new osgViewer::WindowSizeHandler);
 	view->addEventHandler(new osgViewer::LODScaleHandler);
-  view->addEventHandler(new osgGA::StateSetManipulator(view->getCamera()->getOrCreateStateSet()));
+	// view->addEventHandler(new osgGA::StateSetManipulator(view->getCamera()->getOrCreateStateSet()));
 
-  // Tell the database pager to not modify the unref settings
-  view->getDatabasePager()->setUnrefImageDataAfterApplyPolicy(true, false);
+	// Tell the database pager to not modify the unref settings
+	view->getDatabasePager()->setUnrefImageDataAfterApplyPolicy(true, false);
 
 	// We have to pause all threads before a view will be added to the composite viewer
 	stopThreading();
@@ -102,78 +109,85 @@ QWidget* ViewerWidget::createViewWidget(osgQt::GraphicsWindowQt* gw, osg::Node* 
 	startThreading();
 
 	_widgets.insert(view, gw->getGLWidget());
+
 	return gw->getGLWidget();
 }
 
-osgQt::GraphicsWindowQt* ViewerWidget::createGraphicsWindow(int x, int y, int w, int h, const std::string& name/*=""*/, bool shareMainContext /*= false*/, bool windowDecoration/*=false */)
+osgQt::GraphicsWindowQt * ViewerWidget::createGraphicsWindow(int x, int y, int w, int h, const std::string &name /*=""*/, bool shareMainContext /*= false*/,
+                                                             bool windowDecoration /*=false */)
 {
 	// Settings of the rendering context
-	osg::DisplaySettings* ds = osg::DisplaySettings::instance().get();
+	osg::DisplaySettings *ds = osg::DisplaySettings::instance().get();
+
 	ds->setNumMultiSamples(4);
-	osg::ref_ptr<osg::GraphicsContext::Traits> traits = new osg::GraphicsContext::Traits;
-	traits->windowName = name;
+	osg::ref_ptr<osg::GraphicsContext::Traits>  traits = new osg::GraphicsContext::Traits;
+	traits->windowName       = name;
 	traits->windowDecoration = windowDecoration;
-	traits->x = x;
-	traits->y = y;
-	traits->width = w;
-	traits->height = h;
-	traits->doubleBuffer = true;
-	traits->alpha = ds->getMinimumNumAlphaBits();
-	traits->stencil = ds->getMinimumNumStencilBits();
-	traits->sampleBuffers = ds->getMultiSamples();
-	traits->samples = ds->getNumMultiSamples();
+	traits->x                = x;
+	traits->y                = y;
+	traits->width            = w;
+	traits->height           = h;
+	traits->doubleBuffer     = true;
+	traits->alpha            = ds->getMinimumNumAlphaBits();
+	traits->stencil          = ds->getMinimumNumStencilBits();
+	traits->sampleBuffers    = ds->getMultiSamples();
+	traits->samples          = ds->getNumMultiSamples();
 
-	// This setting helps to make sure two synced widget live and die together 
+	// This setting helps to make sure two synced widget live and die together
 	if (shareMainContext)
+	{
 		traits->sharedContext = _mainContext;
+	}
 
-	osg::ref_ptr<osgQt::GraphicsWindowQt> gw = new osgQt::GraphicsWindowQt(traits.get());
-  osg::GraphicsContext::incrementContextIDUsageCount(gw->getState()->getContextID());
+	osg::ref_ptr<osgQt::GraphicsWindowQt>  gw = new osgQt::GraphicsWindowQt(traits.get());
 
 	return gw.release();
 }
 
-osgViewer::View* ViewerWidget::getMainView()
+osgViewer::View * ViewerWidget::getMainView()
 {
 	return _mainView;
 }
 
-osgQt::GraphicsWindowQt* ViewerWidget::getMainContext()
+osgQt::GraphicsWindowQt * ViewerWidget::getMainContext()
 {
 	return _mainContext;
 }
 
-void ViewerWidget::paintEvent(QPaintEvent* event)
+void  ViewerWidget::paintEvent(QPaintEvent *event)
 {
 	frame();
 }
 
-void ViewerWidget::setMouseStyle(unsigned styleshape)
+void  ViewerWidget::setMouseStyle(unsigned styleshape)
 {
 	_mainContext->setCursor((osgViewer::GraphicsWindow::MouseCursor)styleshape);
 }
 
-void ViewerWidget::stopRendering()
+void  ViewerWidget::stopRendering()
 {
 	_timer.stop();
+	stopThreading();
 }
 
-void ViewerWidget::startRendering()
+void  ViewerWidget::startRendering()
 {
+	startThreading();
 	_timer.start(1000 / _frameRate);
 }
 
-void ViewerWidget::setFrameRate(int FPS)
+void  ViewerWidget::setFrameRate(int FPS)
 {
 	stopRendering();
 	_frameRate = FPS;
 	startRendering();
 }
 
-osg::ref_ptr<osg::Camera> ViewerWidget::createLegendHud(const QString& titleString, QVector<osg::Vec4> colorVec, QVector<QString> txtVec)
+osg::ref_ptr<osg::Camera>  ViewerWidget::createLegendHud(const QString &titleString, QVector<osg::Vec4> colorVec, QVector<QString> txtVec)
 {
 	// An hud camera
-	osg::ref_ptr<osg::Camera> hudCamera = new osg::Camera;
+	osg::ref_ptr<osg::Camera>  hudCamera = new osg::Camera;
+
 	hudCamera->setName("hudCamera");
 	hudCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, 1280, 0, 800));
 	hudCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
@@ -183,15 +197,15 @@ osg::ref_ptr<osg::Camera> ViewerWidget::createLegendHud(const QString& titleStri
 	hudCamera->setAllowEventFocus(false);
 
 	// A geode for rendering texts
-	osg::ref_ptr<osg::Geode> pGeode = new osg::Geode;
-	osg::ref_ptr<osg::StateSet> pStateSet = pGeode->getOrCreateStateSet();
+	osg::ref_ptr<osg::Geode>     pGeode    = new osg::Geode;
+	osg::ref_ptr<osg::StateSet>  pStateSet = pGeode->getOrCreateStateSet();
 	pStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 	pStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 
 	// Generate title
-	osg::ref_ptr<osgText::Font> pFont = new osgText::Font;
+	osg::ref_ptr<osgText::Font>  pFont = new osgText::Font;
 	pFont = osgText::readFontFile("simhei.ttf");
-	osg::ref_ptr<osgText::Text> titleText = new osgText::Text;
+	osg::ref_ptr<osgText::Text>  titleText = new osgText::Text;
 	titleText->setFont(pFont);
 	titleText->setText(titleString.toStdString(), osgText::String::ENCODING_UTF8);
 	titleText->setPosition(osg::Vec3(10.0f, 752.0f + 20, -1));
@@ -200,14 +214,15 @@ osg::ref_ptr<osg::Camera> ViewerWidget::createLegendHud(const QString& titleStri
 	pGeode->addDrawable(titleText);
 
 	// Color contents
-	int length = colorVec.size();
+	int  length = colorVec.size();
+
 	for (int i = 0; i < length; i++)
 	{
 		// For every color, generate a squad with that color as filling color
-		osg::ref_ptr<osg::Geometry> pGeo = new osg::Geometry;
+		osg::ref_ptr<osg::Geometry>  pGeo = new osg::Geometry;
 		pGeo = osg::createTexturedQuadGeometry(osg::Vec3(10, 750.0f - (17 * i), -1), osg::Vec3(38, 0.0, 0.0), osg::Vec3(0.0, 15.0, 0.0));
 
-		osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
+		osg::ref_ptr<osg::Vec4Array>  colorArray = new osg::Vec4Array;
 		colorArray->push_back(colorVec.at(i));
 		pGeo->setColorArray(colorArray.get());
 		pGeo->setColorBinding(osg::Geometry::BIND_OVERALL);
@@ -215,7 +230,7 @@ osg::ref_ptr<osg::Camera> ViewerWidget::createLegendHud(const QString& titleStri
 		pGeode->addDrawable(pGeo);
 
 		// Generate the associated describing text
-		osg::ref_ptr<osgText::Text> pText = new osgText::Text;
+		osg::ref_ptr<osgText::Text>  pText = new osgText::Text;
 		pText->setFont(pFont);
 		pText->setText(txtVec.at(i).toStdString());
 		pText->setPosition(osg::Vec3(52.0f, 752.0f - (17 * i), -1));
@@ -230,24 +245,24 @@ osg::ref_ptr<osg::Camera> ViewerWidget::createLegendHud(const QString& titleStri
 	return hudCamera;
 }
 
-osg::ref_ptr<osg::PositionAttitudeTransform> ViewerWidget::createCameraIndicator()
+osg::ref_ptr<osg::PositionAttitudeTransform>  ViewerWidget::createCameraIndicator()
 {
 	// Init a transform that always faces camera
-	osg::ref_ptr<osg::PositionAttitudeTransform> cameraIndicator = new osg::PositionAttitudeTransform();
-	osg::ref_ptr<osg::AutoTransform> cameraCenter = new osg::AutoTransform();
+	osg::ref_ptr<osg::PositionAttitudeTransform>  cameraIndicator = new osg::PositionAttitudeTransform();
+	osg::ref_ptr<osg::AutoTransform>              cameraCenter    = new osg::AutoTransform();
+
 	cameraCenter->setAutoScaleToScreen(true);
 	cameraCenter->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
-	osg::StateSet* state = cameraCenter->getOrCreateStateSet();
+	osg::StateSet *state = cameraCenter->getOrCreateStateSet();
 	state->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
-	state->setMode(GL_LIGHTING, osg::StateAttribute::OFF & osg::StateAttribute::OVERRIDE);
+	state->setMode(GL_LIGHTING, osg::StateAttribute::OFF &osg::StateAttribute::OVERRIDE);
 	state->setRenderBinDetails(99, "RenderBin");
 
 	// Render the image
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	osg::ref_ptr<osg::Geometry> geom = createTexturedQuadGeometry(osg::Vec3(-20, -20, 0), osg::Vec3(40, 0, 0), osg::Vec3(0, 40, 0));
-
-	osg::ref_ptr<osg::Image> image = osgDB::readImageFile("resources/icons/center.png");
-	osg::ref_ptr<osg::Texture2D> texture = new osg::Texture2D;
+	osg::ref_ptr<osg::Geode>      geode   = new osg::Geode;
+	osg::ref_ptr<osg::Geometry>   geom    = createTexturedQuadGeometry(osg::Vec3(-20, -20, 0), osg::Vec3(40, 0, 0), osg::Vec3(0, 40, 0));
+	osg::ref_ptr<osg::Image>      image   = osgDB::readImageFile("resources/icons/center.png");
+	osg::ref_ptr<osg::Texture2D>  texture = new osg::Texture2D;
 	texture->setTextureSize(100, 100);
 	texture->setFilter(osg::Texture::MAG_FILTER, osg::Texture::LINEAR);
 	texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR);
@@ -267,26 +282,26 @@ osg::ref_ptr<osg::PositionAttitudeTransform> ViewerWidget::createCameraIndicator
 	return cameraIndicator;
 }
 
-void ViewerWidget::initCompass(osg::Group* root)
+void  ViewerWidget::initCompass(osg::Group *root)
 {
-	float radius = 1.5f;
-	float height = -1.0f;
+	float                     radius = 1.5f;
+	float                     height = -1.0f;
+	osg::Vec3                 center(-radius, -radius, height);
+	osg::ref_ptr<osg::Geode>  geode = new osg::Geode;
 
-	osg::Vec3 center(-radius, -radius, height);
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 	geode->addDrawable(
-		createTexturedQuadGeometry(center, osg::Vec3(radius*2.0f, 0.0f, 0.0f), osg::Vec3(0.0f, radius*2.0f, 0.0f)));
+		createTexturedQuadGeometry(center, osg::Vec3(radius * 2.0f, 0.0f, 0.0f), osg::Vec3(0.0f, radius * 2.0f, 0.0f)));
 
 	// Load compass
-	osg::ref_ptr<osg::Texture2D> texture = new osg::Texture2D;
+	osg::ref_ptr<osg::Texture2D>  texture = new osg::Texture2D;
 	texture->setImage(osgDB::readImageFile("resources/icons/compass.png"));
 
-	osg::ref_ptr<osg::MatrixTransform> plate = new osg::MatrixTransform;
+	osg::ref_ptr<osg::MatrixTransform>  plate = new osg::MatrixTransform;
 	plate->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture.get());
 	plate->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 	plate->addChild(geode.get());
 
-	osg::ref_ptr<Compass> compass = new Compass;
+	osg::ref_ptr<Compass>  compass = new Compass;
 	compass->setViewport(0.0, 0.0, 50.0, 50.0);
 	compass->setProjectionMatrix(osg::Matrixd::ortho(-1.5, 1.5, -1.5, 1.5, -10.0, 10.0));
 
