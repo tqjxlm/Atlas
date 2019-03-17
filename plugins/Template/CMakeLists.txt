@@ -36,7 +36,7 @@ set(${PROJECT_NAME}_JSONS
 )
 
 set(resdata
-  res/plugin.svg
+  res/Template.svg
 )
 
 file(COPY ${resdata} DESTINATION ${DIST_RESOURCES_PATH}/Template)
