@@ -414,8 +414,8 @@ CMakeLists.txt.user*
 **/cache/
 
 # resources
-Atlas/resources/GDAL_data
-Atlas/resources/Sky
+resources/GDAL_data
+resources/Sky
 resources.rar
 thirdparty/
 thirdparty.rar

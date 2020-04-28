@@ -38,7 +38,7 @@ DataRecord::DataRecord(const QString& name, osgEarth::Layer* layer, DataRecord* 
     _extent = &layer->getExtent();
   else
   {
-    auto node = _layer->getNode();
+    auto node = _layer->getOrCreateNode();
     if (node)
     {
       _extent = NULL;

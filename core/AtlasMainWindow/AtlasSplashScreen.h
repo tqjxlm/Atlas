@@ -2,7 +2,9 @@
 #include <QProgressBar>
 #include <QPixmap>
 
-class AtlasSplashScreen : public QSplashScreen
+#include "AtlasMainWindow_global.h"
+
+class ATLASMAINWINDOW_EXPORT AtlasSplashScreen : public QSplashScreen
 {
 	Q_OBJECT
 

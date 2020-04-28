@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/Map">
-        <file>Atlas/resources/earth_files/geocentric.earth</file>
-        <file>Atlas/resources/earth_files/projected.earth</file>
+        <file>resources/earth_files/geocentric.earth</file>
+        <file>resources/earth_files/projected.earth</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

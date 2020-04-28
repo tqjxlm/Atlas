@@ -212,7 +212,11 @@ void  DataTree::switchRecord(const QString &nodeName, bool checked)
 		{
 			for (int i = 0; i < MAX_SUBVIEW; i++)
 			{
-				record->layer()->setEnabled(checked);
+//				record->layer()->setVisible(checked);
+                if (!checked)
+                    _mainMap[i]->removeLayer(record->layer());
+                else
+                    _mainMap[i]->addLayer(record->layer());
 			}
 		}
 	}

@@ -241,7 +241,7 @@ void  PluginManager::loadContextMenu(QMenu *contextMenu, QTreeWidgetItem *select
 	}
 }
 
-void  PluginManager::registerPluginGroup(const QString& name, QToolBar *toolBar, QMenu *menu)
+void  PluginManager::registerPluginGroup(const QString& name, QPair<QToolBar*, QMenu*> entry)
 {
-	_pluginGroups[name] = { name, toolBar, menu };
+	_pluginGroups[name] = { name, entry.first, entry.second };
 }

@@ -61,8 +61,6 @@ private:
   void  collectInitInfo();
 
 public slots:
-  void  about();
-
 	// View related slots
   void  resetCamera();
 

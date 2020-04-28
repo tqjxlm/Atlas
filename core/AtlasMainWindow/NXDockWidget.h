@@ -1,6 +1,6 @@
 #pragma once
 
-#include "atlasmainwindow_global.h"
+#include "AtlasMainWindow_global.h"
 
 #include <QDockWidget>
 

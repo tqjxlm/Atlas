@@ -13,7 +13,7 @@
 #include <osgQt/GraphicsWindowQt>
 #include <osgGA/StateSetManipulator>
 
-#include <osgEarth/GLUtils>
+//#include <osgEarth/GLUtils>
 
 #include <DataManager/FindNode.hpp>
 
@@ -91,7 +91,7 @@ QWidget * ViewerWidget::createViewWidget(osgQt::GraphicsWindowQt *gw, osg::Node 
 	camera->setSmallFeatureCullingPixelSize(-1.0f);
 
 	// Init the scene
-	osgEarth::GLUtils::setGlobalDefaults(camera->getOrCreateStateSet());
+//	osgEarth::GLUtils::setGlobalDefaults(camera->getOrCreateStateSet());
 
 	view->setSceneData(scene);
 	view->addEventHandler(new osgViewer::StatsHandler);

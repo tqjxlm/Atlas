@@ -37,7 +37,7 @@ public:
 public:
 	PluginManager(QObject *parent, DataManager* dataManager, ViewerWidget* viewer);
 	~PluginManager();
-	void registerPluginGroup(const QString& name, QToolBar* toolBar, QMenu* menu);
+	void registerPluginGroup(const QString& name, QPair<QToolBar*, QMenu*> entry);
 	void loadPlugins();
 
 public slots:

@@ -9,8 +9,6 @@
 #include <QHeaderView>
 #include <QMenu>
 #include <QEvent>
-#include <QMenuBar>
-#include <QLabel>
 #include <algorithm>
 
 #include "ui_AtlasMainWindow.h"
@@ -34,6 +32,9 @@ void  AtlasMainWindow::setupUi()
 	_ui->setupUi(this);
 
 	setWindowIcon(QIcon("resources/icons/atlas.png"));
+
+	connect(_ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
+	connect(_ui->actionAbout, SIGNAL(triggered()), this, SLOT(about()));
 
     initDockWidgets();
 }
@@ -146,6 +147,16 @@ void  AtlasMainWindow::initDockWidgets()
 		attributePanel->setWidget(tableDockWidgetContents);
 		addDockWidget(Qt::RightDockWidgetArea, attributePanel);
 	}
+}
+
+QPair<QToolBar*, QMenu*> AtlasMainWindow::getGroupEntries(QString groupName)
+{
+	if (groupName == "Data") return {_ui->dataToolBar, _ui->dataMenu};
+	if (groupName == "Measure") return {_ui->measToolBar, _ui->measMenu};
+	if (groupName == "Draw") return {_ui->drawToolBar, _ui->drawMenu};
+	if (groupName == "Effect") return {_ui->effectToolBar, _ui->effectMenu};
+	if (groupName == "Analysis") return {_ui->analysisToolBar, _ui->analysisMenu};
+	if (groupName == "Edit") return {_ui->editToolBar, _ui->editMenu};
 }
 
 void AtlasMainWindow::initUiStyles()
@@ -659,4 +670,16 @@ void  AtlasMainWindow::menuWindows_triggered(QAction *action)
 	}
 
 	dockWidget->setFocus();
+}
+
+QMenu* AtlasMainWindow::getProjectMenu()
+{
+	return _ui->projectMenu;
+}
+
+void  AtlasMainWindow::about()
+{
+	QString  versionInfo(tr("Atlas v0.0.1 by tqjxlm"));
+
+	QMessageBox::information(this, tr("version"), versionInfo);
 }

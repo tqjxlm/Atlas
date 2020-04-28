@@ -1,5 +1,5 @@
 ﻿#include "Atlas.h"
-#include "AtlasSplashScreen.h"
+#include <AtlasMainWindow/AtlasSplashScreen.h>
 
 #include <QApplication>
 #include <QFile>

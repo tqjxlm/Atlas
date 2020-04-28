@@ -253,7 +253,9 @@ void  MapController::setViewPoint(const osgEarth::Viewpoint &vp)
 
 	if (vp.nodeIsSet())
 	{
-		fitViewOnNode(vp.getNode(), distance);
+        osg::ref_ptr<osg::Node> safe;
+        vp.getNode(safe);
+		fitViewOnNode(safe, distance);
 	}
 	else
 	{

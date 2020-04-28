@@ -1,14 +1,15 @@
 #ifndef ATLASMAINWINDOW_H
 #define ATLASMAINWINDOW_H
 
-#include "atlasmainwindow_global.h"
-
+#include "AtlasMainWindow_global.h"
 #include <QMainWindow>
 #include <QMap>
 
 QT_BEGIN_NAMESPACE
 class QProgressBar;
 class QLabel;
+class QToolBar;
+class QMenu;
 QT_END_NAMESPACE
 
 class NXDockWidget;
@@ -20,6 +21,8 @@ namespace Ui {
 
 class ATLASMAINWINDOW_EXPORT AtlasMainWindow : public QMainWindow
 {
+    Q_OBJECT
+
 public:
 	AtlasMainWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = 0);
 	~AtlasMainWindow();
@@ -42,6 +45,9 @@ protected:
 	void setupUi();
 	void initDockWidgets();
 	void initUiStyles();
+
+	QMenu* getProjectMenu();
+	QPair<QToolBar*, QMenu*> getGroupEntries(QString groupName);
 
 public slots:
 	// Progress bar loading done
@@ -73,6 +79,8 @@ public slots:
 	void dockWidgetUndocked(NXDockWidget* dockWidget);
 
 	void menuWindows_triggered(QAction* action);
+
+	void  about();
 
 protected:
 	Ui::AtlasMainWindowClass* _ui;

@@ -10,14 +10,13 @@ using namespace std;
 #include <QMessageBox>
 #include <QDateTime>
 #include <QProcess>
+#include <QMenu>
 #include <QTreeWidgetItem>
+#include <QApplication>
 
 #include <osg/Notify>
-#include <osg/ShapeDrawable>
 #include <osg/PositionAttitudeTransform>
-#include <osg/BlendColor>
 #include <osg/BlendFunc>
-#include <osg/TexGen>
 #include <osg/TexEnv>
 
 #include <osgSim/OverlayNode>
@@ -39,7 +38,6 @@ using namespace std;
 #include <SettingsManager/SettingsManager.h>
 #include <PluginManager/PluginManager.h>
 #include <MapController/MapController.h>
-#include <ui_AtlasMainWindow.h>
 
 Atlas::Atlas(QWidget *parent, Qt::WindowFlags flags):
 	AtlasMainWindow(parent, flags)
@@ -63,7 +61,7 @@ Atlas::~Atlas()
 
 	osg::setNotifyLevel(osg::FATAL);
 	osg::setNotifyHandler(nullptr);
-	osgEarth::setNotifyHandler(nullptr);
+//	osgEarth::setNotifyHandler(nullptr);
 
 	cout << "Program closed: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString().c_str() << endl;
 	_log->close();
@@ -101,7 +99,7 @@ void  Atlas::initCore()
 	_root->setName("Root");
 
 	_settingsManager = new SettingsManager(this);
-	_settingsManager->setupUi(_ui->projectMenu);
+	_settingsManager->setupUi(getProjectMenu());
 
 	_dataManager = new DataManager(_settingsManager, this);
 
@@ -123,12 +121,11 @@ void  Atlas::initCore()
 	connect(_dataManager, SIGNAL(stopRendering()), _mainViewerWidget, SLOT(stopRendering()));
 
 	_pluginManager = new PluginManager(this, _dataManager, _mainViewerWidget);
-	_pluginManager->registerPluginGroup("Data", _ui->dataToolBar, _ui->dataMenu);
-	_pluginManager->registerPluginGroup("Measure", _ui->measToolBar, _ui->measMenu);
-	_pluginManager->registerPluginGroup("Draw", _ui->drawToolBar, _ui->drawMenu);
-	_pluginManager->registerPluginGroup("Effect", _ui->effectToolBar, _ui->effectMenu);
-	_pluginManager->registerPluginGroup("Analysis", _ui->analysisToolBar, _ui->analysisMenu);
-	_pluginManager->registerPluginGroup("Edit", _ui->editToolBar, _ui->editMenu);
+	QString groups[] = {"Data", "Measure", "Draw", "Effect", "Analysis", "Edit"};
+	for (QString name : groups)
+    {
+	    _pluginManager->registerPluginGroup(name, getGroupEntries(name));
+    }
 
 	connect(_dataManager, &DataManager::requestContextMenu, _pluginManager, &PluginManager::loadContextMenu);
 	connect(_pluginManager, &PluginManager::sendNowInitName, this, &Atlas::sendNowInitName);
@@ -285,7 +282,8 @@ void  qtLogToFile(QtMsgType type, const QMessageLogContext &context, const QStri
 
 	cout << "[Qt]    [" << logTypes[type] << "]    " << msg.toLocal8Bit().constData();
 #ifndef NDEBUG
-	cout << "    (" << context.file << ": " << context.line << ", " << context.function;
+	if (context.file)
+	    cout << "    (" << context.file << ": " << context.line << ", " << context.function;
 #endif
 	cout << endl;
 }
@@ -364,7 +362,7 @@ void  Atlas::initLog()
 
 	// Redirect OSGEarth
 	osgEarth::setNotifyLevel(osg::INFO);
-	osgEarth::setNotifyHandler(new LogFileHandler(_log));
+//	osgEarth::setNotifyHandler(new LogFileHandler(_log));
 
 	// Redirect OSG
 	osg::setNotifyLevel(osg::NOTICE);
@@ -376,8 +374,6 @@ void  Atlas::initLog()
 void  Atlas::setupUi()
 {
 	AtlasMainWindow::setupUi();
-	connect(_ui->actionAbout, SIGNAL(triggered()), this, SLOT(about()));
-	connect(_ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
 }
 
 void  Atlas::collectInitInfo()
@@ -399,11 +395,4 @@ void  Atlas::collectInitInfo()
 		initSteps++;
 	}
 	emit  sendTotalInitSteps(initSteps);
-}
-
-void  Atlas::about()
-{
-	QString  versionInfo(tr("Atlas v0.0.1 by tqjxlm"));
-
-	QMessageBox::information(this, tr("version"), versionInfo);
 }

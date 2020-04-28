@@ -88,7 +88,7 @@ AddTMSData::~AddTMSData()
 void AddTMSData::setupUi(QToolBar *toolBar, QMenu *menu)
 {
 	QIcon icon;
-	icon.addFile(QStringLiteral(":/Atlas/resources/icons/USGSTMS.png"), QSize(), QIcon::Normal, QIcon::Off);
+	icon.addFile(QStringLiteral(":/resources/icons/USGSTMS.png"), QSize(), QIcon::Normal, QIcon::Off);
 
 	QAction* imageAction = new QAction(_mainWindow);
 	imageAction->setObjectName(QStringLiteral("addTMSImgAction"));
