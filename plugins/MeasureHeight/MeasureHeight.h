@@ -28,9 +28,9 @@ public:
 	virtual void setupUi(QToolBar *toolBar, QMenu* menu) override;
 
 protected:
-	virtual void onLeftButton();
-	virtual void onRightButton();
-	virtual void onMouseMove();
+	virtual void onLeftButton() override;
+	virtual void onRightButton() override;
+	virtual void onMouseMove() override;
 	void updateLines();
 	void updateText();
 

@@ -45,6 +45,6 @@ set(${PROJECT_NAME}_JSONS
 
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_JSONS} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS})
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS} ${PLUGIN_LIBS}
   ${OPENVR_LIBRARY}
 )

@@ -14,7 +14,7 @@
 #include <DataManager/DataRecord.h>
 
 OrthoMap::OrthoMap()
-    : _selectedNode(nullptr)
+	: _selectedNode(nullptr)
 {
 	_pluginName = tr("Orthographic Map");
 	_pluginCategory = "Edit";
@@ -26,22 +26,22 @@ OrthoMap::~OrthoMap()
 
 void OrthoMap::setupUi(QToolBar *toolBar, QMenu *menu)
 {
-  // Area mode: not implemented yet
-  _orthoAreaAction = new QAction(_mainWindow);
-  _orthoAreaAction->setObjectName(QStringLiteral("_orthoAreaAction"));
-  _orthoAreaAction->setCheckable(true);
-  _orthoAreaAction->setEnabled(false);
-  _orthoAreaAction->setText(tr("DOM for Selected Area"));
-  connect(_orthoAreaAction, SIGNAL(toggled(bool)), this, SLOT(toggle(bool)));
+	// Area mode: not implemented yet
+	_orthoAreaAction = new QAction(_mainWindow);
+	_orthoAreaAction->setObjectName(QStringLiteral("_orthoAreaAction"));
+	_orthoAreaAction->setCheckable(true);
+	_orthoAreaAction->setEnabled(false);
+	_orthoAreaAction->setText(tr("DOM for Selected Area"));
+	connect(_orthoAreaAction, SIGNAL(toggled(bool)), this, SLOT(toggle(bool)));
 
-  _orthoAreaDSMAction = new QAction(_mainWindow);
-  _orthoAreaDSMAction->setObjectName(QStringLiteral("_orthoAreaDSMAction"));
-  _orthoAreaDSMAction->setCheckable(true);
-  _orthoAreaDSMAction->setEnabled(false);
-  _orthoAreaDSMAction->setText(tr("DSM for Selected Area"));
-  connect(_orthoAreaDSMAction, SIGNAL(toggled(bool)), this, SLOT(toggle(bool)));
+	_orthoAreaDSMAction = new QAction(_mainWindow);
+	_orthoAreaDSMAction->setObjectName(QStringLiteral("_orthoAreaDSMAction"));
+	_orthoAreaDSMAction->setCheckable(true);
+	_orthoAreaDSMAction->setEnabled(false);
+	_orthoAreaDSMAction->setText(tr("DSM for Selected Area"));
+	connect(_orthoAreaDSMAction, SIGNAL(toggled(bool)), this, SLOT(toggle(bool)));
 
-  // Global mode
+	// Global mode
 	_orthoModelAction = new QAction(_mainWindow);
 	_orthoModelAction->setObjectName(QStringLiteral("_orthoModelAction"));
 	_orthoModelAction->setCheckable(true);
@@ -58,28 +58,28 @@ void OrthoMap::setupUi(QToolBar *toolBar, QMenu *menu)
 	registerMutexAction(_orthoAreaDSMAction);
 }
 
-void OrthoMap::loadContextMenu(QMenu * contextMenu, QTreeWidgetItem * selectedItem)
+void OrthoMap::loadContextMenu(QMenu *contextMenu, QTreeWidgetItem *selectedItem)
 {
-  if (selectedItem->parent()->text(0) == tr("Oblique Imagery Model"))
-  {
-    auto dataRecord = dynamic_cast<DataRecord*>(selectedItem);
-    if (dataRecord && !dataRecord->isLayer() && dataRecord->node())
-    {
-      QIcon orthoicon;
-      orthoicon.addFile(QString::fromUtf8("resources/icons/satellite.png"), QSize(), QIcon::Normal, QIcon::Off);
+	if (selectedItem->parent()->text(0) == tr("Oblique Imagery Model"))
+	{
+		auto dataRecord = dynamic_cast<DataRecord *>(selectedItem);
+		if (dataRecord && !dataRecord->isLayer() && dataRecord->node())
+		{
+			QIcon orthoicon;
+			orthoicon.addFile(QString::fromUtf8("resources/icons/satellite.png"), QSize(), QIcon::Normal, QIcon::Off);
 
-      QMenu *orthoMenu = new QMenu();
-      orthoMenu->setIcon(orthoicon);
-      orthoMenu->addAction(_orthoModelAction);
-      orthoMenu->addAction(_orthoAreaAction);
-      orthoMenu->addAction(_orthoModelDSMAction);
-      orthoMenu->addAction(_orthoAreaDSMAction);
-      orthoMenu->setTitle(tr("Orthographics"));
+			QMenu *orthoMenu = new QMenu();
+			orthoMenu->setIcon(orthoicon);
+			orthoMenu->addAction(_orthoModelAction);
+			orthoMenu->addAction(_orthoAreaAction);
+			orthoMenu->addAction(_orthoModelDSMAction);
+			orthoMenu->addAction(_orthoAreaDSMAction);
+			orthoMenu->setTitle(tr("Orthographics"));
 
-      contextMenu->addMenu(orthoMenu);
-      _selectedNode = dataRecord->node()->asGroup();
-    }
-  }
+			contextMenu->addMenu(orthoMenu);
+			_selectedNode = dataRecord->node()->asGroup();
+		}
+	}
 }
 
 void OrthoMap::onDoubleClick()
@@ -94,7 +94,7 @@ void OrthoMap::onRightButton()
 
 void OrthoMap::toggle(bool checked)
 {
-	QAction* action = dynamic_cast<QAction*>(sender());
+	QAction *action = dynamic_cast<QAction *>(sender());
 
 	// In area mode, the actions should be toggled until the area is drawn
 	if (action == _orthoAreaDSMAction)
@@ -124,13 +124,12 @@ void OrthoMap::toggle(bool checked)
 
 		action->toggle();
 	}
-
 }
 
-void OrthoMap::setupWorkingDialog(osg::Node* scene)
+void OrthoMap::setupWorkingDialog(osg::Node *scene)
 {
 	_saveDialog = new SaveOrthoProjDialog(*_mainViewer, scene, _globalWKT, _mode, 0);
-  _saveDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+	_saveDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 	connect(_saveDialog, SIGNAL(accepted()), _saveDialog, SLOT(finish()));
 	connect(_saveDialog, SIGNAL(rejected()), _saveDialog, SLOT(finish()));
 

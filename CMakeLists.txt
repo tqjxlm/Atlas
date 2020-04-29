@@ -14,7 +14,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INSTALL_PREFIX, "/usr")
 set(CMAKE_AUTOMOC ON)
-# set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DIST_PATH})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${DIST_PATH})
@@ -62,20 +61,20 @@ find_package(GDAL)
 find_package(OsgQt5)
 
 include_directories(
-  ${PROJECT_BINARY_DIR} ${OSG_INCLUDE_DIR} ${GDAL_INCLUDE_DIR}
-  ${OSGEARTH_INCLUDE_DIRS} ${OSGEARTH_INCLUDE_DIR} ${OSGQT5_INCLUDE_DIR} core)
+  ${PROJECT_BINARY_DIR}
+  ${OSG_INCLUDE_DIR}
+  ${GDAL_INCLUDE_DIR}
+  ${OSGEARTH_INCLUDE_DIRS}
+  ${OSGEARTH_INCLUDE_DIR}
+  ${OSGQT5_INCLUDE_DIR}
+  core)
 
 # -------------------------------------------------------------
 # Find files
 # -------------------------------------------------------------
-set(${PROJECT_NAME}_HDRS
-    Atlas/Atlas.h
-        core/AtlasMainWindow/AtlasSplashScreen.h
-    Atlas/resource.h)
+set(${PROJECT_NAME}_HDRS Atlas/Atlas.h Atlas/resource.h)
 
-set(${PROJECT_NAME}_SRCS
-    Atlas/main.cpp
-    Atlas/Atlas.cpp)
+set(${PROJECT_NAME}_SRCS Atlas/main.cpp Atlas/Atlas.cpp)
 
 set(COMMON_LIBS
     Qt5::Core
@@ -93,7 +92,7 @@ set(COMMON_LIBS
     ${OSGEARTHUTIL_LIBRARY}
     ${OSGEARTHSYMBOLOGY_LIBRARY}
     ${FRIBIDI_LIBRARY}
-        ${OSGQT5_LIBRARY})
+    ${OSGQT5_LIBRARY})
 
 macro(SUBDIRLIST result curdir)
   file(
@@ -116,18 +115,20 @@ subdirlist(COMPONENTS ${CMAKE_CURRENT_SOURCE_DIR}/core)
 
 set(CORE_LIBS "")
 foreach(componentName ${COMPONENTS})
-    add_subdirectory(core/${componentName})
-    include_directories(core/${componentName})
-    list(APPEND CORE_LIBS ${componentName})
-    string(TOUPPER ${componentName} upperName)
-    add_definitions(-D${upperName})
+  add_subdirectory(core/${componentName})
+  include_directories(core/${componentName})
+  list(APPEND CORE_LIBS ${componentName})
+  string(TOUPPER ${componentName} upperName)
+  add_definitions(-D${upperName})
 endforeach()
+
+set(PLUGIN_LIBS PluginInterface MousePicker)
 
 # -------------------------------------------------------------
 # Plugins
 # -------------------------------------------------------------
 function(DefinePlugin pluginName)
-  option(PLUGIN_${pluginName} "Use ${pluginName}" OFF)
+  option(PLUGIN_${pluginName} "Use ${pluginName}" ON)
   if(PLUGIN_${pluginName})
     message("Enable plugin: ${pluginName}")
     add_subdirectory(plugins/${pluginName})
@@ -146,9 +147,9 @@ endforeach()
 # -------------------------------------------------------------
 # Executable and linking
 # -------------------------------------------------------------
-add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS} resource.qrc)
+add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS}
+                               resource.qrc)
 
-message("Core components ${CORE_LIBS}")
 target_link_libraries(${PROJECT_NAME} ${CORE_LIBS} ${COMMON_LIBS})
 
 # -------------------------------------------------------------
@@ -157,9 +158,9 @@ target_link_libraries(${PROJECT_NAME} ${CORE_LIBS} ${COMMON_LIBS})
 file(REMOVE_RECURSE ${DIST_PLUGINS_PATH})
 file(MAKE_DIRECTORY ${DIST_RESOURCES_PATH})
 add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/resources
-        ${DIST_RESOURCES_PATH})
+  TARGET ${PROJECT_NAME}
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/resources
+          ${DIST_RESOURCES_PATH})
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

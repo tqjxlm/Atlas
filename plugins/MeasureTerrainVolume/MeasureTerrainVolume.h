@@ -19,10 +19,10 @@ public:
 	~MeasureTerrainVolume();
 	virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
 
-	virtual void onLeftButton();
-	virtual void onRightButton();
-	virtual void onDoubleClick();
-	virtual void onMouseMove();
+	virtual void onLeftButton() override;
+	virtual void onRightButton() override;
+	virtual void onDoubleClick() override;
+	virtual void onMouseMove() override;
 
 	bool calculateVolume();
 	float volInBoundary(osg::Node* node, osg::Vec3Array* boundary);

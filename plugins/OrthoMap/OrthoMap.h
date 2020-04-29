@@ -21,8 +21,8 @@ public:
 	~OrthoMap();
 	virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
   virtual void loadContextMenu(QMenu * contextMenu, QTreeWidgetItem * selectedItem) override;
-  virtual void onDoubleClick();
-	virtual void onRightButton();
+  virtual void onDoubleClick() override;
+	virtual void onRightButton() override;
 	virtual void setupWorkingDialog(osg::Node* scene);
 
 public slots:

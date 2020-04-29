@@ -28,10 +28,10 @@ public:
   virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
 
 protected:
-  virtual void onLeftButton();
-  virtual void onRightButton();
-  virtual void onDoubleClick();
-  virtual void onMouseMove();
+  virtual void onLeftButton() override;
+  virtual void onRightButton() override;
+  virtual void onDoubleClick() override;
+  virtual void onMouseMove() override;
   virtual void drawOverlay();
 
   virtual osg::ref_ptr<osg::Geometry> tesselatedPolygon(osg::Vec3Array* polygon);

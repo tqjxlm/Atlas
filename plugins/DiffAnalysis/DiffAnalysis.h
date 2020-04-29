@@ -38,8 +38,8 @@ public:
 	~DiffAnalysis();
 	virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
 
-	virtual void onDoubleClick();
-	virtual void onLeftButton();
+	virtual void onDoubleClick() override;
+	virtual void onLeftButton() override;
 
 	// Write out as image
 	void writeWithGDAL(osg::Image* image, std::string path);

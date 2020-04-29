@@ -30,8 +30,8 @@ public:
   virtual void loadContextMenu(QMenu * contextMenu, QTreeWidgetItem * selectedItem) override;
 
 protected:
-	virtual void onLeftButton();
-	virtual void onDoubleClick();
+	virtual void onLeftButton() override;
+	virtual void onDoubleClick() override;
 
 protected:
 	osg::ref_ptr<osg::Vec2Array> _boundary;

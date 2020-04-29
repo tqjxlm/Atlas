@@ -19,8 +19,8 @@ public:
 	MeasureTerrainArea();
 	~MeasureTerrainArea();
 	virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
-	virtual void onDoubleClick();
-	virtual void onLeftButton();
+	virtual void onDoubleClick() override;
+	virtual void onLeftButton() override;
 
 protected:
 	bool calculateArea();

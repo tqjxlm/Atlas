@@ -16,6 +16,7 @@ find_package(Qt5Widgets CONFIG REQUIRED)
 include_directories(
     ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS}
+    ${GDAL_INCLUDE_DIR}
     ../
 )
 
@@ -39,6 +40,8 @@ set(${PROJECT_NAME}_JSONS
 
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_JSONS} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS})
 
-target_link_libraries(${PROJECT_NAME}
-
+target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS} ${PLUGIN_LIBS}
+  DrawSurfacePolygon
+  DataManager
+  ViewerWidget
 )

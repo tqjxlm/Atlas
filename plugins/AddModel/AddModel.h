@@ -29,12 +29,12 @@ public:
 	AddModel();
 	~AddModel();
 
-	virtual void onLeftButton();
-	virtual void onRightButton();
-	virtual void onMouseMove();
+	virtual void onLeftButton() override;
+	virtual void onRightButton() override;
+	virtual void onMouseMove() override;
 	virtual void finish();
 	virtual bool loadModel(std::string filePath);
-	virtual void setupUi(QToolBar* toolBar, QMenu* menu);
+	virtual void setupUi(QToolBar* toolBar, QMenu* menu) override;
 
 public slots:
 	virtual void toggle(bool checked = true) override;

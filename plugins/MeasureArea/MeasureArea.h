@@ -18,6 +18,6 @@ public:
 	MeasureArea();
 	~MeasureArea();
 	virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
-	virtual void onDoubleClick();
+	virtual void onDoubleClick() override;
 	float calcuSpatialPolygonArea();
 };

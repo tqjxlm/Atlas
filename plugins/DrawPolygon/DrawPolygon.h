@@ -20,10 +20,10 @@ public:
 	~DrawPolygon();
 	virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
 
-	virtual void onLeftButton();
-	virtual void onMouseMove();
-	virtual void onRightButton();
-	virtual void onDoubleClick();
+	virtual void onLeftButton() override;
+	virtual void onMouseMove() override;
+	virtual void onRightButton() override;
+	virtual void onDoubleClick() override;
 
 	virtual osg::ref_ptr<osg::Geometry> createPolygon();
 

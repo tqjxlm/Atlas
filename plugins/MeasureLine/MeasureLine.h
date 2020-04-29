@@ -8,26 +8,26 @@ class QAction;
 class QMenu;
 QT_END_NAMESPACE
 
-class MeasureLine: public DrawLine
+class MeasureLine : public DrawLine
 {
-	Q_OBJECT
-	Q_PLUGIN_METADATA(IID "io.tqjxlm.Atlas.PluginInterface" FILE "MeasureLine.json")
-	Q_INTERFACES(PluginInterface)
+  Q_OBJECT
+  Q_PLUGIN_METADATA(IID "io.tqjxlm.Atlas.PluginInterface" FILE "MeasureLine.json")
+  Q_INTERFACES(PluginInterface)
 
 public:
-	MeasureLine();
+  MeasureLine();
 
-	~MeasureLine();
+  ~MeasureLine();
 
-  virtual void  setupUi(QToolBar *toolBar, QMenu *menu) override;
+  virtual void setupUi(QToolBar *toolBar, QMenu *menu) override;
 
-  virtual void  onLeftButton();
+  virtual void onLeftButton() override;
 
-  virtual void  onDoubleClick();
+  virtual void onDoubleClick() override;
 
-  virtual void  onMouseMove();
+  virtual void onMouseMove() override;
 
 protected:
-  double                       _totoalDistance;
-  osg::ref_ptr<osgText::Text>  _tmpLabel;
+  double _totoalDistance;
+  osg::ref_ptr<osgText::Text> _tmpLabel;
 };

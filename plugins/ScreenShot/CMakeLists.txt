@@ -11,6 +11,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${DIST_PLUGINS_PATH})
 
 find_package(Qt5Core CONFIG REQUIRED)
 find_package(Qt5Widgets CONFIG REQUIRED)
+find_package(OpenGL)
 
 include_directories(
     ${Qt5Core_INCLUDE_DIRS}
@@ -37,6 +38,7 @@ set(${PROJECT_NAME}_JSONS
 
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_JSONS} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS})
 
-target_link_libraries(${PROJECT_NAME}
-
+target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS} ${PLUGIN_LIBS}
+  ViewerWidget
+  ${OPENGL_LIBRARIES}
 )
