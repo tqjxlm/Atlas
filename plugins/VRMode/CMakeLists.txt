@@ -16,6 +16,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${DIST_PLUGINS_PATH})
 find_package(Qt5Core CONFIG REQUIRED)
 find_package(Qt5Widgets CONFIG REQUIRED)
 find_package(Qt5OpenGL CONFIG REQUIRED)
+find_package(OpenGL REQUIRED)
 
 include_directories(
     ${Qt5Core_INCLUDE_DIRS}
@@ -43,8 +44,11 @@ set(${PROJECT_NAME}_JSONS
   ${JsonFiles}
 )
 
+string(TOUPPER ${ProjectId} upperName)
+add_definitions(-D${upperName}_LIB)
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_JSONS} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS})
 
-target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS} ${PLUGIN_LIBS}
+target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS} ${PLUGIN_LIBS} ViewerWidget
   ${OPENVR_LIBRARY}
+  ${OPENGL_LIBRARIES}
 )

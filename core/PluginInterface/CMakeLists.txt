@@ -28,5 +28,7 @@ set(${PROJECT_NAME}_UIS
 
 qt5_wrap_ui(UIS ${${PROJECT_NAME}_UIS})
 
+string(TOUPPER ${ProjectId} upperName)
+add_definitions(-D${upperName}_LIB)
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS} ${UIS} ../../resource.qrc)
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS} MousePicker SettingsManager)

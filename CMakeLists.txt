@@ -19,6 +19,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DIST_PATH})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${DIST_PATH})
 set(QT_MIN_VERSION 5.11.0)
 
+MARK_AS_ADVANCED(MULTITHREADED_BUILD)
+SET(MULTITHREADED_BUILD ON CACHE BOOL "Parallel build with as many threads as possible!")
+
 # -------------------------------------------------------------
 # Dependencies
 # -------------------------------------------------------------
@@ -31,7 +34,6 @@ find_package(
   COMPONENTS Core
              Gui
              Widgets
-             Svg
              OpenGL
              Network
              Xml
@@ -56,9 +58,9 @@ find_package(
   osgEarthUtil
   osgEarthSymbology
   osgEarthAnnotation)
+find_package(OsgQt5 REQUIRED)
 find_package(FriBiDi)
 find_package(GDAL)
-find_package(OsgQt5)
 
 include_directories(
   ${PROJECT_BINARY_DIR}
@@ -118,8 +120,6 @@ foreach(componentName ${COMPONENTS})
   add_subdirectory(core/${componentName})
   include_directories(core/${componentName})
   list(APPEND CORE_LIBS ${componentName})
-  string(TOUPPER ${componentName} upperName)
-  add_definitions(-D${upperName})
 endforeach()
 
 set(PLUGIN_LIBS PluginInterface MousePicker)
@@ -133,8 +133,6 @@ function(DefinePlugin pluginName)
     message("Enable plugin: ${pluginName}")
     add_subdirectory(plugins/${pluginName})
     include_directories(plugins/${pluginName})
-    string(TOUPPER ${pluginName} upperName)
-    add_definitions(-D${upperName})
   endif()
 endfunction()
 
@@ -151,6 +149,12 @@ add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS}
                                resource.qrc)
 
 target_link_libraries(${PROJECT_NAME} ${CORE_LIBS} ${COMMON_LIBS})
+
+if(MULTITHREADED_BUILD)
+    if(MSVC)
+      target_compile_options(Atlas PUBLIC "/MP")
+    endif()
+endif()
 
 # -------------------------------------------------------------
 # File management

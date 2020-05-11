@@ -45,6 +45,8 @@ set(resdata
 
 file(COPY ${resdata} DESTINATION ${DIST_RESOURCES_PATH}/OpenSkyNetwork)
 
+string(TOUPPER ${ProjectId} upperName)
+add_definitions(-D${upperName}_LIB)
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_JSONS} ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS})
 
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS} ${PLUGIN_LIBS}

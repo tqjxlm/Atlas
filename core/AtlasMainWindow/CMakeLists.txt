@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.1)
 get_filename_component(ProjectId ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${ProjectId})
 
-string(TOUPPER ${ProjectId} upperName)
-add_definitions(-D${upperName}_LIB)
-
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_AUTOMOC ON)
 # set(CMAKE_AUTOUIC ON)
@@ -31,5 +28,7 @@ set(${PROJECT_NAME}_UIS
 
 qt5_wrap_ui(UIS ${${PROJECT_NAME}_UIS})
 
+string(TOUPPER ${ProjectId} upperName)
+add_definitions(-D${upperName}_LIB)
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SRCS} ${${PROJECT_NAME}_HDRS} ${UIS} ../../resource.qrc)
 target_link_libraries(${PROJECT_NAME} ${COMMON_LIBS})
