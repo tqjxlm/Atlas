@@ -12,12 +12,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${DIST_PLUGINS_PATH})
 find_package(Qt5Core CONFIG REQUIRED)
 find_package(Qt5Widgets CONFIG REQUIRED)
 find_package(Qt5Network REQUIRED)
-find_package(Qt5WebSockets REQUIRED)
+# find_package(Qt5WebSockets REQUIRED)
 
 include_directories(
     ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS}
-    ${Qt5WebSockets_INCLUDE_DIRS}
+    # ${Qt5WebSockets_INCLUDE_DIRS}
 )
 
 file(GLOB_RECURSE HFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*.h)

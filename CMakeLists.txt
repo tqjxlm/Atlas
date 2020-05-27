@@ -1,26 +1,37 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.8)
 
 project(Atlas)
 
 # -------------------------------------------------------------
 # CMAKE settings
 # -------------------------------------------------------------
-set(DIST_PATH ${PROJECT_BINARY_DIR}/dist)
-set(DIST_PLUGINS_PATH ${DIST_PATH}/plugins)
-set(DIST_RESOURCES_PATH ${DIST_PATH}/resources)
-
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_INSTALL_PREFIX, "/usr")
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DIST_PATH})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${DIST_PATH})
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+set(CMAKE_BUILD_TYPE Release)
+
+ADD_DEFINITIONS(-DUNICODE)
+ADD_DEFINITIONS(-D_UNICODE)
 set(QT_MIN_VERSION 5.11.0)
 
 MARK_AS_ADVANCED(MULTITHREADED_BUILD)
 SET(MULTITHREADED_BUILD ON CACHE BOOL "Parallel build with as many threads as possible!")
+
+# -------------------------------------------------------------
+# Paths and configurations
+# -------------------------------------------------------------
+set(DIST_PATH ${PROJECT_BINARY_DIR}/dist)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DIST_PATH})
+set(DIST_PLUGINS_PATH ${DIST_PATH}/plugins)
+set(DIST_RESOURCES_PATH ${DIST_PATH}/resources)
+
+set(THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/thirdparty CACHE PATH "The root directory for all third party dependencies.")
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${THIRD_PARTY_DIR} ${THIRD_PARTY_DIR}/debug)
+set(ENV{THIRD_PARTY_DIR} ${THIRD_PARTY_DIR})
 
 # -------------------------------------------------------------
 # Dependencies
@@ -85,7 +96,6 @@ set(COMMON_LIBS
     Qt5::OpenGL
     Qt5::Network
     Qt5::Xml
-    -lpthread
     ${OPENSCENEGRAPH_LIBRARIES}
     ${GDAL_LIBRARY}
     ${OSGEARTH_LIBRARY}
@@ -95,6 +105,12 @@ set(COMMON_LIBS
     ${OSGEARTHSYMBOLOGY_LIBRARY}
     ${FRIBIDI_LIBRARY}
     ${OSGQT5_LIBRARY})
+
+if (UNIX)
+  set(COMMON_LIBS
+    ${COMMON_LIBS}
+    -lpthread)
+endif (UNIX)
 
 macro(SUBDIRLIST result curdir)
   file(
@@ -130,7 +146,7 @@ set(PLUGIN_LIBS PluginInterface MousePicker)
 function(DefinePlugin pluginName)
   option(PLUGIN_${pluginName} "Use ${pluginName}" ON)
   if(PLUGIN_${pluginName})
-    message("Enable plugin: ${pluginName}")
+    message(STATUS "Enable plugin: ${pluginName}")
     add_subdirectory(plugins/${pluginName})
     include_directories(plugins/${pluginName})
   endif()
@@ -157,14 +173,33 @@ if(MULTITHREADED_BUILD)
 endif()
 
 # -------------------------------------------------------------
-# File management
+# Deployment
 # -------------------------------------------------------------
-file(REMOVE_RECURSE ${DIST_PLUGINS_PATH})
+file(REMOVE_RECURSE ${DIST_PATH})
 file(MAKE_DIRECTORY ${DIST_RESOURCES_PATH})
 add_custom_command(
   TARGET ${PROJECT_NAME}
   POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/resources
           ${DIST_RESOURCES_PATH})
+
+if (MSVC)
+  set(RELEASE_PATHS ${THIRD_PARTY_DIR}/bin ${THIRD_PARTY_DIR}/tools/osgearth ${THIRD_PARTY_DIR}/tools/osg)
+  set(DEBUG_PATHS ${THIRD_PARTY_DIR}/debug/bin ${THIRD_PARTY_DIR}/debug/tools/osgearth ${THIRD_PARTY_DIR}/debug/tools/osg)
+  set(ALL_PATH "PATH=%PATH%" ${THIRD_PARTY_DIR}/tools ${RELEASE_PATHS} ${DEBUG_PATHS})
+  set_target_properties(Atlas PROPERTIES VS_DEBUGGER_ENVIRONMENT "${ALL_PATH}")
+
+  add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${THIRD_PARTY_DIR}/plugins ${DIST_PATH}/Debug)
+
+  add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${THIRD_PARTY_DIR}/plugins ${DIST_PATH}/Release)
+endif()
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
