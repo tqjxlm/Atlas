@@ -17,7 +17,6 @@ set(CMAKE_MODULE_PATH "${Atlas_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INSTALL_PREFIX, "/usr")
 set(CMAKE_AUTOMOC ON)
-#set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${DIST_PATH})
 set(QT_MIN_VERSION 5.11.0)
@@ -25,7 +24,7 @@ set(QT_MIN_VERSION 5.11.0)
 find_package(Qt5 COMPONENTS Core Gui Widgets Svg OpenGL Network Xml REQUIRED)
 find_package(OpenSceneGraph 3.4.0 REQUIRED osgViewer osgGA osgDB osgManipulator osgSim osgParticle osgText osgUtil)
 find_package(OsgEarth 2.9 REQUIRED osgEarthFeatures osgEarthUtil osgEarthSymbology osgEarthAnnotation)
-find_package(FriBiDi)
+#find_package(FriBiDi)
 find_package(GDAL)
 
 include_directories(
@@ -130,7 +129,6 @@ target_link_libraries(${PROJECT_NAME}
   ${OSGEARTHFEATURES_LIBRARY}
   ${OSGEARTHUTIL_LIBRARY}
   ${OSGEARTHSYMBOLOGY_LIBRARY}
-  ${FRIBIDI_LIBRARY}
   -losgQt5
 )
 
